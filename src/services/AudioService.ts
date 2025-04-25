@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 interface AudioConfig {
   startSoundPath: string;
   endSoundPath: string;
@@ -41,3 +43,4 @@ class AudioService {
 }
 
 export default AudioService;
+
