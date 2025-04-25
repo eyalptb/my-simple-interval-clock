@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { TimerState } from '@/types/timer';
@@ -49,24 +50,31 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     startSound.src = '/go.mp3';
     endSound.src = '/whistle.mp3';
     
+    // Only show errors when trying to play sounds, not on initial load
     startSound.onerror = () => {
-      console.error('Failed to load start sound');
-      toast({
-        title: 'Audio Error',
-        description: 'Could not load start sound',
-        variant: 'destructive'
-      });
+      if (audioStore.current.attemptedToPlay) {
+        console.error('Failed to load start sound');
+        toast({
+          title: 'Audio Error',
+          description: 'Could not load start sound',
+          variant: 'destructive'
+        });
+      }
     };
 
     endSound.onerror = () => {
-      console.error('Failed to load end sound');
-      toast({
-        title: 'Audio Error',
-        description: 'Could not load end sound',
-        variant: 'destructive'
-      });
+      if (audioStore.current.attemptedToPlay) {
+        console.error('Failed to load end sound');
+        toast({
+          title: 'Audio Error',
+          description: 'Could not load end sound',
+          variant: 'destructive'
+        });
+      }
     };
     
+    // Add flag to track if play has been attempted
+    audioStore.current.attemptedToPlay = false;
     startSound.load();
     endSound.load();
     
@@ -99,6 +107,7 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
           const endSound = audioStore.current.endSound;
           if (endSound) {
             endSound.currentTime = 0;
+            audioStore.current.attemptedToPlay = true;
             endSound.play().catch(e => console.error('Error playing end sound:', e));
           }
         }
@@ -121,6 +130,7 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
               const startSound = audioStore.current.startSound;
               if (startSound) {
                 startSound.currentTime = 0;
+                audioStore.current.attemptedToPlay = true;
                 startSound.play().catch(e => console.error('Error playing start sound:', e));
               }
             }
@@ -151,6 +161,7 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
                 const startSound = audioStore.current.startSound;
                 if (startSound) {
                   startSound.currentTime = 0;
+                  audioStore.current.attemptedToPlay = true;
                   startSound.play().catch(e => console.error('Error playing start sound:', e));
                 }
               }

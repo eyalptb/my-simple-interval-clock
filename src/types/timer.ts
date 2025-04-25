@@ -40,6 +40,7 @@ export interface TimerControls {
   audioStore: React.MutableRefObject<{
     startSound?: HTMLAudioElement;
     endSound?: HTMLAudioElement;
+    attemptedToPlay?: boolean;
   }>;
   intervalStore: React.MutableRefObject<{
     id?: number;
