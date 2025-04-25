@@ -48,10 +48,10 @@ const TimerControls: React.FC = () => {
   };
 
   const handleIncreaseSeconds = () => {
-    // When seconds are 59, we want to reset to 0 and add 1 to minutes
-    if (seconds >= 59) {
+    // If seconds are 59, reset to 0 and add 1 to minutes
+    if (seconds === 59) {
       setSeconds(0);
-      setMinutes(minutes + 1);
+      setMinutes(Math.min(99, minutes + 1));
     } else {
       setSeconds(seconds + 1);
     }
@@ -77,10 +77,10 @@ const TimerControls: React.FC = () => {
   };
 
   const handleIncreaseRestSeconds = () => {
-    // When restSeconds are 59, we want to reset to 0 and add 1 to restMinutes
-    if (restSeconds >= 59) {
+    // If rest seconds are 59, reset to 0 and add 1 to rest minutes
+    if (restSeconds === 59) {
       setRestSeconds(0);
-      setRestMinutes(restMinutes + 1);
+      setRestMinutes(Math.min(99, restMinutes + 1));
     } else {
       setRestSeconds(restSeconds + 1);
     }
