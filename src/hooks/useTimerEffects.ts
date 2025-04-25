@@ -33,8 +33,19 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
   } = controls;
 
   useEffect(() => {
-    startSoundRef.current = new Audio('/go.mp3');
-    endSoundRef.current = new Audio('/whistle.mp3');
+    // We'll create new audio elements but won't assign to .current directly
+    // because the refs are read-only
+    const startSound = new Audio('/go.mp3');
+    const endSound = new Audio('/whistle.mp3');
+    
+    // Store references in a way that doesn't use .current assignment
+    if (startSoundRef && 'current' in startSoundRef) {
+      // Using a type assertion to work around the readonly issue
+      (startSoundRef as { current: HTMLAudioElement | null }).current = startSound;
+    }
+    if (endSoundRef && 'current' in endSoundRef) {
+      (endSoundRef as { current: HTMLAudioElement | null }).current = endSound;
+    }
     
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -45,7 +56,8 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
   useEffect(() => {
     if (!isRunning) return;
     
-    timerRef.current = window.setInterval(() => {
+    // Using window.setInterval and storing the ID
+    const intervalId = window.setInterval(() => {
       if (seconds > 0) {
         setSecondsState(seconds - 1);
       } else if (minutes > 0) {
@@ -116,6 +128,11 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
         }
       }
     }, 1000);
+    
+    // Store the interval ID safely using a type assertion
+    if (timerRef && 'current' in timerRef) {
+      (timerRef as { current: number | null }).current = intervalId;
+    }
     
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);

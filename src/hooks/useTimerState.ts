@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { TimerTheme } from '@/types/timer';
 
 export const useTimerState = () => {
@@ -14,6 +14,7 @@ export const useTimerState = () => {
   const [restSeconds, setRestSecondsState] = useState(20);
   const [isResting, setIsResting] = useState(false);
   const [theme, setThemeState] = useState<TimerTheme>('black-white');
+  const pendingTimeUpdateRef = useRef<NodeJS.Timeout | null>(null);
 
   return {
     minutes,
@@ -38,5 +39,6 @@ export const useTimerState = () => {
     setIsResting,
     theme,
     setThemeState,
+    pendingTimeUpdateRef,
   };
 };

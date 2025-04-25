@@ -15,7 +15,6 @@ export const useTimerControls = (state: TimerState) => {
   const startSoundRef = useRef<HTMLAudioElement | null>(null);
   const endSoundRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<number | null>(null);
-  const pendingTimeUpdateRef = useRef<NodeJS.Timeout | null>(null);
 
   const startTimer = () => {
     if (!state.isRunning && (state.minutes > 0 || state.seconds > 0)) {
@@ -48,6 +47,6 @@ export const useTimerControls = (state: TimerState) => {
     startSoundRef,
     endSoundRef,
     timerRef,
-    pendingTimeUpdateRef,
+    pendingTimeUpdateRef: state.pendingTimeUpdateRef,
   };
 };

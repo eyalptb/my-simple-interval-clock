@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useRef } from 'react';
 import { useTimerState } from '@/hooks/useTimerState';
 import { useTimerControls } from '@/hooks/useTimerControls';
 import { useTimerEffects } from '@/hooks/useTimerEffects';
@@ -62,15 +62,106 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setTheme = (newTheme: TimerTheme) => {
     timerState.setThemeState(newTheme);
   };
+  
+  // Add the missing incrementSeconds, decrementSeconds, etc. methods
+  const incrementSeconds = () => {
+    if (!timerState.isRunning) {
+      setSeconds(timerState.seconds + 1);
+    }
+  };
+  
+  const decrementSeconds = () => {
+    if (!timerState.isRunning && timerState.seconds > 0) {
+      setSeconds(timerState.seconds - 1);
+    }
+  };
+  
+  const incrementMinutes = () => {
+    if (!timerState.isRunning && timerState.minutes < 99) {
+      setMinutes(timerState.minutes + 1);
+    }
+  };
+  
+  const decrementMinutes = () => {
+    if (!timerState.isRunning && timerState.minutes > 0) {
+      setMinutes(timerState.minutes - 1);
+    }
+  };
+  
+  const setRestMinutes = (min: number) => {
+    if (!timerState.isRunning) {
+      timerState.setRestMinutesState(Math.min(99, Math.max(0, min)));
+    }
+  };
+  
+  const setRestSeconds = (sec: number) => {
+    if (!timerState.isRunning) {
+      if (sec >= 60) {
+        const minutesToAdd = Math.floor(sec / 60);
+        const remainingSeconds = sec % 60;
+        timerState.setRestSecondsState(remainingSeconds);
+        timerState.setRestMinutesState(Math.min(99, timerState.restMinutes + minutesToAdd));
+        return;
+      }
+      
+      timerState.setRestSecondsState(Math.min(59, Math.max(0, sec)));
+    }
+  };
+  
+  const incrementRestSeconds = () => {
+    if (!timerState.isRunning) {
+      setRestSeconds(timerState.restSeconds + 1);
+    }
+  };
+  
+  const decrementRestSeconds = () => {
+    if (!timerState.isRunning && timerState.restSeconds > 0) {
+      setRestSeconds(timerState.restSeconds - 1);
+    }
+  };
+  
+  const incrementRestMinutes = () => {
+    if (!timerState.isRunning && timerState.restMinutes < 99) {
+      setRestMinutes(timerState.restMinutes + 1);
+    }
+  };
+  
+  const decrementRestMinutes = () => {
+    if (!timerState.isRunning && timerState.restMinutes > 0) {
+      setRestMinutes(timerState.restMinutes - 1);
+    }
+  };
 
-  const value = {
-    ...timerState,
-    ...timerControls,
+  const value: TimerContextType = {
+    minutes: timerState.minutes,
+    seconds: timerState.seconds,
+    isRunning: timerState.isRunning,
+    isPaused: timerState.isPaused,
+    isMuted: timerState.isMuted,
+    currentRepetition: timerState.currentRepetition,
+    totalRepetitions: timerState.totalRepetitions,
+    restMinutes: timerState.restMinutes,
+    restSeconds: timerState.restSeconds,
+    isResting: timerState.isResting,
+    theme: timerState.theme,
     setMinutes,
     setSeconds,
     setTotalRepetitions,
+    setRestMinutes,
+    setRestSeconds,
     setTheme,
     toggleMute,
+    startTimer: timerControls.startTimer,
+    pauseTimer: timerControls.pauseTimer,
+    resetTimer: timerControls.resetTimer,
+    incrementSeconds,
+    decrementSeconds,
+    incrementMinutes,
+    decrementMinutes,
+    incrementRestSeconds,
+    decrementRestSeconds,
+    incrementRestMinutes,
+    decrementRestMinutes,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
