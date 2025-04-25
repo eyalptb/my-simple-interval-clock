@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { toast } from '@/components/ui/use-toast';
 
@@ -193,6 +192,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return;
       }
       
+      // If seconds are < 0, borrow from minutes if available
+      if (sec < 0 && minutes > 0) {
+        setMinutesState(prev => prev - 1);
+        setSecondsState(59);
+        return;
+      }
+      
       const validSec = Math.min(59, Math.max(0, sec));
       
       pendingTimeUpdateRef.current = setTimeout(() => {
@@ -236,6 +242,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return;
       }
       
+      // If seconds are < 0, borrow from minutes if available
+      if (sec < 0 && restMinutes > 0) {
+        setRestMinutesState(prev => prev - 1);
+        setRestSecondsState(59);
+        return;
+      }
+      
       const validSec = Math.min(59, Math.max(0, sec));
       
       pendingTimeUpdateRef.current = setTimeout(() => {
@@ -260,10 +273,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const decrementSeconds = () => {
     if (isRunning) return;
     
-    if (seconds === 0 && minutes > 0) {
-      setSecondsState(59);
-      setMinutesState(prev => prev - 1);
-    } else if (seconds > 0) {
+    if (seconds === 0) {
+      // When at 0 seconds, wrap around to 59 and decrement minute if possible
+      if (minutes > 0) {
+        setSecondsState(59);
+        setMinutesState(prev => prev - 1);
+      }
+    } else {
       setSecondsState(prev => prev - 1);
     }
   };
@@ -295,10 +311,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const decrementRestSeconds = () => {
     if (isRunning) return;
     
-    if (restSeconds === 0 && restMinutes > 0) {
-      setRestSecondsState(59);
-      setRestMinutesState(prev => prev - 1);
-    } else if (restSeconds > 0) {
+    if (restSeconds === 0) {
+      // When at 0 seconds, wrap around to 59 and decrement minute if possible
+      if (restMinutes > 0) {
+        setRestSecondsState(59);
+        setRestMinutesState(prev => prev - 1);
+      }
+    } else {
       setRestSecondsState(prev => prev - 1);
     }
   };
