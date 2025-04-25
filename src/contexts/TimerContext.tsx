@@ -40,7 +40,7 @@ export const useTimer = () => {
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [minutes, setMinutesState] = useState(0);
-  const [seconds, setSecondsState] = useState(40);
+  const [seconds, setSecondsState] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -54,6 +54,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const timerRef = useRef<number | null>(null);
   const startSoundRef = useRef<HTMLAudioElement | null>(null);
   const endSoundRef = useRef<HTMLAudioElement | null>(null);
+  const pendingTimeUpdateRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize audio elements
   useEffect(() => {
@@ -62,6 +63,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (pendingTimeUpdateRef.current) clearTimeout(pendingTimeUpdateRef.current);
     };
   }, []);
 
@@ -162,11 +164,33 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
   
   const setMinutes = (min: number) => {
-    if (!isRunning) setMinutesState(min);
+    if (!isRunning) {
+      // Cancel any pending updates
+      if (pendingTimeUpdateRef.current) {
+        clearTimeout(pendingTimeUpdateRef.current);
+      }
+      
+      // Create a small delay before updating the state to prevent rapid changes
+      pendingTimeUpdateRef.current = setTimeout(() => {
+        setMinutesState(min);
+        pendingTimeUpdateRef.current = null;
+      }, 50);
+    }
   };
   
   const setSeconds = (sec: number) => {
-    if (!isRunning) setSecondsState(sec);
+    if (!isRunning) {
+      // Cancel any pending updates
+      if (pendingTimeUpdateRef.current) {
+        clearTimeout(pendingTimeUpdateRef.current);
+      }
+      
+      // Create a small delay before updating the state to prevent rapid changes
+      pendingTimeUpdateRef.current = setTimeout(() => {
+        setSecondsState(sec);
+        pendingTimeUpdateRef.current = null;
+      }, 50);
+    }
   };
   
   const setTotalRepetitions = (reps: number) => {
@@ -174,11 +198,33 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
   
   const setRestMinutes = (min: number) => {
-    if (!isRunning) setRestMinutesState(min);
+    if (!isRunning) {
+      // Cancel any pending updates
+      if (pendingTimeUpdateRef.current) {
+        clearTimeout(pendingTimeUpdateRef.current);
+      }
+      
+      // Create a small delay before updating the state to prevent rapid changes
+      pendingTimeUpdateRef.current = setTimeout(() => {
+        setRestMinutesState(min);
+        pendingTimeUpdateRef.current = null;
+      }, 50);
+    }
   };
   
   const setRestSeconds = (sec: number) => {
-    if (!isRunning) setRestSecondsState(sec);
+    if (!isRunning) {
+      // Cancel any pending updates
+      if (pendingTimeUpdateRef.current) {
+        clearTimeout(pendingTimeUpdateRef.current);
+      }
+      
+      // Create a small delay before updating the state to prevent rapid changes
+      pendingTimeUpdateRef.current = setTimeout(() => {
+        setRestSecondsState(sec);
+        pendingTimeUpdateRef.current = null;
+      }, 50);
+    }
   };
   
   const setTheme = (newTheme: TimerTheme) => {
