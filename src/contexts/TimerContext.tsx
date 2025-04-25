@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { toast } from '@/components/ui/use-toast';
 
@@ -112,15 +113,33 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
         } else {
           if (currentRepetition < totalRepetitions) {
-            setIsResting(true);
-            setMinutesState(restMinutes);
-            setSecondsState(restSeconds);
-            
-            toast({
-              title: "Rest period",
-              description: `Rest for ${restMinutes}:${restSeconds.toString().padStart(2, '0')}`,
-              duration: 3000,
-            });
+            // Check if rest time is zero (both minutes and seconds)
+            if (restMinutes === 0 && restSeconds === 0) {
+              // Skip rest period and go directly to the next repetition
+              setCurrentRepetition(currentRepetition + 1);
+              setMinutesState(minutes);
+              setSecondsState(seconds);
+              
+              toast({
+                title: `Starting repetition ${currentRepetition + 1} of ${totalRepetitions}`,
+                duration: 3000,
+              });
+              
+              if (!isMuted && startSoundRef.current) {
+                startSoundRef.current.play().catch(e => console.error('Error playing start sound:', e));
+              }
+            } else {
+              // Normal behavior when rest time > 0
+              setIsResting(true);
+              setMinutesState(restMinutes);
+              setSecondsState(restSeconds);
+              
+              toast({
+                title: "Rest period",
+                description: `Rest for ${restMinutes}:${restSeconds.toString().padStart(2, '0')}`,
+                duration: 3000,
+              });
+            }
           } else {
             resetTimer();
             toast({
