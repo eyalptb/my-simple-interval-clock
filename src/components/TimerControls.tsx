@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { Button } from '@/components/ui/button';
@@ -129,7 +128,9 @@ const TimerControls: React.FC = () => {
     <div className="space-y-2">
       <div className="flex items-center justify-center">
         <Clock className="h-4 w-4 mr-1" />
-        <span className="text-sm font-medium">{title}</span>
+        <span className="text-sm font-medium">
+          {isRest ? "Recess Time" : title}
+        </span>
       </div>
       
       <div className="flex justify-between items-center">
@@ -200,7 +201,6 @@ const TimerControls: React.FC = () => {
 
   return (
     <div className="w-full space-y-6">
-      {/* Main timer controls */}
       <div className="flex justify-center space-x-4">
         <Button 
           variant="outline" 
@@ -246,13 +246,11 @@ const TimerControls: React.FC = () => {
         </Button>
       </div>
       
-      {/* Minutes and seconds controls - Always visible */}
       <div className="grid grid-cols-2 gap-4">
         {renderTimeDisplay("Workout Time", minutes, seconds, true, false)}
-        {renderTimeDisplay("Rest Time", restMinutes, restSeconds, true, true)}
+        {renderTimeDisplay("", restMinutes, restSeconds, true, true)}
       </div>
       
-      {/* Repetitions control - Only visible when not running */}
       {!isRunning && !isPaused && (
         <div className="flex items-center justify-center space-x-4">
           <div className="flex items-center">
@@ -272,7 +270,6 @@ const TimerControls: React.FC = () => {
         </div>
       )}
       
-      {/* If running, show current information */}
       {(isRunning || isPaused) && (
         <div className="text-center">
           <div className="flex items-center justify-center">
