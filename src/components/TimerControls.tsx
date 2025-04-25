@@ -34,7 +34,8 @@ const TimerControls: React.FC = () => {
     restMinutes,
     restSeconds,
     setRestMinutes,
-    setRestSeconds
+    setRestSeconds,
+    isResting
   } = useTimer();
 
   const handleIncreaseMinutes = () => {
@@ -101,6 +102,53 @@ const TimerControls: React.FC = () => {
     setTotalRepetitions(Math.max(1, totalRepetitions - 1));
   };
 
+  const renderTimeDisplay = (title, minutes, seconds, isEditable = true) => (
+    <div className="space-y-2">
+      <div className="flex items-center justify-center">
+        <Clock className="h-4 w-4 mr-1" />
+        <span className="text-sm font-medium">{title}</span>
+      </div>
+      
+      <div className="flex justify-between items-center">
+        <div className="text-center">
+          <span className="text-xs">Min</span>
+          <div className="flex flex-col items-center">
+            {!isRunning && !isPaused && isEditable ? (
+              <Button variant="ghost" size="icon" onClick={title === "Workout Time" ? handleIncreaseMinutes : handleIncreaseRestMinutes}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            ) : <div className="h-8"></div>}
+            <span className="text-lg font-bold">{(title === "Workout Time" ? minutes : restMinutes).toString().padStart(2, '0')}</span>
+            {!isRunning && !isPaused && isEditable ? (
+              <Button variant="ghost" size="icon" onClick={title === "Workout Time" ? handleDecreaseMinutes : handleDecreaseRestMinutes}>
+                <Minus className="h-4 w-4" />
+              </Button>
+            ) : <div className="h-8"></div>}
+          </div>
+        </div>
+        
+        <span className="text-2xl">:</span>
+        
+        <div className="text-center">
+          <span className="text-xs">Sec</span>
+          <div className="flex flex-col items-center">
+            {!isRunning && !isPaused && isEditable ? (
+              <Button variant="ghost" size="icon" onClick={title === "Workout Time" ? handleIncreaseSeconds : handleIncreaseRestSeconds}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            ) : <div className="h-8"></div>}
+            <span className="text-lg font-bold">{(title === "Workout Time" ? seconds : restSeconds).toString().padStart(2, '0')}</span>
+            {!isRunning && !isPaused && isEditable ? (
+              <Button variant="ghost" size="icon" onClick={title === "Workout Time" ? handleDecreaseSeconds : handleDecreaseRestSeconds}>
+                <Minus className="h-4 w-4" />
+              </Button>
+            ) : <div className="h-8"></div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="w-full space-y-6">
       {/* Main timer controls */}
@@ -149,86 +197,13 @@ const TimerControls: React.FC = () => {
         </Button>
       </div>
       
-      {/* Minutes and seconds controls */}
-      {!isRunning && !isPaused && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-center">
-              <Clock className="h-4 w-4 mr-1" />
-              <span className="text-sm font-medium">Workout Time</span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <div className="text-center">
-                <span className="text-xs">Min</span>
-                <div className="flex flex-col items-center">
-                  <Button variant="ghost" size="icon" onClick={handleIncreaseMinutes}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <span className="text-lg font-bold">{minutes.toString().padStart(2, '0')}</span>
-                  <Button variant="ghost" size="icon" onClick={handleDecreaseMinutes}>
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              
-              <span className="text-2xl">:</span>
-              
-              <div className="text-center">
-                <span className="text-xs">Sec</span>
-                <div className="flex flex-col items-center">
-                  <Button variant="ghost" size="icon" onClick={handleIncreaseSeconds}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <span className="text-lg font-bold">{seconds.toString().padStart(2, '0')}</span>
-                  <Button variant="ghost" size="icon" onClick={handleDecreaseSeconds}>
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex items-center justify-center">
-              <Bell className="h-4 w-4 mr-1" />
-              <span className="text-sm font-medium">Rest Time</span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <div className="text-center">
-                <span className="text-xs">Min</span>
-                <div className="flex flex-col items-center">
-                  <Button variant="ghost" size="icon" onClick={handleIncreaseRestMinutes}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <span className="text-lg font-bold">{restMinutes.toString().padStart(2, '0')}</span>
-                  <Button variant="ghost" size="icon" onClick={handleDecreaseRestMinutes}>
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              
-              <span className="text-2xl">:</span>
-              
-              <div className="text-center">
-                <span className="text-xs">Sec</span>
-                <div className="flex flex-col items-center">
-                  <Button variant="ghost" size="icon" onClick={handleIncreaseRestSeconds}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <span className="text-lg font-bold">{restSeconds.toString().padStart(2, '0')}</span>
-                  <Button variant="ghost" size="icon" onClick={handleDecreaseRestSeconds}>
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Minutes and seconds controls - Always visible now */}
+      <div className="grid grid-cols-2 gap-4">
+        {renderTimeDisplay("Workout Time", minutes, seconds)}
+        {renderTimeDisplay("Rest Time", restMinutes, restSeconds)}
+      </div>
       
-      {/* Repetitions control */}
+      {/* Repetitions control - Only visible when not running */}
       {!isRunning && !isPaused && (
         <div className="flex items-center justify-center space-x-4">
           <div className="flex items-center">
@@ -244,6 +219,16 @@ const TimerControls: React.FC = () => {
             <Button variant="outline" size="icon" onClick={handleIncreaseReps}>
               <Plus className="h-4 w-4" />
             </Button>
+          </div>
+        </div>
+      )}
+      
+      {/* If running, show current information */}
+      {(isRunning || isPaused) && (
+        <div className="text-center">
+          <div className="flex items-center justify-center">
+            <Repeat className="h-4 w-4 mr-1" />
+            <span className="text-sm font-medium">Repetition {isResting ? "Rest" : "Work"}: {isResting ? "" : ""}</span>
           </div>
         </div>
       )}
