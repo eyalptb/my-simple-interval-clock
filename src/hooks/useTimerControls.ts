@@ -34,6 +34,17 @@ export const useTimerControls = (state: TimerState) => {
 
   const startTimer = () => {
     if (!state.isRunning && (minutes > 0 || seconds > 0)) {
+      // Update timer reference with current values before starting
+      if (!state.isResting) {
+        timerRef.current = {
+          workoutMin: minutes,
+          workoutSec: seconds,
+          restMin: state.restMinutes,
+          restSec: state.restSeconds
+        };
+        console.log("Start timer: Storing workout time", minutes, seconds);
+      }
+      
       setIsRunning(true);
       setIsPaused(false);
       if (!isMuted) {
@@ -72,10 +83,9 @@ export const useTimerControls = (state: TimerState) => {
     setCurrentRepetition(1);
     
     // Restore original timer values from the ref
-    if (timerRef.current) {
-      state.setMinutesState(timerRef.current.workoutMin);
-      state.setSecondsState(timerRef.current.workoutSec);
-    }
+    console.log("Reset timer: Restoring to", timerRef.current.workoutMin, timerRef.current.workoutSec);
+    state.setMinutesState(timerRef.current.workoutMin);
+    state.setSecondsState(timerRef.current.workoutSec);
   };
 
   return {
