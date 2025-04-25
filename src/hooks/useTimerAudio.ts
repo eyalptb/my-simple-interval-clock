@@ -73,5 +73,6 @@ export const useTimerAudio = (isMuted: boolean) => {
   return {
     playStartSound,
     playEndSound,
+    audioStore,
   };
 };

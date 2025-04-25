@@ -1,6 +1,7 @@
 
 import { useRef } from 'react';
 import { TimerState } from '@/types/timer';
+import { useTimerAudio } from './useTimerAudio';
 
 export const useTimerControls = (state: TimerState) => {
   const {
@@ -10,7 +11,10 @@ export const useTimerControls = (state: TimerState) => {
     setCurrentRepetition,
     minutes,
     seconds,
+    isMuted,
   } = state;
+
+  const { audioStore } = useTimerAudio(isMuted);
 
   // Create refs for timer settings
   const timerRef = useRef<{
@@ -86,5 +90,6 @@ export const useTimerControls = (state: TimerState) => {
     timerRef,
     intervalStore,
     pendingTimeUpdateRef: state.pendingTimeUpdateRef,
+    audioStore,
   };
 };

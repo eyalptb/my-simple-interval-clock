@@ -16,7 +16,7 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     restSeconds,
   } = state;
 
-  const { timerRef, resetTimer } = controls;
+  const { timerRef, resetTimer, audioStore } = controls;
 
   const { playStartSound, playEndSound } = useTimerAudio(isMuted);
   const intervalStore = useTimerInterval(state, {
