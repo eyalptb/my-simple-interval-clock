@@ -28,10 +28,10 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         variant="outline" 
         size="icon"
         onClick={onReset}
-        className="rounded-full bg-[#ea384c] hover:bg-[#d1323e] text-white border-none relative"
+        className="rounded-full bg-[#ea384c] hover:bg-[#d1323e] text-white border-none relative group"
       >
-        <RefreshCw className="h-6 w-6" />
-        <span className="absolute font-bold text-sm">R</span>
+        <RefreshCw className="h-6 w-6 group-hover:text-white" />
+        <span className="absolute font-bold text-sm group-hover:text-white">R</span>
       </Button>
       
       {!isRunning ? (
@@ -72,3 +72,4 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
 };
 
 export default ControlButtons;
+
