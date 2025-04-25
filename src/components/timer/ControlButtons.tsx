@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Play, Pause, Volume, VolumeX, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +29,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         onClick={onReset}
         className="rounded-full bg-[#ea384c] hover:bg-[#d1323e] text-white border-none relative"
       >
-        <RefreshCw className="h-5 w-5" />
+        <RefreshCw className="h-6 w-6" />
         <span className="absolute font-bold text-sm">R</span>
       </Button>
       
