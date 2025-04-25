@@ -31,7 +31,8 @@ const TimerControls: React.FC = () => {
     incrementRestSeconds,
     decrementRestSeconds,
     incrementRestMinutes,
-    decrementRestMinutes
+    decrementRestMinutes,
+    isResting,
   } = useTimer();
 
   // Store the initial values for input display - these won't change while timer is running
@@ -55,18 +56,24 @@ const TimerControls: React.FC = () => {
     if (value >= 0 && value <= 99) {
       if (isRest) {
         setRestMinutes(value);
+        setInputRestMinutes(value);
       } else {
         setMinutes(value);
+        setInputMinutes(value);
       }
     }
   };
 
   const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>, isRest: boolean) => {
     const value = parseInt(e.target.value) || 0;
-    if (isRest) {
-      setRestSeconds(value);
-    } else {
-      setSeconds(value);
+    if (value >= 0 && value <= 59) {
+      if (isRest) {
+        setRestSeconds(value);
+        setInputRestSeconds(value);
+      } else {
+        setSeconds(value);
+        setInputSeconds(value);
+      }
     }
   };
 
@@ -103,10 +110,40 @@ const TimerControls: React.FC = () => {
           displaySeconds={inputSeconds}
           onMinutesChange={handleMinutesChange}
           onSecondsChange={handleSecondsChange}
-          onIncreaseMinutes={incrementMinutes}
-          onDecreaseMinutes={decrementMinutes}
-          onIncreaseSeconds={incrementSeconds}
-          onDecreaseSeconds={decrementSeconds}
+          onIncreaseMinutes={() => {
+            incrementMinutes();
+            if (!isRunning && !isPaused) {
+              setInputMinutes(prev => Math.min(99, prev + 1));
+            }
+          }}
+          onDecreaseMinutes={() => {
+            decrementMinutes();
+            if (!isRunning && !isPaused) {
+              setInputMinutes(prev => Math.max(0, prev - 1));
+            }
+          }}
+          onIncreaseSeconds={() => {
+            incrementSeconds();
+            if (!isRunning && !isPaused) {
+              if (inputSeconds === 59) {
+                setInputSeconds(0);
+                setInputMinutes(prev => Math.min(99, prev + 1));
+              } else {
+                setInputSeconds(prev => prev + 1);
+              }
+            }
+          }}
+          onDecreaseSeconds={() => {
+            decrementSeconds();
+            if (!isRunning && !isPaused) {
+              if (inputSeconds === 0 && inputMinutes > 0) {
+                setInputSeconds(59);
+                setInputMinutes(prev => prev - 1);
+              } else if (inputSeconds > 0) {
+                setInputSeconds(prev => prev - 1);
+              }
+            }
+          }}
         />
         
         <TimeDisplay
@@ -121,10 +158,40 @@ const TimerControls: React.FC = () => {
           displaySeconds={inputRestSeconds}
           onMinutesChange={handleMinutesChange}
           onSecondsChange={handleSecondsChange}
-          onIncreaseMinutes={incrementRestMinutes}
-          onDecreaseMinutes={decrementRestMinutes}
-          onIncreaseSeconds={incrementRestSeconds}
-          onDecreaseSeconds={decrementRestSeconds}
+          onIncreaseMinutes={() => {
+            incrementRestMinutes();
+            if (!isRunning && !isPaused) {
+              setInputRestMinutes(prev => Math.min(99, prev + 1));
+            }
+          }}
+          onDecreaseMinutes={() => {
+            decrementRestMinutes();
+            if (!isRunning && !isPaused) {
+              setInputRestMinutes(prev => Math.max(0, prev - 1));
+            }
+          }}
+          onIncreaseSeconds={() => {
+            incrementRestSeconds();
+            if (!isRunning && !isPaused) {
+              if (inputRestSeconds === 59) {
+                setInputRestSeconds(0);
+                setInputRestMinutes(prev => Math.min(99, prev + 1));
+              } else {
+                setInputRestSeconds(prev => prev + 1);
+              }
+            }
+          }}
+          onDecreaseSeconds={() => {
+            decrementRestSeconds();
+            if (!isRunning && !isPaused) {
+              if (inputRestSeconds === 0 && inputRestMinutes > 0) {
+                setInputRestSeconds(59);
+                setInputRestMinutes(prev => prev - 1);
+              } else if (inputRestSeconds > 0) {
+                setInputRestSeconds(prev => prev - 1);
+              }
+            }
+          }}
         />
       </div>
       
