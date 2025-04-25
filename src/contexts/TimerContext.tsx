@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { toast } from '@/components/ui/use-toast';
 
@@ -56,7 +55,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const endSoundRef = useRef<HTMLAudioElement | null>(null);
   const pendingTimeUpdateRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize audio elements
   useEffect(() => {
     startSoundRef.current = new Audio('/go.mp3');
     endSoundRef.current = new Audio('/whistle.mp3');
@@ -67,7 +65,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, []);
 
-  // Timer logic
   useEffect(() => {
     if (!isRunning) return;
     
@@ -78,15 +75,12 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setMinutesState(minutes - 1);
         setSecondsState(59);
       } else {
-        // Timer completed
         if (!isMuted && endSoundRef.current) {
           endSoundRef.current.play().catch(e => console.error('Error playing end sound:', e));
         }
         
         if (isResting) {
-          // Rest period completed
           if (currentRepetition < totalRepetitions) {
-            // Start next workout interval
             setCurrentRepetition(currentRepetition + 1);
             setIsResting(false);
             setMinutesState(minutes);
@@ -101,7 +95,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               startSoundRef.current.play().catch(e => console.error('Error playing start sound:', e));
             }
           } else {
-            // Workout completed
             resetTimer();
             toast({
               title: "Workout completed!",
@@ -110,7 +103,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             });
           }
         } else {
-          // Work period completed, start rest if not the last repetition
           if (currentRepetition < totalRepetitions) {
             setIsResting(true);
             setMinutesState(restMinutes);
@@ -122,7 +114,6 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               duration: 3000,
             });
           } else {
-            // Final work period completed
             resetTimer();
             toast({
               title: "Workout completed!",
@@ -165,12 +156,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const setMinutes = (min: number) => {
     if (!isRunning) {
-      // Cancel any pending updates
       if (pendingTimeUpdateRef.current) {
         clearTimeout(pendingTimeUpdateRef.current);
       }
       
-      // Create a small delay before updating the state to prevent rapid changes
       pendingTimeUpdateRef.current = setTimeout(() => {
         setMinutesState(min);
         pendingTimeUpdateRef.current = null;
@@ -180,14 +169,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const setSeconds = (sec: number) => {
     if (!isRunning) {
-      // Cancel any pending updates
       if (pendingTimeUpdateRef.current) {
         clearTimeout(pendingTimeUpdateRef.current);
       }
       
-      // Create a small delay before updating the state to prevent rapid changes
+      const validSec = Math.min(59, Math.max(0, sec));
+      
       pendingTimeUpdateRef.current = setTimeout(() => {
-        setSecondsState(sec);
+        setSecondsState(validSec);
         pendingTimeUpdateRef.current = null;
       }, 50);
     }
@@ -199,12 +188,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const setRestMinutes = (min: number) => {
     if (!isRunning) {
-      // Cancel any pending updates
       if (pendingTimeUpdateRef.current) {
         clearTimeout(pendingTimeUpdateRef.current);
       }
       
-      // Create a small delay before updating the state to prevent rapid changes
       pendingTimeUpdateRef.current = setTimeout(() => {
         setRestMinutesState(min);
         pendingTimeUpdateRef.current = null;
@@ -214,12 +201,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const setRestSeconds = (sec: number) => {
     if (!isRunning) {
-      // Cancel any pending updates
       if (pendingTimeUpdateRef.current) {
         clearTimeout(pendingTimeUpdateRef.current);
       }
       
-      // Create a small delay before updating the state to prevent rapid changes
       pendingTimeUpdateRef.current = setTimeout(() => {
         setRestSecondsState(sec);
         pendingTimeUpdateRef.current = null;
