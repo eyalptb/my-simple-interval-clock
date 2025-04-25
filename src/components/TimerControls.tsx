@@ -47,22 +47,22 @@ const TimerControls: React.FC = () => {
   };
 
   const handleIncreaseSeconds = () => {
-    if (seconds >= 55) {
+    if (seconds === 59) {
       setSeconds(0);
       setMinutes(Math.min(99, minutes + 1));
     } else {
-      setSeconds(seconds + 5);
+      setSeconds(seconds + 1);
     }
   };
 
   const handleDecreaseSeconds = () => {
-    if (seconds <= 0) {
+    if (seconds === 0) {
       if (minutes > 0) {
-        setSeconds(55);
+        setSeconds(59);
         setMinutes(minutes - 1);
       }
     } else {
-      setSeconds(Math.max(0, seconds - 5));
+      setSeconds(Math.max(0, seconds - 1));
     }
   };
 
@@ -75,22 +75,22 @@ const TimerControls: React.FC = () => {
   };
 
   const handleIncreaseRestSeconds = () => {
-    if (restSeconds >= 55) {
+    if (restSeconds === 59) {
       setRestSeconds(0);
       setRestMinutes(Math.min(99, restMinutes + 1));
     } else {
-      setRestSeconds(restSeconds + 5);
+      setRestSeconds(restSeconds + 1);
     }
   };
 
   const handleDecreaseRestSeconds = () => {
-    if (restSeconds <= 0) {
+    if (restSeconds === 0) {
       if (restMinutes > 0) {
-        setRestSeconds(55);
+        setRestSeconds(59);
         setRestMinutes(restMinutes - 1);
       }
     } else {
-      setRestSeconds(Math.max(0, restSeconds - 5));
+      setRestSeconds(Math.max(0, restSeconds - 1));
     }
   };
 
