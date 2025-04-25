@@ -31,8 +31,6 @@ export interface TimerControls {
   startTimer: () => void;
   pauseTimer: () => void;
   resetTimer: () => void;
-  startSoundRef: React.RefObject<HTMLAudioElement>;
-  endSoundRef: React.RefObject<HTMLAudioElement>;
   timerRef: React.MutableRefObject<{
     workoutMin: number;
     workoutSec: number;
