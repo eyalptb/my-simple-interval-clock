@@ -13,19 +13,24 @@ export const useTimerControls = (state: TimerState) => {
     seconds,
   } = state;
 
-  // Create refs with additional properties for audio
+  // Create refs for audio
   const startSoundRef = useRef<HTMLAudioElement | null>(null);
   const endSoundRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<number | null>(null);
+
+  // Store audio elements and interval ID in these objects
+  const audioStore = useRef<{ startSound?: HTMLAudioElement, endSound?: HTMLAudioElement }>({});
+  const intervalStore = useRef<{ id?: number }>({});
 
   const startTimer = () => {
     if (!state.isRunning && (minutes > 0 || seconds > 0)) {
       setIsRunning(true);
       setIsPaused(false);
       if (!isMuted) {
-        // Access the audio through our custom property
-        const startSound = (startSoundRef as any)._audio;
+        // Access the audio through our store
+        const startSound = audioStore.current.startSound;
         if (startSound) {
+          startSound.currentTime = 0; // Reset to beginning
           startSound.play().catch(e => console.error('Error playing start sound:', e));
         }
       }
@@ -37,18 +42,18 @@ export const useTimerControls = (state: TimerState) => {
       setIsRunning(false);
       setIsPaused(true);
       
-      // Clear interval using our custom property
-      if ((timerRef as any)._intervalId) {
-        window.clearInterval((timerRef as any)._intervalId);
+      // Clear interval using our store
+      if (intervalStore.current.id) {
+        window.clearInterval(intervalStore.current.id);
       }
     }
   };
 
   const resetTimer = () => {
-    // Clear interval using our custom property
-    if ((timerRef as any)._intervalId) {
-      window.clearInterval((timerRef as any)._intervalId);
-      (timerRef as any)._intervalId = null;
+    // Clear interval using our store
+    if (intervalStore.current.id) {
+      window.clearInterval(intervalStore.current.id);
+      intervalStore.current.id = undefined;
     }
     
     setIsRunning(false);
@@ -64,6 +69,8 @@ export const useTimerControls = (state: TimerState) => {
     startSoundRef,
     endSoundRef,
     timerRef,
+    audioStore,
+    intervalStore,
     pendingTimeUpdateRef: state.pendingTimeUpdateRef,
   };
 };

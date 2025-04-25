@@ -30,6 +30,8 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     endSoundRef,
     resetTimer,
     pendingTimeUpdateRef,
+    audioStore,
+    intervalStore,
   } = controls;
 
   // Store original workout and rest times to restore them when needed
@@ -38,24 +40,26 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
   const originalRestMin = restMinutes;
   const originalRestSec = restSeconds;
 
+  // Create and store audio elements
   useEffect(() => {
-    // Create audio elements without directly assigning to read-only refs
+    // Create audio elements
     const startSound = new Audio('/go.mp3');
     const endSound = new Audio('/whistle.mp3');
     
-    // Store the audio elements for later reference
-    if (startSoundRef) {
-      // Use a mutable object property instead of the read-only 'current'
-      (startSoundRef as any)._audio = startSound;
-    }
+    // Store the audio elements in our mutable store
+    audioStore.current.startSound = startSound;
+    audioStore.current.endSound = endSound;
     
-    if (endSoundRef) {
-      (endSoundRef as any)._audio = endSound;
-    }
-    
+    // Clean up on unmount
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (pendingTimeUpdateRef.current) clearTimeout(pendingTimeUpdateRef.current);
+      if (intervalStore.current.id) {
+        clearInterval(intervalStore.current.id);
+        intervalStore.current.id = undefined;
+      }
+      
+      if (pendingTimeUpdateRef.current) {
+        clearTimeout(pendingTimeUpdateRef.current);
+      }
     };
   }, []);
 
@@ -70,19 +74,21 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
         setSecondsState(59);
       } else {
         // Handle end of countdown
-        if (!isMuted && endSoundRef) {
-          const endSound = (endSoundRef as any)._audio;
+        if (!isMuted) {
+          const endSound = audioStore.current.endSound;
           if (endSound) {
+            endSound.currentTime = 0; // Reset to beginning
             endSound.play().catch(e => console.error('Error playing end sound:', e));
           }
         }
         
         if (isResting) {
+          // End of rest period
           if (currentRepetition < totalRepetitions) {
             setCurrentRepetition(currentRepetition + 1);
             setIsResting(false);
             
-            // Always reset to the original workout time values
+            // Reset to the original workout time values
             setMinutesState(originalWorkoutMin);
             setSecondsState(originalWorkoutSec);
             
@@ -91,14 +97,21 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
               duration: 3000,
             });
             
-            if (!isMuted && startSoundRef) {
-              const startSound = (startSoundRef as any)._audio;
+            if (!isMuted) {
+              const startSound = audioStore.current.startSound;
               if (startSound) {
+                startSound.currentTime = 0;
                 startSound.play().catch(e => console.error('Error playing start sound:', e));
               }
             }
           } else {
+            // Workout completed
             resetTimer();
+            
+            // Make sure workout time is set to original values
+            setMinutesState(originalWorkoutMin);
+            setSecondsState(originalWorkoutSec);
+            
             toast({
               title: "Workout completed!",
               description: `Completed all ${totalRepetitions} repetitions. Great job!`,
@@ -106,11 +119,13 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
             });
           }
         } else {
+          // End of workout period
           if (currentRepetition < totalRepetitions) {
             if (restMinutes === 0 && restSeconds === 0) {
+              // No rest period configured, go to next repetition
               setCurrentRepetition(currentRepetition + 1);
               
-              // Always reset to the original workout time values
+              // Reset to the original workout time values
               setMinutesState(originalWorkoutMin);
               setSecondsState(originalWorkoutSec);
               
@@ -119,13 +134,15 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
                 duration: 3000,
               });
               
-              if (!isMuted && startSoundRef) {
-                const startSound = (startSoundRef as any)._audio;
+              if (!isMuted) {
+                const startSound = audioStore.current.startSound;
                 if (startSound) {
+                  startSound.currentTime = 0;
                   startSound.play().catch(e => console.error('Error playing start sound:', e));
                 }
               }
             } else {
+              // Start rest period
               setIsResting(true);
               setMinutesState(restMinutes);
               setSecondsState(restSeconds);
@@ -137,7 +154,13 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
               });
             }
           } else {
+            // Last repetition completed
             resetTimer();
+            
+            // Make sure workout time is set to original values
+            setMinutesState(originalWorkoutMin);
+            setSecondsState(originalWorkoutSec);
+            
             toast({
               title: "Workout completed!",
               description: `Completed all ${totalRepetitions} repetitions. Great job!`,
@@ -148,22 +171,20 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
       }
     }, 1000);
     
-    // Store interval ID without directly assigning to read-only ref
-    // Using a workaround with the window object
-    window.clearInterval(timerRef.current || 0);
-    (window as any)._timerRefId = intervalId;
-    (timerRef as any)._intervalId = intervalId;
+    // Store interval ID in our mutable store
+    intervalStore.current.id = intervalId;
     
     return () => {
       window.clearInterval(intervalId);
     };
   }, [isRunning, minutes, seconds, currentRepetition, totalRepetitions, isResting, isMuted, restMinutes, restSeconds, originalWorkoutMin, originalWorkoutSec]);
 
-  // Additional effect to sync the timer ref with our stored ID
+  // Additional effect to clean up intervals on unmount
   useEffect(() => {
     return () => {
-      if ((timerRef as any)._intervalId) {
-        window.clearInterval((timerRef as any)._intervalId);
+      if (intervalStore.current.id) {
+        window.clearInterval(intervalStore.current.id);
+        intervalStore.current.id = undefined;
       }
     };
   }, []);

@@ -34,5 +34,12 @@ export interface TimerControls {
   startSoundRef: React.RefObject<HTMLAudioElement>;
   endSoundRef: React.RefObject<HTMLAudioElement>;
   timerRef: React.RefObject<number>;
+  audioStore: React.MutableRefObject<{
+    startSound?: HTMLAudioElement;
+    endSound?: HTMLAudioElement;
+  }>;
+  intervalStore: React.MutableRefObject<{
+    id?: number;
+  }>;
   pendingTimeUpdateRef: React.RefObject<NodeJS.Timeout>;
 }
