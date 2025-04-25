@@ -118,7 +118,23 @@ const TimerControls: React.FC = () => {
 
   const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>, isRest: boolean) => {
     const value = parseInt(e.target.value) || 0;
-    if (value >= 0 && value <= 59) {
+    
+    // Properly handle values over 59
+    if (value > 59) {
+      // Calculate minutes to add
+      const minutesToAdd = Math.floor(value / 60);
+      // Calculate remaining seconds
+      const remainingSeconds = value % 60;
+      
+      if (isRest) {
+        setRestSeconds(remainingSeconds);
+        setRestMinutes(Math.min(99, restMinutes + minutesToAdd));
+      } else {
+        setSeconds(remainingSeconds);
+        setMinutes(Math.min(99, minutes + minutesToAdd));
+      }
+    } else if (value >= 0) {
+      // Normal case for values between 0-59
       if (isRest) {
         setRestSeconds(value);
       } else {
