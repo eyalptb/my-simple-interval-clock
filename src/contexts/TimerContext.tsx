@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useRef } from 'react';
 import { useTimerState } from '@/hooks/useTimerState';
 import { useTimerControls } from '@/hooks/useTimerControls';
@@ -63,18 +62,9 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     timerState.setThemeState(newTheme);
   };
   
-  // Fixed increment/decrement functions to properly handle rolling over
   const incrementSeconds = () => {
     if (!timerState.isRunning) {
-      if (timerState.seconds === 59) {
-        // Roll over from seconds to minutes
-        if (timerState.minutes < 99) {
-          setMinutes(timerState.minutes + 1);
-          setSeconds(0);
-        }
-      } else {
-        setSeconds(timerState.seconds + 1);
-      }
+      setSeconds(timerState.seconds + 1);
     }
   };
   
@@ -124,15 +114,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const incrementRestSeconds = () => {
     if (!timerState.isRunning) {
-      if (timerState.restSeconds === 59) {
-        // Roll over from seconds to minutes
-        if (timerState.restMinutes < 99) {
-          setRestMinutes(timerState.restMinutes + 1);
-          setRestSeconds(0);
-        }
-      } else {
-        setRestSeconds(timerState.restSeconds + 1);
-      }
+      setRestSeconds(timerState.restSeconds + 1);
     }
   };
   
