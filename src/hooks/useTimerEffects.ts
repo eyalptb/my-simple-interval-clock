@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { TimerState } from '@/types/timer';
@@ -31,18 +32,19 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     pendingTimeUpdateRef,
   } = controls;
 
-  const initialWorkoutMin = minutes;
-  const initialWorkoutSec = seconds;
-  const initialRestMin = restMinutes;
-  const initialRestSec = restSeconds;
+  // Store original workout and rest times to restore them when needed
+  const originalWorkoutMin = state.minutes;
+  const originalWorkoutSec = state.seconds;
+  const originalRestMin = restMinutes;
+  const originalRestSec = restSeconds;
 
   useEffect(() => {
-    if (startSoundRef && 'current' in startSoundRef) {
-      (startSoundRef as { current: HTMLAudioElement | null }).current = new Audio('/go.mp3');
+    if (startSoundRef && startSoundRef.current === null) {
+      startSoundRef.current = new Audio('/go.mp3');
     }
     
-    if (endSoundRef && 'current' in endSoundRef) {
-      (endSoundRef as { current: HTMLAudioElement | null }).current = new Audio('/whistle.mp3');
+    if (endSoundRef && endSoundRef.current === null) {
+      endSoundRef.current = new Audio('/whistle.mp3');
     }
     
     return () => {
@@ -70,8 +72,9 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
             setCurrentRepetition(currentRepetition + 1);
             setIsResting(false);
             
-            setMinutesState(state.minutes);
-            setSecondsState(state.seconds);
+            // Always reset to the original workout time values
+            setMinutesState(originalWorkoutMin);
+            setSecondsState(originalWorkoutSec);
             
             toast({
               title: `Starting repetition ${currentRepetition + 1} of ${totalRepetitions}`,
@@ -94,8 +97,9 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
             if (restMinutes === 0 && restSeconds === 0) {
               setCurrentRepetition(currentRepetition + 1);
               
-              setMinutesState(state.minutes);
-              setSecondsState(state.seconds);
+              // Always reset to the original workout time values
+              setMinutesState(originalWorkoutMin);
+              setSecondsState(originalWorkoutSec);
               
               toast({
                 title: `Starting repetition ${currentRepetition + 1} of ${totalRepetitions}`,
@@ -128,12 +132,10 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
       }
     }, 1000);
     
-    if (timerRef && 'current' in timerRef) {
-      (timerRef as { current: number | null }).current = intervalId;
-    }
+    timerRef.current = intervalId;
     
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, minutes, seconds, currentRepetition, totalRepetitions, isResting, isMuted, restMinutes, restSeconds]);
+  }, [isRunning, minutes, seconds, currentRepetition, totalRepetitions, isResting, isMuted, restMinutes, restSeconds, originalWorkoutMin, originalWorkoutSec]);
 };
