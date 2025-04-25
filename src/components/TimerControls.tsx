@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { Button } from '@/components/ui/button';
@@ -9,8 +8,6 @@ import {
   SkipBack,
   Plus, 
   Minus, 
-  Bell,
-  BellOff,
   Clock, 
   Repeat,
   Volume,
@@ -48,7 +45,6 @@ const TimerControls: React.FC = () => {
   };
 
   const handleIncreaseSeconds = () => {
-    // If seconds are 59, reset to 0 and add 1 to minutes
     if (seconds === 59) {
       setSeconds(0);
       setMinutes(Math.min(99, minutes + 1));
@@ -77,7 +73,6 @@ const TimerControls: React.FC = () => {
   };
 
   const handleIncreaseRestSeconds = () => {
-    // If rest seconds are 59, reset to 0 and add 1 to rest minutes
     if (restSeconds === 59) {
       setRestSeconds(0);
       setRestMinutes(Math.min(99, restMinutes + 1));

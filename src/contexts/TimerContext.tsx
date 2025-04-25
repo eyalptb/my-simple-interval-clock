@@ -205,8 +205,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearTimeout(pendingTimeUpdateRef.current);
       }
       
+      const validSec = Math.min(59, Math.max(0, sec));
+      
       pendingTimeUpdateRef.current = setTimeout(() => {
-        setRestSecondsState(sec);
+        setRestSecondsState(validSec);
         pendingTimeUpdateRef.current = null;
       }, 50);
     }
