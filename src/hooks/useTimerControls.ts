@@ -13,26 +13,21 @@ export const useTimerControls = (state: TimerState) => {
     seconds,
   } = state;
 
-  // Preload audio files
+  // Create refs with additional properties for audio
   const startSoundRef = useRef<HTMLAudioElement | null>(null);
   const endSoundRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<number | null>(null);
-
-  // Initialize audio on first load
-  if (startSoundRef.current === null) {
-    startSoundRef.current = new Audio('/go.mp3');
-  }
-  
-  if (endSoundRef.current === null) {
-    endSoundRef.current = new Audio('/whistle.mp3');
-  }
 
   const startTimer = () => {
     if (!state.isRunning && (minutes > 0 || seconds > 0)) {
       setIsRunning(true);
       setIsPaused(false);
-      if (!isMuted && startSoundRef.current) {
-        startSoundRef.current.play().catch(e => console.error('Error playing start sound:', e));
+      if (!isMuted) {
+        // Access the audio through our custom property
+        const startSound = (startSoundRef as any)._audio;
+        if (startSound) {
+          startSound.play().catch(e => console.error('Error playing start sound:', e));
+        }
       }
     }
   };
@@ -41,10 +36,21 @@ export const useTimerControls = (state: TimerState) => {
     if (state.isRunning) {
       setIsRunning(false);
       setIsPaused(true);
+      
+      // Clear interval using our custom property
+      if ((timerRef as any)._intervalId) {
+        window.clearInterval((timerRef as any)._intervalId);
+      }
     }
   };
 
   const resetTimer = () => {
+    // Clear interval using our custom property
+    if ((timerRef as any)._intervalId) {
+      window.clearInterval((timerRef as any)._intervalId);
+      (timerRef as any)._intervalId = null;
+    }
+    
     setIsRunning(false);
     setIsPaused(false);
     setIsResting(false);

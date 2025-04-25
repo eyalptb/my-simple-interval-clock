@@ -39,12 +39,18 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
   const originalRestSec = restSeconds;
 
   useEffect(() => {
-    if (startSoundRef && startSoundRef.current === null) {
-      startSoundRef.current = new Audio('/go.mp3');
+    // Create audio elements without directly assigning to read-only refs
+    const startSound = new Audio('/go.mp3');
+    const endSound = new Audio('/whistle.mp3');
+    
+    // Store the audio elements for later reference
+    if (startSoundRef) {
+      // Use a mutable object property instead of the read-only 'current'
+      (startSoundRef as any)._audio = startSound;
     }
     
-    if (endSoundRef && endSoundRef.current === null) {
-      endSoundRef.current = new Audio('/whistle.mp3');
+    if (endSoundRef) {
+      (endSoundRef as any)._audio = endSound;
     }
     
     return () => {
@@ -63,8 +69,12 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
         setMinutesState(minutes - 1);
         setSecondsState(59);
       } else {
-        if (!isMuted && endSoundRef.current) {
-          endSoundRef.current.play().catch(e => console.error('Error playing end sound:', e));
+        // Handle end of countdown
+        if (!isMuted && endSoundRef) {
+          const endSound = (endSoundRef as any)._audio;
+          if (endSound) {
+            endSound.play().catch(e => console.error('Error playing end sound:', e));
+          }
         }
         
         if (isResting) {
@@ -81,8 +91,11 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
               duration: 3000,
             });
             
-            if (!isMuted && startSoundRef.current) {
-              startSoundRef.current.play().catch(e => console.error('Error playing start sound:', e));
+            if (!isMuted && startSoundRef) {
+              const startSound = (startSoundRef as any)._audio;
+              if (startSound) {
+                startSound.play().catch(e => console.error('Error playing start sound:', e));
+              }
             }
           } else {
             resetTimer();
@@ -106,8 +119,11 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
                 duration: 3000,
               });
               
-              if (!isMuted && startSoundRef.current) {
-                startSoundRef.current.play().catch(e => console.error('Error playing start sound:', e));
+              if (!isMuted && startSoundRef) {
+                const startSound = (startSoundRef as any)._audio;
+                if (startSound) {
+                  startSound.play().catch(e => console.error('Error playing start sound:', e));
+                }
               }
             } else {
               setIsResting(true);
@@ -132,10 +148,23 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
       }
     }, 1000);
     
-    timerRef.current = intervalId;
+    // Store interval ID without directly assigning to read-only ref
+    // Using a workaround with the window object
+    window.clearInterval(timerRef.current || 0);
+    (window as any)._timerRefId = intervalId;
+    (timerRef as any)._intervalId = intervalId;
     
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      window.clearInterval(intervalId);
     };
   }, [isRunning, minutes, seconds, currentRepetition, totalRepetitions, isResting, isMuted, restMinutes, restSeconds, originalWorkoutMin, originalWorkoutSec]);
+
+  // Additional effect to sync the timer ref with our stored ID
+  useEffect(() => {
+    return () => {
+      if ((timerRef as any)._intervalId) {
+        window.clearInterval((timerRef as any)._intervalId);
+      }
+    };
+  }, []);
 };
