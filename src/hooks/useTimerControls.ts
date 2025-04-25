@@ -13,10 +13,20 @@ export const useTimerControls = (state: TimerState) => {
     seconds,
   } = state;
 
-  // Create refs for audio
+  // Create refs for audio and timer settings
   const startSoundRef = useRef<HTMLAudioElement | null>(null);
   const endSoundRef = useRef<HTMLAudioElement | null>(null);
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef<{
+    workoutMin: number;
+    workoutSec: number;
+    restMin: number;
+    restSec: number;
+  }>({
+    workoutMin: minutes,
+    workoutSec: seconds,
+    restMin: state.restMinutes,
+    restSec: state.restSeconds
+  });
 
   // Store audio elements and interval ID in these objects
   const audioStore = useRef<{ startSound?: HTMLAudioElement, endSound?: HTMLAudioElement }>({});
@@ -60,6 +70,12 @@ export const useTimerControls = (state: TimerState) => {
     setIsPaused(false);
     setIsResting(false);
     setCurrentRepetition(1);
+    
+    // Restore original timer values from the ref
+    if (timerRef.current) {
+      state.setMinutesState(timerRef.current.workoutMin);
+      state.setSecondsState(timerRef.current.workoutSec);
+    }
   };
 
   return {
