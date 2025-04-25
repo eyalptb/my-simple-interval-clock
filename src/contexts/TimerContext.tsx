@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useRef } from 'react';
 import { useTimerState } from '@/hooks/useTimerState';
 import { useTimerControls } from '@/hooks/useTimerControls';
@@ -63,13 +62,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     timerState.setThemeState(newTheme);
   };
   
-  // Fixed and simplified time adjustment functions
   const incrementSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.seconds === 59) {
-        // Correctly handle 0:59 -> 1:00 transition
-        const newMinutes = Math.min(99, timerState.minutes + 1);
-        setMinutes(newMinutes);
+        setMinutes(timerState.minutes + 1);
         setSeconds(0);
       } else {
         setSeconds(timerState.seconds + 1);
@@ -80,10 +76,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const decrementSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.minutes === 0 && timerState.seconds === 0) {
-        // Handle 0:00 -> 0:59 transition
         setSeconds(59);
       } else if (timerState.seconds === 0) {
-        // Handle 1:00 -> 0:59 transition
         setMinutes(timerState.minutes - 1);
         setSeconds(59);
       } else {
@@ -124,13 +118,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
   
-  // Fixed rest time adjustment functions using the same pattern
   const incrementRestSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.restSeconds === 59) {
-        // Correctly handle 0:59 -> 1:00 transition
-        const newMinutes = Math.min(99, timerState.restMinutes + 1);
-        setRestMinutes(newMinutes);
+        setRestMinutes(timerState.restMinutes + 1);
         setRestSeconds(0);
       } else {
         setRestSeconds(timerState.restSeconds + 1);
@@ -141,10 +132,8 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const decrementRestSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.restMinutes === 0 && timerState.restSeconds === 0) {
-        // Handle 0:00 -> 0:59 transition
         setRestSeconds(59);
       } else if (timerState.restSeconds === 0) {
-        // Handle 1:00 -> 0:59 transition
         setRestMinutes(timerState.restMinutes - 1);
         setRestSeconds(59);
       } else {
