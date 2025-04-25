@@ -1,6 +1,5 @@
 
 import { useRef } from 'react';
-import { toast } from '@/components/ui/use-toast';
 import { TimerState } from '@/types/timer';
 
 export const useTimerControls = (state: TimerState) => {
@@ -10,14 +9,26 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting,
     setCurrentRepetition,
     isMuted,
+    minutes,
+    seconds,
   } = state;
 
+  // Preload audio files
   const startSoundRef = useRef<HTMLAudioElement | null>(null);
   const endSoundRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<number | null>(null);
 
+  // Initialize audio on first load
+  if (startSoundRef.current === null) {
+    startSoundRef.current = new Audio('/go.mp3');
+  }
+  
+  if (endSoundRef.current === null) {
+    endSoundRef.current = new Audio('/whistle.mp3');
+  }
+
   const startTimer = () => {
-    if (!state.isRunning && (state.minutes > 0 || state.seconds > 0)) {
+    if (!state.isRunning && (minutes > 0 || seconds > 0)) {
       setIsRunning(true);
       setIsPaused(false);
       if (!isMuted && startSoundRef.current) {

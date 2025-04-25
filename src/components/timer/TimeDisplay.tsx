@@ -42,10 +42,10 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
   // Display title with appropriate label based on whether it's rest or workout
   const displayTitle = isRest ? "Rest Time" : title;
   
-  // Always use the display values for input controls
-  // For the display during runtime, use the running timer values
-  const showMinutes = isRunning || isPaused ? minutes : displayMinutes;
-  const showSeconds = isRunning || isPaused ? seconds : displaySeconds;
+  // Show display values when editing, show running values when timer is active
+  // This ensures the original values don't change during runtime
+  const showMinutes = (isRunning || isPaused) && isRest === true ? minutes : displayMinutes;
+  const showSeconds = (isRunning || isPaused) && isRest === true ? seconds : displaySeconds;
 
   return (
     <div className="space-y-2">
