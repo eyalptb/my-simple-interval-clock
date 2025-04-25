@@ -31,10 +31,8 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     intervalStore,
   } = controls;
 
-  // Ensure we store the original values when the component mounts or values change
   useEffect(() => {
     if (!isRunning && !isResting) {
-      // Only update the reference values when not running and not in rest mode
       timerRef.current = {
         workoutMin: minutes,
         workoutSec: seconds,
@@ -44,25 +42,37 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     }
   }, [minutes, seconds, restMinutes, restSeconds, isRunning, isResting]);
 
-  // Create audio elements with actual "Go" and whistle sounds
   useEffect(() => {
-    // Create audio elements
     const startSound = new Audio();
     const endSound = new Audio();
     
-    // Load sound files from public directory
     startSound.src = '/go.mp3';
     endSound.src = '/whistle.mp3';
     
-    // Preload the audio files
+    startSound.onerror = () => {
+      console.error('Failed to load start sound');
+      toast({
+        title: 'Audio Error',
+        description: 'Could not load start sound',
+        variant: 'destructive'
+      });
+    };
+
+    endSound.onerror = () => {
+      console.error('Failed to load end sound');
+      toast({
+        title: 'Audio Error',
+        description: 'Could not load end sound',
+        variant: 'destructive'
+      });
+    };
+    
     startSound.load();
     endSound.load();
     
-    // Store the audio elements in our store
     audioStore.current.startSound = startSound;
     audioStore.current.endSound = endSound;
     
-    // Clean up on unmount
     return () => {
       if (intervalStore.current.id) {
         clearInterval(intervalStore.current.id);
@@ -85,22 +95,19 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
         setMinutesState(minutes - 1);
         setSecondsState(59);
       } else {
-        // Handle end of countdown
         if (!isMuted) {
           const endSound = audioStore.current.endSound;
           if (endSound) {
-            endSound.currentTime = 0; // Reset to beginning
+            endSound.currentTime = 0;
             endSound.play().catch(e => console.error('Error playing end sound:', e));
           }
         }
         
         if (isResting) {
-          // End of rest period
           if (currentRepetition < totalRepetitions) {
             setCurrentRepetition(currentRepetition + 1);
             setIsResting(false);
             
-            // Reset to the stored original workout time values
             console.log("After rest: Restoring workout time to", timerRef.current.workoutMin, timerRef.current.workoutSec);
             setMinutesState(timerRef.current.workoutMin);
             setSecondsState(timerRef.current.workoutSec);
@@ -118,7 +125,6 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
               }
             }
           } else {
-            // Workout completed
             resetTimer();
             
             toast({
@@ -128,13 +134,10 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
             });
           }
         } else {
-          // End of workout period
           if (currentRepetition < totalRepetitions) {
             if (restMinutes === 0 && restSeconds === 0) {
-              // No rest period configured, go to next repetition
               setCurrentRepetition(currentRepetition + 1);
               
-              // Reset to the stored original workout time values
               console.log("No rest: Restoring workout time to", timerRef.current.workoutMin, timerRef.current.workoutSec);
               setMinutesState(timerRef.current.workoutMin);
               setSecondsState(timerRef.current.workoutSec);
@@ -152,7 +155,6 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
                 }
               }
             } else {
-              // Start rest period
               setIsResting(true);
               setMinutesState(restMinutes);
               setSecondsState(restSeconds);
@@ -164,7 +166,6 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
               });
             }
           } else {
-            // Last repetition completed
             resetTimer();
             
             toast({
@@ -177,7 +178,6 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
       }
     }, 1000);
     
-    // Store interval ID in our mutable store
     intervalStore.current.id = intervalId;
     
     return () => {
@@ -185,7 +185,6 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     };
   }, [isRunning, minutes, seconds, currentRepetition, totalRepetitions, isResting, isMuted, restMinutes, restSeconds]);
 
-  // Additional effect to clean up intervals on unmount
   useEffect(() => {
     return () => {
       if (intervalStore.current.id) {
