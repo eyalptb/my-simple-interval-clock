@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Play, Pause, SkipBack, Volume, VolumeX } from 'lucide-react';
+import { Play, Pause, Volume, VolumeX, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ControlButtonsProps {
@@ -28,9 +28,10 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         variant="outline" 
         size="icon"
         onClick={onReset}
-        className="rounded-full"
+        className="rounded-full bg-[#ea384c] hover:bg-[#d1323e] text-white border-none relative"
       >
-        <SkipBack className="h-5 w-5" />
+        <RefreshCw className="h-5 w-5" />
+        <span className="absolute font-bold text-sm">R</span>
       </Button>
       
       {!isRunning ? (

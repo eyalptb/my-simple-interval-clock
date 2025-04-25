@@ -86,6 +86,8 @@ export const useTimerControls = (state: TimerState) => {
     console.log("Reset timer: Restoring to", timerRef.current.workoutMin, timerRef.current.workoutSec);
     state.setMinutesState(timerRef.current.workoutMin);
     state.setSecondsState(timerRef.current.workoutSec);
+    state.setRestMinutesState(timerRef.current.restMin);
+    state.setRestSecondsState(timerRef.current.restSec);
   };
 
   return {
