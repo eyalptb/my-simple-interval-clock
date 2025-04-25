@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
 
@@ -15,9 +14,9 @@ export const useTimerAudio = (isMuted: boolean) => {
     const startSound = new Audio();
     const endSound = new Audio();
     
-    // Use public URLs instead of direct imports
-    startSound.src = '/audio/go.mp3';
-    endSound.src = '/audio/whistle.mp3';
+    // Use asset paths for audio files
+    startSound.src = '/src/assets/audio/go.mp3';
+    endSound.src = '/src/assets/audio/whistle.mp3';
     
     startSound.onerror = () => {
       console.warn('Failed to load start sound. Using default beep.');
