@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { Button } from '@/components/ui/button';
@@ -44,6 +43,20 @@ const TimerControls: React.FC = () => {
     incrementRestMinutes,
     decrementRestMinutes
   } = useTimer();
+
+  const [inputMinutes, setInputMinutes] = React.useState(minutes);
+  const [inputSeconds, setInputSeconds] = React.useState(seconds);
+  const [inputRestMinutes, setInputRestMinutes] = React.useState(restMinutes);
+  const [inputRestSeconds, setInputRestSeconds] = React.useState(restSeconds);
+
+  React.useEffect(() => {
+    if (!isRunning && !isPaused) {
+      setInputMinutes(minutes);
+      setInputSeconds(seconds);
+      setInputRestMinutes(restMinutes);
+      setInputRestSeconds(restSeconds);
+    }
+  }, [minutes, seconds, restMinutes, restSeconds, isRunning, isPaused]);
 
   const handleIncreaseMinutes = () => {
     incrementMinutes();
@@ -106,84 +119,89 @@ const TimerControls: React.FC = () => {
     }
   };
 
-  const renderTimeDisplay = (title, mins, secs, isEditable = true, isRest: boolean) => (
-    <div className="space-y-2">
-      <div className="flex items-center justify-center">
-        <Clock className="h-4 w-4 mr-1" />
-        <span className="text-sm font-medium">
-          {isRest ? "Recess Time" : title}
-        </span>
-      </div>
-      
-      <div className="flex justify-between items-center">
-        <div className="text-center">
-          <span className="text-xs">Min</span>
-          <div className="flex flex-col items-center">
-            {!isRunning && !isPaused && isEditable ? (
-              <Button variant="ghost" size="icon" onClick={!isRest ? handleIncreaseMinutes : handleIncreaseRestMinutes}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            ) : <div className="h-8"></div>}
-            
-            <div className="h-8 flex items-center justify-center">
-              {!isRunning && !isPaused && isEditable ? (
-                <Input
-                  type="number"
-                  min="0"
-                  max="99"
-                  value={!isRest ? mins : restMinutes}
-                  onChange={(e) => handleMinutesChange(e, isRest)}
-                  className="w-12 h-8 text-center p-0"
-                />
-              ) : (
-                <span className="text-lg font-bold">{(!isRest ? mins : restMinutes).toString().padStart(2, '0')}</span>
-              )}
-            </div>
-            
-            {!isRunning && !isPaused && isEditable ? (
-              <Button variant="ghost" size="icon" onClick={!isRest ? handleDecreaseMinutes : handleDecreaseRestMinutes}>
-                <Minus className="h-4 w-4" />
-              </Button>
-            ) : <div className="h-8"></div>}
-          </div>
+  const renderTimeDisplay = (title, mins, secs, isEditable = true, isRest: boolean) => {
+    const displayMins = !isRest ? inputMinutes : inputRestMinutes;
+    const displaySecs = !isRest ? inputSeconds : inputRestSeconds;
+    
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-center">
+          <Clock className="h-4 w-4 mr-1" />
+          <span className="text-sm font-medium">
+            {isRest ? "Recess Time" : title}
+          </span>
         </div>
         
-        <span className="text-2xl">:</span>
-        
-        <div className="text-center">
-          <span className="text-xs">Sec</span>
-          <div className="flex flex-col items-center">
-            {!isRunning && !isPaused && isEditable ? (
-              <Button variant="ghost" size="icon" onClick={!isRest ? handleIncreaseSeconds : handleIncreaseRestSeconds}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            ) : <div className="h-8"></div>}
-            
-            <div className="h-8 flex items-center justify-center">
+        <div className="flex justify-between items-center">
+          <div className="text-center">
+            <span className="text-xs">Min</span>
+            <div className="flex flex-col items-center">
               {!isRunning && !isPaused && isEditable ? (
-                <Input
-                  type="number"
-                  min="0"
-                  max="59"
-                  value={!isRest ? secs : restSeconds}
-                  onChange={(e) => handleSecondsChange(e, isRest)}
-                  className="w-12 h-8 text-center p-0"
-                />
-              ) : (
-                <span className="text-lg font-bold">{(!isRest ? secs : restSeconds).toString().padStart(2, '0')}</span>
-              )}
+                <Button variant="ghost" size="icon" onClick={!isRest ? handleIncreaseMinutes : handleIncreaseRestMinutes}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              ) : <div className="h-8"></div>}
+              
+              <div className="h-8 flex items-center justify-center">
+                {!isRunning && !isPaused && isEditable ? (
+                  <Input
+                    type="number"
+                    min="0"
+                    max="99"
+                    value={displayMins}
+                    onChange={(e) => handleMinutesChange(e, isRest)}
+                    className="w-12 h-8 text-center p-0"
+                  />
+                ) : (
+                  <span className="text-lg font-bold">{(isRunning || isPaused ? (!isRest ? mins : restMinutes) : displayMins).toString().padStart(2, '0')}</span>
+                )}
+              </div>
+              
+              {!isRunning && !isPaused && isEditable ? (
+                <Button variant="ghost" size="icon" onClick={!isRest ? handleDecreaseMinutes : handleDecreaseRestMinutes}>
+                  <Minus className="h-4 w-4" />
+                </Button>
+              ) : <div className="h-8"></div>}
             </div>
-            
-            {!isRunning && !isPaused && isEditable ? (
-              <Button variant="ghost" size="icon" onClick={!isRest ? handleDecreaseSeconds : handleDecreaseRestSeconds}>
-                <Minus className="h-4 w-4" />
-              </Button>
-            ) : <div className="h-8"></div>}
+          </div>
+          
+          <span className="text-2xl">:</span>
+          
+          <div className="text-center">
+            <span className="text-xs">Sec</span>
+            <div className="flex flex-col items-center">
+              {!isRunning && !isPaused && isEditable ? (
+                <Button variant="ghost" size="icon" onClick={!isRest ? handleIncreaseSeconds : handleIncreaseRestSeconds}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              ) : <div className="h-8"></div>}
+              
+              <div className="h-8 flex items-center justify-center">
+                {!isRunning && !isPaused && isEditable ? (
+                  <Input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={displaySecs}
+                    onChange={(e) => handleSecondsChange(e, isRest)}
+                    className="w-12 h-8 text-center p-0"
+                  />
+                ) : (
+                  <span className="text-lg font-bold">{(isRunning || isPaused ? (!isRest ? secs : restSeconds) : displaySecs).toString().padStart(2, '0')}</span>
+                )}
+              </div>
+              
+              {!isRunning && !isPaused && isEditable ? (
+                <Button variant="ghost" size="icon" onClick={!isRest ? handleDecreaseSeconds : handleDecreaseRestSeconds}>
+                  <Minus className="h-4 w-4" />
+                </Button>
+              ) : <div className="h-8"></div>}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="w-full space-y-6">
