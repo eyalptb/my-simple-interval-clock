@@ -13,9 +13,7 @@ export const useTimerControls = (state: TimerState) => {
     seconds,
   } = state;
 
-  // Create refs for audio and timer settings
-  const startSoundRef = useRef<HTMLAudioElement | null>(null);
-  const endSoundRef = useRef<HTMLAudioElement | null>(null);
+  // Create refs for timer settings
   const timerRef = useRef<{
     workoutMin: number;
     workoutSec: number;
@@ -102,8 +100,6 @@ export const useTimerControls = (state: TimerState) => {
     startTimer,
     pauseTimer,
     resetTimer,
-    startSoundRef,
-    endSoundRef,
     timerRef,
     audioStore,
     intervalStore,
