@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { Button } from '@/components/ui/button';
@@ -48,7 +47,6 @@ const TimerControls: React.FC = () => {
   };
 
   const handleIncreaseSeconds = () => {
-    // When seconds are 59, reset to 0 and add 1 to minutes
     if (seconds === 59) {
       setSeconds(0);
       setMinutes(Math.min(99, minutes + 1));
@@ -77,7 +75,6 @@ const TimerControls: React.FC = () => {
   };
 
   const handleIncreaseRestSeconds = () => {
-    // When restSeconds are 59, reset to 0 and add 1 to restMinutes
     if (restSeconds === 59) {
       setRestSeconds(0);
       setRestMinutes(Math.min(99, restMinutes + 1));
@@ -119,11 +116,8 @@ const TimerControls: React.FC = () => {
   const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>, isRest: boolean) => {
     const value = parseInt(e.target.value) || 0;
     
-    // Properly handle values over 59
     if (value > 59) {
-      // Calculate minutes to add
       const minutesToAdd = Math.floor(value / 60);
-      // Calculate remaining seconds
       const remainingSeconds = value % 60;
       
       if (isRest) {
@@ -134,7 +128,6 @@ const TimerControls: React.FC = () => {
         setMinutes(Math.min(99, minutes + minutesToAdd));
       }
     } else if (value >= 0) {
-      // Normal case for values between 0-59
       if (isRest) {
         setRestSeconds(value);
       } else {
