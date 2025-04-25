@@ -15,29 +15,30 @@ export const useTimerAudio = (isMuted: boolean) => {
     const startSound = new Audio();
     const endSound = new Audio();
     
+    // Use a relative path and add error handling
     startSound.src = '/audio/go.mp3';
     endSound.src = '/audio/whistle.mp3';
     
     startSound.onerror = () => {
-      if (audioStore.current.attemptedToPlay) {
-        console.error('Failed to load start sound');
-        toast({
-          title: 'Audio Error',
-          description: 'Could not load start sound',
-          variant: 'destructive'
-        });
-      }
+      console.warn('Failed to load start sound. Using default beep.');
+      toast({
+        title: 'Audio Warning',
+        description: 'Could not load start sound. Using default audio.',
+        variant: 'default'
+      });
+      // Optional: You could set a default beep sound here
+      startSound.src = 'data:audio/wav;base64,//uQRAAAAWMQ++QAAAABmhf5nWAEuNUHNn9zCwAARQ2cDHmwhT5g/QAAAABMFV//6O///AAAADhQAAQAA//7gABDhX4CAAPAA//4sABDwsAEALP//AAAAADAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA==';
     };
 
     endSound.onerror = () => {
-      if (audioStore.current.attemptedToPlay) {
-        console.error('Failed to load end sound');
-        toast({
-          title: 'Audio Error',
-          description: 'Could not load end sound',
-          variant: 'destructive'
-        });
-      }
+      console.warn('Failed to load end sound. Using default beep.');
+      toast({
+        title: 'Audio Warning',
+        description: 'Could not load end sound. Using default audio.',
+        variant: 'default'
+      });
+      // Optional: You could set a default beep sound here
+      endSound.src = 'data:audio/wav;base64,//uQRAAAAWMQ++QAAAABmhf5nWAEuNUHNn9zCwAARQ2cDHmwhT5g/QAAAABMFV//6O///AAAADhQAAQAA//7gABDhX4CAAPAA//4sABDwsAEALP//AAAAADAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA//8AAKAA==';
     };
     
     audioStore.current.attemptedToPlay = false;
