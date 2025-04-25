@@ -82,12 +82,20 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting(false);
     setCurrentRepetition(1);
     
-    // Restore original timer values from the ref
-    console.log("Reset timer: Restoring to", timerRef.current.workoutMin, timerRef.current.workoutSec);
-    state.setMinutesState(timerRef.current.workoutMin);
-    state.setSecondsState(timerRef.current.workoutSec);
-    state.setRestMinutesState(timerRef.current.restMin);
-    state.setRestSecondsState(timerRef.current.restSec);
+    // Reset all timer values to zero instead of restoring from timerRef
+    console.log("Reset timer: Setting all values to 0");
+    state.setMinutesState(0);
+    state.setSecondsState(0);
+    state.setRestMinutesState(0);
+    state.setRestSecondsState(0);
+    
+    // Also update the timerRef to zeros so that future resets will use these values
+    timerRef.current = {
+      workoutMin: 0,
+      workoutSec: 0,
+      restMin: 0,
+      restSec: 0
+    };
   };
 
   return {
