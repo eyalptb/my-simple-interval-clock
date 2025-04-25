@@ -5,6 +5,7 @@ import FlipClock from '@/components/FlipClock';
 import TimerControls from '@/components/TimerControls';
 import ThemeSelector from '@/components/ThemeSelector';
 import Advertisement from '@/components/Advertisement';
+import WorkoutStatus from '@/components/WorkoutStatus';
 
 const Index = () => {
   return (
@@ -24,6 +25,13 @@ const Index = () => {
             </section>
             
             <section 
+              aria-label="Workout Status"
+              className="bg-transparent"
+            >
+              <WorkoutStatus />
+            </section>
+            
+            <section 
               aria-label="Timer Display" 
               className="rounded-lg shadow-md bg-card p-4"
             >
@@ -32,7 +40,7 @@ const Index = () => {
             
             <section 
               aria-label="Timer Controls" 
-              className="bg-transparent" // Removed shadow and rounded border
+              className="bg-transparent"
             >
               <TimerControls />
             </section>
