@@ -32,7 +32,7 @@ const Index = () => {
             
             <section 
               aria-label="Timer Controls" 
-              className="rounded-lg shadow-md bg-card p-4"
+              className="bg-transparent" // Removed shadow and rounded border
             >
               <TimerControls />
             </section>
