@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useRef } from 'react';
 import { useTimerState } from '@/hooks/useTimerState';
 import { useTimerControls } from '@/hooks/useTimerControls';
@@ -62,15 +63,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     timerState.setThemeState(newTheme);
   };
   
+  // Completely redesigned time adjustment functions
   const incrementSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.seconds === 59) {
-        // Roll over from seconds to minutes
-        if (timerState.minutes < 99) {
-          setMinutes(timerState.minutes + 1);
-          setSeconds(0);
-        }
+        // When at 59 seconds, increment to next minute
+        setMinutes(timerState.minutes + 1);
+        setSeconds(0);
       } else {
+        // Normal increment
         setSeconds(timerState.seconds + 1);
       }
     }
@@ -78,12 +79,16 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const decrementSeconds = () => {
     if (!timerState.isRunning) {
-      if (timerState.seconds > 0) {
-        setSeconds(timerState.seconds - 1);
-      } else if (timerState.minutes > 0) {
-        // Roll over from minutes to seconds
+      if (timerState.minutes === 0 && timerState.seconds === 0) {
+        // When at 00:00, wrap to 0:59
+        setSeconds(59);
+      } else if (timerState.seconds === 0) {
+        // When at X:00, go to (X-1):59
         setMinutes(timerState.minutes - 1);
         setSeconds(59);
+      } else {
+        // Normal decrement
+        setSeconds(timerState.seconds - 1);
       }
     }
   };
@@ -120,15 +125,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
   
+  // Redesigned rest time adjustment functions
   const incrementRestSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.restSeconds === 59) {
-        // Roll over from seconds to minutes
-        if (timerState.restMinutes < 99) {
-          setRestMinutes(timerState.restMinutes + 1);
-          setRestSeconds(0);
-        }
+        // When at 59 seconds, increment to next minute
+        setRestMinutes(timerState.restMinutes + 1);
+        setRestSeconds(0);
       } else {
+        // Normal increment
         setRestSeconds(timerState.restSeconds + 1);
       }
     }
@@ -136,12 +141,16 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const decrementRestSeconds = () => {
     if (!timerState.isRunning) {
-      if (timerState.restSeconds > 0) {
-        setRestSeconds(timerState.restSeconds - 1);
-      } else if (timerState.restMinutes > 0) {
-        // Roll over from minutes to seconds
+      if (timerState.restMinutes === 0 && timerState.restSeconds === 0) {
+        // When at 00:00, wrap to 0:59
+        setRestSeconds(59);
+      } else if (timerState.restSeconds === 0) {
+        // When at X:00, go to (X-1):59
         setRestMinutes(timerState.restMinutes - 1);
         setRestSeconds(59);
+      } else {
+        // Normal decrement
+        setRestSeconds(timerState.restSeconds - 1);
       }
     }
   };
