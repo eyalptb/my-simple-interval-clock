@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Play, Pause, Volume, VolumeX, RefreshCw } from 'lucide-react';
+import { Play, Pause, Volume, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ControlButtonsProps {
@@ -30,7 +30,6 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         onClick={onReset}
         className="rounded-full bg-[#ea384c] hover:bg-[#d1323e] text-white border-none relative group"
       >
-        <RefreshCw className="h-16 w-16 group-hover:text-white stroke-[1.5]" />
         <span className="absolute font-bold text-sm group-hover:text-white">R</span>
       </Button>
       
@@ -72,3 +71,4 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
 };
 
 export default ControlButtons;
+
