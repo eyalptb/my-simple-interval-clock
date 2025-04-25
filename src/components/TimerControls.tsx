@@ -2,6 +2,7 @@
 import React from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { 
   Play, 
   Pause, 
@@ -102,7 +103,29 @@ const TimerControls: React.FC = () => {
     setTotalRepetitions(Math.max(1, totalRepetitions - 1));
   };
 
-  const renderTimeDisplay = (title, minutes, seconds, isEditable = true) => (
+  const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>, isRest: boolean) => {
+    const value = parseInt(e.target.value) || 0;
+    if (value >= 0 && value <= 99) {
+      if (isRest) {
+        setRestMinutes(value);
+      } else {
+        setMinutes(value);
+      }
+    }
+  };
+
+  const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>, isRest: boolean) => {
+    const value = parseInt(e.target.value) || 0;
+    if (value >= 0 && value <= 59) {
+      if (isRest) {
+        setRestSeconds(value);
+      } else {
+        setSeconds(value);
+      }
+    }
+  };
+
+  const renderTimeDisplay = (title, mins, secs, isEditable = true, isRest: boolean) => (
     <div className="space-y-2">
       <div className="flex items-center justify-center">
         <Clock className="h-4 w-4 mr-1" />
@@ -114,13 +137,26 @@ const TimerControls: React.FC = () => {
           <span className="text-xs">Min</span>
           <div className="flex flex-col items-center">
             {!isRunning && !isPaused && isEditable ? (
-              <Button variant="ghost" size="icon" onClick={title === "Workout Time" ? handleIncreaseMinutes : handleIncreaseRestMinutes}>
+              <Button variant="ghost" size="icon" onClick={!isRest ? handleIncreaseMinutes : handleIncreaseRestMinutes}>
                 <Plus className="h-4 w-4" />
               </Button>
             ) : <div className="h-8"></div>}
-            <span className="text-lg font-bold">{(title === "Workout Time" ? minutes : restMinutes).toString().padStart(2, '0')}</span>
+            
             {!isRunning && !isPaused && isEditable ? (
-              <Button variant="ghost" size="icon" onClick={title === "Workout Time" ? handleDecreaseMinutes : handleDecreaseRestMinutes}>
+              <Input
+                type="number"
+                min="0"
+                max="99"
+                value={!isRest ? mins : restMinutes}
+                onChange={(e) => handleMinutesChange(e, isRest)}
+                className="w-12 h-8 text-center p-0"
+              />
+            ) : (
+              <span className="text-lg font-bold">{(!isRest ? mins : restMinutes).toString().padStart(2, '0')}</span>
+            )}
+            
+            {!isRunning && !isPaused && isEditable ? (
+              <Button variant="ghost" size="icon" onClick={!isRest ? handleDecreaseMinutes : handleDecreaseRestMinutes}>
                 <Minus className="h-4 w-4" />
               </Button>
             ) : <div className="h-8"></div>}
@@ -133,13 +169,26 @@ const TimerControls: React.FC = () => {
           <span className="text-xs">Sec</span>
           <div className="flex flex-col items-center">
             {!isRunning && !isPaused && isEditable ? (
-              <Button variant="ghost" size="icon" onClick={title === "Workout Time" ? handleIncreaseSeconds : handleIncreaseRestSeconds}>
+              <Button variant="ghost" size="icon" onClick={!isRest ? handleIncreaseSeconds : handleIncreaseRestSeconds}>
                 <Plus className="h-4 w-4" />
               </Button>
             ) : <div className="h-8"></div>}
-            <span className="text-lg font-bold">{(title === "Workout Time" ? seconds : restSeconds).toString().padStart(2, '0')}</span>
+            
             {!isRunning && !isPaused && isEditable ? (
-              <Button variant="ghost" size="icon" onClick={title === "Workout Time" ? handleDecreaseSeconds : handleDecreaseRestSeconds}>
+              <Input
+                type="number"
+                min="0"
+                max="59"
+                value={!isRest ? secs : restSeconds}
+                onChange={(e) => handleSecondsChange(e, isRest)}
+                className="w-12 h-8 text-center p-0"
+              />
+            ) : (
+              <span className="text-lg font-bold">{(!isRest ? secs : restSeconds).toString().padStart(2, '0')}</span>
+            )}
+            
+            {!isRunning && !isPaused && isEditable ? (
+              <Button variant="ghost" size="icon" onClick={!isRest ? handleDecreaseSeconds : handleDecreaseRestSeconds}>
                 <Minus className="h-4 w-4" />
               </Button>
             ) : <div className="h-8"></div>}
@@ -197,10 +246,10 @@ const TimerControls: React.FC = () => {
         </Button>
       </div>
       
-      {/* Minutes and seconds controls - Always visible now */}
+      {/* Minutes and seconds controls - Always visible */}
       <div className="grid grid-cols-2 gap-4">
-        {renderTimeDisplay("Workout Time", minutes, seconds)}
-        {renderTimeDisplay("Rest Time", restMinutes, restSeconds)}
+        {renderTimeDisplay("Workout Time", minutes, seconds, true, false)}
+        {renderTimeDisplay("Rest Time", restMinutes, restSeconds, true, true)}
       </div>
       
       {/* Repetitions control - Only visible when not running */}
