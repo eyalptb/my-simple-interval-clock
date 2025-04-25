@@ -8,7 +8,6 @@ export const useTimerControls = (state: TimerState) => {
     setIsPaused,
     setIsResting,
     setCurrentRepetition,
-    isMuted,
     minutes,
     seconds,
   } = state;
@@ -26,12 +25,6 @@ export const useTimerControls = (state: TimerState) => {
     restSec: state.restSeconds
   });
 
-  // Store audio elements and interval ID in these objects
-  const audioStore = useRef<{ 
-    startSound?: HTMLAudioElement, 
-    endSound?: HTMLAudioElement,
-    attemptedToPlay?: boolean 
-  }>({});
   const intervalStore = useRef<{ id?: number }>({});
 
   const startTimer = () => {
@@ -44,20 +37,10 @@ export const useTimerControls = (state: TimerState) => {
           restMin: state.restMinutes,
           restSec: state.restSeconds
         };
-        console.log("Start timer: Storing workout time", minutes, seconds);
       }
       
       setIsRunning(true);
       setIsPaused(false);
-      if (!isMuted) {
-        // Access the audio through our store
-        const startSound = audioStore.current.startSound;
-        if (startSound) {
-          startSound.currentTime = 0; // Reset to beginning
-          audioStore.current.attemptedToPlay = true;
-          startSound.play().catch(e => console.error('Error playing start sound:', e));
-        }
-      }
     }
   };
 
@@ -66,7 +49,6 @@ export const useTimerControls = (state: TimerState) => {
       setIsRunning(false);
       setIsPaused(true);
       
-      // Clear interval using our store
       if (intervalStore.current.id) {
         window.clearInterval(intervalStore.current.id);
       }
@@ -74,7 +56,6 @@ export const useTimerControls = (state: TimerState) => {
   };
 
   const resetTimer = () => {
-    // Clear interval using our store
     if (intervalStore.current.id) {
       window.clearInterval(intervalStore.current.id);
       intervalStore.current.id = undefined;
@@ -85,14 +66,11 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting(false);
     setCurrentRepetition(1);
     
-    // Reset all timer values to zero instead of restoring from timerRef
-    console.log("Reset timer: Setting all values to 0");
     state.setMinutesState(0);
     state.setSecondsState(0);
     state.setRestMinutesState(0);
     state.setRestSecondsState(0);
     
-    // Also update the timerRef to zeros so that future resets will use these values
     timerRef.current = {
       workoutMin: 0,
       workoutSec: 0,
@@ -106,7 +84,6 @@ export const useTimerControls = (state: TimerState) => {
     pauseTimer,
     resetTimer,
     timerRef,
-    audioStore,
     intervalStore,
     pendingTimeUpdateRef: state.pendingTimeUpdateRef,
   };
