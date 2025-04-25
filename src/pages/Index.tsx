@@ -34,7 +34,7 @@ const Index = () => {
           </div>
           
           <div className="text-center text-xs text-gray-500 mt-auto">
-            <p>Interval Clock &copy; {new Date().getFullYear()}</p>
+            <p>©Eyal Wolanowski {new Date().getFullYear()}</p>
           </div>
         </div>
       </div>
