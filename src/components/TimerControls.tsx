@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { useTimer } from '@/contexts/TimerContext';
-import TimeDisplay from './timer/TimeDisplay';
 import ControlButtons from './timer/ControlButtons';
 import RepetitionControls from './timer/RepetitionControls';
+import TimeSections from './timer/controls/TimeSections';
 
 const TimerControls: React.FC = () => {
   const { 
@@ -32,16 +32,15 @@ const TimerControls: React.FC = () => {
     decrementRestSeconds,
     incrementRestMinutes,
     decrementRestMinutes,
-    isResting,
   } = useTimer();
 
-  // Store the initial values for input display - these won't change while timer is running
+  // Store the initial values for input display
   const [inputMinutes, setInputMinutes] = React.useState(minutes);
   const [inputSeconds, setInputSeconds] = React.useState(seconds);
   const [inputRestMinutes, setInputRestMinutes] = React.useState(restMinutes);
   const [inputRestSeconds, setInputRestSeconds] = React.useState(restSeconds);
 
-  // Only update the input display values when timer is not running and not paused
+  // Update input display values when timer is not running and not paused
   React.useEffect(() => {
     if (!isRunning && !isPaused) {
       setInputMinutes(minutes);
@@ -97,103 +96,28 @@ const TimerControls: React.FC = () => {
         onToggleMute={toggleMute}
       />
       
-      <div className="grid grid-cols-2 gap-4">
-        <TimeDisplay
-          title="Workout Time"
-          minutes={minutes}
-          seconds={seconds}
-          isRest={false}
-          isRunning={isRunning}
-          isPaused={isPaused}
-          isEditable={true}
-          displayMinutes={inputMinutes}
-          displaySeconds={inputSeconds}
-          onMinutesChange={handleMinutesChange}
-          onSecondsChange={handleSecondsChange}
-          onIncreaseMinutes={() => {
-            incrementMinutes();
-            if (!isRunning && !isPaused) {
-              setInputMinutes(prev => Math.min(99, prev + 1));
-            }
-          }}
-          onDecreaseMinutes={() => {
-            decrementMinutes();
-            if (!isRunning && !isPaused) {
-              setInputMinutes(prev => Math.max(0, prev - 1));
-            }
-          }}
-          onIncreaseSeconds={() => {
-            incrementSeconds();
-            if (!isRunning && !isPaused) {
-              if (inputSeconds === 59) {
-                setInputSeconds(0);
-                setInputMinutes(prev => Math.min(99, prev + 1));
-              } else {
-                setInputSeconds(prev => prev + 1);
-              }
-            }
-          }}
-          onDecreaseSeconds={() => {
-            decrementSeconds();
-            if (!isRunning && !isPaused) {
-              if (inputSeconds === 0 && inputMinutes > 0) {
-                setInputSeconds(59);
-                setInputMinutes(prev => prev - 1);
-              } else if (inputSeconds > 0) {
-                setInputSeconds(prev => prev - 1);
-              }
-            }
-          }}
-        />
-        
-        <TimeDisplay
-          title="Rest Time"
-          minutes={restMinutes}
-          seconds={restSeconds}
-          isRest={true}
-          isRunning={isRunning}
-          isPaused={isPaused}
-          isEditable={true}
-          displayMinutes={inputRestMinutes}
-          displaySeconds={inputRestSeconds}
-          onMinutesChange={handleMinutesChange}
-          onSecondsChange={handleSecondsChange}
-          onIncreaseMinutes={() => {
-            incrementRestMinutes();
-            if (!isRunning && !isPaused) {
-              setInputRestMinutes(prev => Math.min(99, prev + 1));
-            }
-          }}
-          onDecreaseMinutes={() => {
-            decrementRestMinutes();
-            if (!isRunning && !isPaused) {
-              setInputRestMinutes(prev => Math.max(0, prev - 1));
-            }
-          }}
-          onIncreaseSeconds={() => {
-            incrementRestSeconds();
-            if (!isRunning && !isPaused) {
-              if (inputRestSeconds === 59) {
-                setInputRestSeconds(0);
-                setInputRestMinutes(prev => Math.min(99, prev + 1));
-              } else {
-                setInputRestSeconds(prev => prev + 1);
-              }
-            }
-          }}
-          onDecreaseSeconds={() => {
-            decrementRestSeconds();
-            if (!isRunning && !isPaused) {
-              if (inputRestSeconds === 0 && inputRestMinutes > 0) {
-                setInputRestSeconds(59);
-                setInputRestMinutes(prev => prev - 1);
-              } else if (inputRestSeconds > 0) {
-                setInputRestSeconds(prev => prev - 1);
-              }
-            }
-          }}
-        />
-      </div>
+      <TimeSections
+        minutes={minutes}
+        seconds={seconds}
+        restMinutes={restMinutes}
+        restSeconds={restSeconds}
+        inputMinutes={inputMinutes}
+        inputSeconds={inputSeconds}
+        inputRestMinutes={inputRestMinutes}
+        inputRestSeconds={inputRestSeconds}
+        isRunning={isRunning}
+        isPaused={isPaused}
+        onMinutesChange={handleMinutesChange}
+        onSecondsChange={handleSecondsChange}
+        onIncreaseMinutes={incrementMinutes}
+        onDecreaseMinutes={decrementMinutes}
+        onIncreaseSeconds={incrementSeconds}
+        onDecreaseSeconds={decrementSeconds}
+        onIncreaseRestMinutes={incrementRestMinutes}
+        onDecreaseRestMinutes={decrementRestMinutes}
+        onIncreaseRestSeconds={incrementRestSeconds}
+        onDecreaseRestSeconds={decrementRestSeconds}
+      />
       
       <RepetitionControls
         isRunning={isRunning}
