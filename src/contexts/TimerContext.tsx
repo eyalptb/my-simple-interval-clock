@@ -63,15 +63,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     timerState.setThemeState(newTheme);
   };
   
-  // Completely redesigned time adjustment functions
+  // Fixed and simplified time adjustment functions
   const incrementSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.seconds === 59) {
-        // When at 59 seconds, increment to next minute
-        setMinutes(timerState.minutes + 1);
+        // Correctly handle 0:59 -> 1:00 transition
+        const newMinutes = Math.min(99, timerState.minutes + 1);
+        setMinutes(newMinutes);
         setSeconds(0);
       } else {
-        // Normal increment
         setSeconds(timerState.seconds + 1);
       }
     }
@@ -80,14 +80,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const decrementSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.minutes === 0 && timerState.seconds === 0) {
-        // When at 00:00, wrap to 0:59
+        // Handle 0:00 -> 0:59 transition
         setSeconds(59);
       } else if (timerState.seconds === 0) {
-        // When at X:00, go to (X-1):59
+        // Handle 1:00 -> 0:59 transition
         setMinutes(timerState.minutes - 1);
         setSeconds(59);
       } else {
-        // Normal decrement
         setSeconds(timerState.seconds - 1);
       }
     }
@@ -125,15 +124,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
   
-  // Redesigned rest time adjustment functions
+  // Fixed rest time adjustment functions using the same pattern
   const incrementRestSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.restSeconds === 59) {
-        // When at 59 seconds, increment to next minute
-        setRestMinutes(timerState.restMinutes + 1);
+        // Correctly handle 0:59 -> 1:00 transition
+        const newMinutes = Math.min(99, timerState.restMinutes + 1);
+        setRestMinutes(newMinutes);
         setRestSeconds(0);
       } else {
-        // Normal increment
         setRestSeconds(timerState.restSeconds + 1);
       }
     }
@@ -142,14 +141,13 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const decrementRestSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.restMinutes === 0 && timerState.restSeconds === 0) {
-        // When at 00:00, wrap to 0:59
+        // Handle 0:00 -> 0:59 transition
         setRestSeconds(59);
       } else if (timerState.restSeconds === 0) {
-        // When at X:00, go to (X-1):59
+        // Handle 1:00 -> 0:59 transition
         setRestMinutes(timerState.restMinutes - 1);
         setRestSeconds(59);
       } else {
-        // Normal decrement
         setRestSeconds(timerState.restSeconds - 1);
       }
     }
