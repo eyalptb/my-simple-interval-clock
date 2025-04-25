@@ -26,6 +26,14 @@ interface TimerContextType {
   startTimer: () => void;
   pauseTimer: () => void;
   resetTimer: () => void;
+  incrementSeconds: () => void;
+  decrementSeconds: () => void;
+  incrementMinutes: () => void;
+  decrementMinutes: () => void;
+  incrementRestSeconds: () => void;
+  decrementRestSeconds: () => void;
+  incrementRestMinutes: () => void;
+  decrementRestMinutes: () => void;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
@@ -181,7 +189,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const minutesToAdd = Math.floor(sec / 60);
         const remainingSeconds = sec % 60;
         setSecondsState(remainingSeconds);
-        setMinutes(Math.min(99, minutes + minutesToAdd));
+        setMinutesState(prev => Math.min(99, prev + minutesToAdd));
         return;
       }
       
@@ -224,7 +232,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const minutesToAdd = Math.floor(sec / 60);
         const remainingSeconds = sec % 60;
         setRestSecondsState(remainingSeconds);
-        setRestMinutes(Math.min(99, restMinutes + minutesToAdd));
+        setRestMinutesState(prev => Math.min(99, prev + minutesToAdd));
         return;
       }
       
@@ -234,6 +242,76 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setRestSecondsState(validSec);
         pendingTimeUpdateRef.current = null;
       }, 50);
+    }
+  };
+  
+  const incrementSeconds = () => {
+    if (isRunning) return;
+    
+    if (seconds >= 59) {
+      // Handle rollover in a single batch
+      setSecondsState(0);
+      setMinutesState(prev => Math.min(99, prev + 1));
+    } else {
+      setSecondsState(prev => prev + 1);
+    }
+  };
+  
+  const decrementSeconds = () => {
+    if (isRunning) return;
+    
+    if (seconds === 0 && minutes > 0) {
+      setSecondsState(59);
+      setMinutesState(prev => prev - 1);
+    } else if (seconds > 0) {
+      setSecondsState(prev => prev - 1);
+    }
+  };
+  
+  const incrementMinutes = () => {
+    if (!isRunning) {
+      setMinutesState(prev => Math.min(99, prev + 1));
+    }
+  };
+  
+  const decrementMinutes = () => {
+    if (!isRunning) {
+      setMinutesState(prev => Math.max(0, prev - 1));
+    }
+  };
+  
+  const incrementRestSeconds = () => {
+    if (isRunning) return;
+    
+    if (restSeconds >= 59) {
+      // Handle rollover in a single batch
+      setRestSecondsState(0);
+      setRestMinutesState(prev => Math.min(99, prev + 1));
+    } else {
+      setRestSecondsState(prev => prev + 1);
+    }
+  };
+  
+  const decrementRestSeconds = () => {
+    if (isRunning) return;
+    
+    if (restSeconds === 0 && restMinutes > 0) {
+      setRestSecondsState(59);
+      setRestMinutesState(prev => prev - 1);
+    } else if (restSeconds > 0) {
+      setRestSecondsState(prev => prev - 1);
+    }
+  };
+  
+  const incrementRestMinutes = () => {
+    if (!isRunning) {
+      setRestMinutesState(prev => Math.min(99, prev + 1));
+    }
+  };
+  
+  const decrementRestMinutes = () => {
+    if (!isRunning) {
+      setRestMinutesState(prev => Math.max(0, prev - 1));
     }
   };
   
@@ -267,6 +345,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     startTimer,
     pauseTimer,
     resetTimer,
+    incrementSeconds,
+    decrementSeconds,
+    incrementMinutes,
+    decrementMinutes,
+    incrementRestSeconds,
+    decrementRestSeconds,
+    incrementRestMinutes,
+    decrementRestMinutes,
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;

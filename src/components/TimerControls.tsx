@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { Button } from '@/components/ui/button';
@@ -34,65 +33,47 @@ const TimerControls: React.FC = () => {
     restSeconds,
     setRestMinutes,
     setRestSeconds,
-    isResting
+    isResting,
+    incrementSeconds,
+    decrementSeconds,
+    incrementMinutes,
+    decrementMinutes,
+    incrementRestSeconds,
+    decrementRestSeconds,
+    incrementRestMinutes,
+    decrementRestMinutes
   } = useTimer();
 
   const handleIncreaseMinutes = () => {
-    setMinutes(Math.min(99, minutes + 1));
+    incrementMinutes();
   };
 
   const handleDecreaseMinutes = () => {
-    setMinutes(Math.max(0, minutes - 1));
+    decrementMinutes();
   };
 
   const handleIncreaseSeconds = () => {
-    // When seconds are at 59, we need to roll over to 0 and add 1 to minutes
-    if (seconds >= 59) {
-      setSeconds(0);
-      setMinutes(Math.min(99, minutes + 1));
-    } else {
-      setSeconds(seconds + 1);
-    }
+    incrementSeconds();
   };
 
   const handleDecreaseSeconds = () => {
-    if (seconds === 0) {
-      if (minutes > 0) {
-        setSeconds(59);
-        setMinutes(minutes - 1);
-      }
-    } else {
-      setSeconds(Math.max(0, seconds - 1));
-    }
+    decrementSeconds();
   };
 
   const handleIncreaseRestMinutes = () => {
-    setRestMinutes(Math.min(99, restMinutes + 1));
+    incrementRestMinutes();
   };
 
   const handleDecreaseRestMinutes = () => {
-    setRestMinutes(Math.max(0, restMinutes - 1));
+    decrementRestMinutes();
   };
 
   const handleIncreaseRestSeconds = () => {
-    // When rest seconds are at 59, we need to roll over to 0 and add 1 to rest minutes
-    if (restSeconds >= 59) {
-      setRestSeconds(0);
-      setRestMinutes(Math.min(99, restMinutes + 1));
-    } else {
-      setRestSeconds(restSeconds + 1);
-    }
+    incrementRestSeconds();
   };
 
   const handleDecreaseRestSeconds = () => {
-    if (restSeconds === 0) {
-      if (restMinutes > 0) {
-        setRestSeconds(59);
-        setRestMinutes(restMinutes - 1);
-      }
-    } else {
-      setRestSeconds(Math.max(0, restSeconds - 1));
-    }
+    decrementRestSeconds();
   };
 
   const handleIncreaseReps = () => {
@@ -117,23 +98,10 @@ const TimerControls: React.FC = () => {
   const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>, isRest: boolean) => {
     const value = parseInt(e.target.value) || 0;
     
-    if (value > 59) {
-      const minutesToAdd = Math.floor(value / 60);
-      const remainingSeconds = value % 60;
-      
-      if (isRest) {
-        setRestSeconds(remainingSeconds);
-        setRestMinutes(Math.min(99, restMinutes + minutesToAdd));
-      } else {
-        setSeconds(remainingSeconds);
-        setMinutes(Math.min(99, minutes + minutesToAdd));
-      }
-    } else if (value >= 0) {
-      if (isRest) {
-        setRestSeconds(value);
-      } else {
-        setSeconds(value);
-      }
+    if (isRest) {
+      setRestSeconds(value);
+    } else {
+      setSeconds(value);
     }
   };
 
