@@ -11,7 +11,7 @@ const Index = () => {
     <TimerProvider>
       <div className="min-h-screen flex flex-col">
         <div className="container mx-auto px-4 py-6 flex-1 max-w-md">
-          <h1 className="text-2xl font-bold text-center mb-6">SweatSync Timer Pro</h1>
+          <h1 className="text-2xl font-bold text-center mb-6">Interval Clock</h1>
           
           {/* Ad space */}
           <div className="mb-6">
@@ -34,7 +34,7 @@ const Index = () => {
           </div>
           
           <div className="text-center text-xs text-gray-500 mt-auto">
-            <p>SweatSync Timer Pro &copy; {new Date().getFullYear()}</p>
+            <p>Interval Clock &copy; {new Date().getFullYear()}</p>
           </div>
         </div>
       </div>
