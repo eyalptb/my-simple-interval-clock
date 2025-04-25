@@ -65,10 +65,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const incrementSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.seconds === 59) {
-        setMinutes(timerState.minutes + 1);
-        setSeconds(0);
+        const newMinutes = Math.min(99, timerState.minutes + 1);
+        timerState.setMinutesState(newMinutes);
+        timerState.setSecondsState(0);
       } else {
-        setSeconds(timerState.seconds + 1);
+        timerState.setSecondsState(timerState.seconds + 1);
       }
     }
   };
@@ -76,25 +77,25 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const decrementSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.minutes === 0 && timerState.seconds === 0) {
-        setSeconds(59);
+        timerState.setSecondsState(59);
       } else if (timerState.seconds === 0) {
-        setMinutes(timerState.minutes - 1);
-        setSeconds(59);
+        timerState.setMinutesState(timerState.minutes - 1);
+        timerState.setSecondsState(59);
       } else {
-        setSeconds(timerState.seconds - 1);
+        timerState.setSecondsState(timerState.seconds - 1);
       }
     }
   };
   
   const incrementMinutes = () => {
     if (!timerState.isRunning && timerState.minutes < 99) {
-      setMinutes(timerState.minutes + 1);
+      timerState.setMinutesState(timerState.minutes + 1);
     }
   };
   
   const decrementMinutes = () => {
     if (!timerState.isRunning && timerState.minutes > 0) {
-      setMinutes(timerState.minutes - 1);
+      timerState.setMinutesState(timerState.minutes - 1);
     }
   };
   
@@ -121,10 +122,11 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const incrementRestSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.restSeconds === 59) {
-        setRestMinutes(timerState.restMinutes + 1);
-        setRestSeconds(0);
+        const newMinutes = Math.min(99, timerState.restMinutes + 1);
+        timerState.setRestMinutesState(newMinutes);
+        timerState.setRestSecondsState(0);
       } else {
-        setRestSeconds(timerState.restSeconds + 1);
+        timerState.setRestSecondsState(timerState.restSeconds + 1);
       }
     }
   };
@@ -132,25 +134,25 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const decrementRestSeconds = () => {
     if (!timerState.isRunning) {
       if (timerState.restMinutes === 0 && timerState.restSeconds === 0) {
-        setRestSeconds(59);
+        timerState.setRestSecondsState(59);
       } else if (timerState.restSeconds === 0) {
-        setRestMinutes(timerState.restMinutes - 1);
-        setRestSeconds(59);
+        timerState.setRestMinutesState(timerState.restMinutes - 1);
+        timerState.setRestSecondsState(59);
       } else {
-        setRestSeconds(timerState.restSeconds - 1);
+        timerState.setRestSecondsState(timerState.restSeconds - 1);
       }
     }
   };
   
   const incrementRestMinutes = () => {
     if (!timerState.isRunning && timerState.restMinutes < 99) {
-      setRestMinutes(timerState.restMinutes + 1);
+      timerState.setRestMinutesState(timerState.restMinutes + 1);
     }
   };
   
   const decrementRestMinutes = () => {
     if (!timerState.isRunning && timerState.restMinutes > 0) {
-      setRestMinutes(timerState.restMinutes - 1);
+      timerState.setRestMinutesState(timerState.restMinutes - 1);
     }
   };
 
