@@ -63,7 +63,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     timerState.setThemeState(newTheme);
   };
   
-  // Add the missing incrementSeconds, decrementSeconds, etc. methods
+  // Modified decrement functions to handle rolling over
   const incrementSeconds = () => {
     if (!timerState.isRunning) {
       setSeconds(timerState.seconds + 1);
@@ -71,8 +71,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
   
   const decrementSeconds = () => {
-    if (!timerState.isRunning && timerState.seconds > 0) {
-      setSeconds(timerState.seconds - 1);
+    if (!timerState.isRunning) {
+      if (timerState.seconds > 0) {
+        setSeconds(timerState.seconds - 1);
+      } else if (timerState.minutes > 0) {
+        // Roll over from minutes to seconds
+        setMinutes(timerState.minutes - 1);
+        setSeconds(59);
+      }
     }
   };
   
@@ -115,8 +121,14 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
   
   const decrementRestSeconds = () => {
-    if (!timerState.isRunning && timerState.restSeconds > 0) {
-      setRestSeconds(timerState.restSeconds - 1);
+    if (!timerState.isRunning) {
+      if (timerState.restSeconds > 0) {
+        setRestSeconds(timerState.restSeconds - 1);
+      } else if (timerState.restMinutes > 0) {
+        // Roll over from minutes to seconds
+        setRestMinutes(timerState.restMinutes - 1);
+        setRestSeconds(59);
+      }
     }
   };
   
