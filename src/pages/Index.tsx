@@ -9,30 +9,44 @@ import Advertisement from '@/components/Advertisement';
 const Index = () => {
   return (
     <TimerProvider>
-      <main className="min-h-screen flex flex-col">
-        <div className="container mx-auto px-4 py-6 flex-1 max-w-md">
-          <header className="mb-6">
-            <h1 className="text-2xl font-bold text-center">Interval Clock</h1>
+      <main className="min-h-screen flex flex-col bg-background">
+        <div className="container mx-auto px-4 py-8 flex-1 max-w-md">
+          <header className="mb-8 text-center">
+            <h1 className="text-3xl font-bold tracking-tight">Interval Clock</h1>
           </header>
           
-          <section aria-label="Advertisement" className="mb-6">
-            <Advertisement />
-          </section>
+          <div className="space-y-8">
+            <section 
+              aria-label="Advertisement" 
+              className="rounded-lg shadow-sm bg-card"
+            >
+              <Advertisement />
+            </section>
+            
+            <section 
+              aria-label="Timer Display" 
+              className="rounded-lg shadow-md bg-card p-4"
+            >
+              <FlipClock />
+            </section>
+            
+            <section 
+              aria-label="Timer Controls" 
+              className="rounded-lg shadow-md bg-card p-4"
+            >
+              <TimerControls />
+            </section>
+            
+            <section 
+              aria-label="Theme Selection" 
+              className="rounded-lg shadow-sm bg-card p-4"
+            >
+              <ThemeSelector />
+            </section>
+          </div>
           
-          <section aria-label="Timer" className="mb-8">
-            <FlipClock />
-          </section>
-          
-          <section aria-label="Timer Controls" className="mb-8">
-            <TimerControls />
-          </section>
-          
-          <section aria-label="Theme Selection" className="mb-6">
-            <ThemeSelector />
-          </section>
-          
-          <footer className="text-center text-xs text-gray-500 mt-auto">
-            <p>©{new Date().getFullYear()} Eyal Wolanowski</p>
+          <footer className="mt-12 text-center text-sm text-muted-foreground">
+            <p>©Eyal Wolanowski {new Date().getFullYear()}</p>
           </footer>
         </div>
       </main>
