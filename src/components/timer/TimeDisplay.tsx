@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Clock, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,12 +38,15 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
   onIncreaseSeconds,
   onDecreaseSeconds,
 }) => {
+  const showMinutes = isRunning || isPaused ? minutes : displayMinutes;
+  const showSeconds = isRunning || isPaused ? seconds : displaySeconds;
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-center">
         <Clock className="h-4 w-4 mr-1" />
         <span className="text-sm font-medium">
-          {isRest ? "Recess Time" : title}
+          {isRest ? "Rest Time" : title}
         </span>
       </div>
       
@@ -70,7 +72,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
                 />
               ) : (
                 <span className="text-lg font-bold">
-                  {(isRunning || isPaused ? minutes : displayMinutes).toString().padStart(2, '0')}
+                  {showMinutes.toString().padStart(2, '0')}
                 </span>
               )}
             </div>
@@ -106,7 +108,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
                 />
               ) : (
                 <span className="text-lg font-bold">
-                  {(isRunning || isPaused ? seconds : displaySeconds).toString().padStart(2, '0')}
+                  {showSeconds.toString().padStart(2, '0')}
                 </span>
               )}
             </div>

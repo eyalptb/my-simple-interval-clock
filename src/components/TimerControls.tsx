@@ -34,11 +34,13 @@ const TimerControls: React.FC = () => {
     decrementRestMinutes
   } = useTimer();
 
+  // Store the initial values for input display - these won't change while timer is running
   const [inputMinutes, setInputMinutes] = React.useState(minutes);
   const [inputSeconds, setInputSeconds] = React.useState(seconds);
   const [inputRestMinutes, setInputRestMinutes] = React.useState(restMinutes);
   const [inputRestSeconds, setInputRestSeconds] = React.useState(restSeconds);
 
+  // Only update the input display values when timer is not running and not paused
   React.useEffect(() => {
     if (!isRunning && !isPaused) {
       setInputMinutes(minutes);
@@ -108,7 +110,7 @@ const TimerControls: React.FC = () => {
         />
         
         <TimeDisplay
-          title=""
+          title="Rest Time"
           minutes={restMinutes}
           seconds={restSeconds}
           isRest={true}
