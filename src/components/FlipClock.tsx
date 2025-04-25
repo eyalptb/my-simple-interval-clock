@@ -11,14 +11,13 @@ const FlipClock: React.FC = () => {
   const formattedSeconds = String(seconds).padStart(2, '0');
   
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-center mb-2">
-        {isResting && (
+    <div className="w-full flex flex-col items-center">
+      <div className="mb-2">
+        {isResting ? (
           <div className="text-lg font-semibold text-yellow-500">
             REST
           </div>
-        )}
-        {!isResting && (
+        ) : (
           <div className="text-lg font-semibold text-green-500">
             WORKOUT
           </div>
