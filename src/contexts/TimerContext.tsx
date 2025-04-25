@@ -1,9 +1,8 @@
-
 import React, { createContext, useContext, useRef } from 'react';
 import { useTimerState } from '@/hooks/useTimerState';
 import { useTimerControls } from '@/hooks/useTimerControls';
-import { useTimerEffects } from '@/hooks/useTimerEffects';
 import { useTimeInputs } from '@/hooks/useTimeInputs';
+import { useTimerEffects } from '@/hooks/useTimerEffects';
 import { TimerTheme } from '@/types/timer';
 
 interface TimerContextType {
