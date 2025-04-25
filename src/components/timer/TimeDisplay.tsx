@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Clock, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,16 +39,18 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
   onIncreaseSeconds,
   onDecreaseSeconds,
 }) => {
+  // Use running timer values when the timer is active, otherwise use the display values
   const showMinutes = isRunning || isPaused ? minutes : displayMinutes;
   const showSeconds = isRunning || isPaused ? seconds : displaySeconds;
+
+  // Display title with appropriate label based on whether it's rest or workout
+  const displayTitle = isRest ? "Rest Time" : title;
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-center">
         <Clock className="h-4 w-4 mr-1" />
-        <span className="text-sm font-medium">
-          {isRest ? "Rest Time" : title}
-        </span>
+        <span className="text-sm font-medium">{displayTitle}</span>
       </div>
       
       <div className="flex justify-between items-center">

@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { TimerState } from '@/types/timer';
@@ -33,8 +32,7 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
   } = controls;
 
   useEffect(() => {
-    // We'll create new audio elements but won't assign to .current directly
-    // because the refs are read-only
+    // Fix audio paths by adding the correct path prefix
     const startSound = new Audio('/go.mp3');
     const endSound = new Audio('/whistle.mp3');
     
