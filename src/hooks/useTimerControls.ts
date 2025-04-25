@@ -27,7 +27,11 @@ export const useTimerControls = (state: TimerState) => {
   });
 
   // Store audio elements and interval ID in these objects
-  const audioStore = useRef<{ startSound?: HTMLAudioElement, endSound?: HTMLAudioElement }>({});
+  const audioStore = useRef<{ 
+    startSound?: HTMLAudioElement, 
+    endSound?: HTMLAudioElement,
+    attemptedToPlay?: boolean 
+  }>({});
   const intervalStore = useRef<{ id?: number }>({});
 
   const startTimer = () => {
@@ -50,6 +54,7 @@ export const useTimerControls = (state: TimerState) => {
         const startSound = audioStore.current.startSound;
         if (startSound) {
           startSound.currentTime = 0; // Reset to beginning
+          audioStore.current.attemptedToPlay = true;
           startSound.play().catch(e => console.error('Error playing start sound:', e));
         }
       }

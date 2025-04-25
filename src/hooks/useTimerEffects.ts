@@ -47,8 +47,8 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     const startSound = new Audio();
     const endSound = new Audio();
     
-    startSound.src = '/go.mp3';
-    endSound.src = '/whistle.mp3';
+    startSound.src = '/audio/go.mp3';
+    endSound.src = '/audio/whistle.mp3';
     
     // Only show errors when trying to play sounds, not on initial load
     startSound.onerror = () => {
