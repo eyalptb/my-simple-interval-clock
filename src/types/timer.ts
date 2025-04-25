@@ -1,0 +1,38 @@
+
+export type TimerTheme = 'black-white' | 'white-black' | 'neon-green' | 'neon-red' | 'neon-pink';
+
+export interface TimerState {
+  minutes: number;
+  seconds: number;
+  isRunning: boolean;
+  isPaused: boolean;
+  isMuted: boolean;
+  currentRepetition: number;
+  totalRepetitions: number;
+  restMinutes: number;
+  restSeconds: number;
+  isResting: boolean;
+  theme: TimerTheme;
+  setMinutesState: (min: number) => void;
+  setSecondsState: (sec: number) => void;
+  setIsRunning: (running: boolean) => void;
+  setIsPaused: (paused: boolean) => void;
+  setIsMuted: (muted: boolean) => void;
+  setCurrentRepetition: (rep: number) => void;
+  setTotalRepetitionsState: (reps: number) => void;
+  setRestMinutesState: (min: number) => void;
+  setRestSecondsState: (sec: number) => void;
+  setIsResting: (resting: boolean) => void;
+  setThemeState: (theme: TimerTheme) => void;
+  pendingTimeUpdateRef: React.MutableRefObject<NodeJS.Timeout | null>;
+}
+
+export interface TimerControls {
+  startTimer: () => void;
+  pauseTimer: () => void;
+  resetTimer: () => void;
+  startSoundRef: React.RefObject<HTMLAudioElement>;
+  endSoundRef: React.RefObject<HTMLAudioElement>;
+  timerRef: React.RefObject<number>;
+  pendingTimeUpdateRef: React.RefObject<NodeJS.Timeout>;
+}
