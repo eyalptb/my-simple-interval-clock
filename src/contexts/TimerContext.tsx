@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { toast } from '@/components/ui/use-toast';
 
@@ -160,8 +161,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearTimeout(pendingTimeUpdateRef.current);
       }
       
+      const validMin = Math.min(99, Math.max(0, min));
+      
       pendingTimeUpdateRef.current = setTimeout(() => {
-        setMinutesState(min);
+        setMinutesState(validMin);
         pendingTimeUpdateRef.current = null;
       }, 50);
     }
@@ -171,6 +174,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!isRunning) {
       if (pendingTimeUpdateRef.current) {
         clearTimeout(pendingTimeUpdateRef.current);
+      }
+      
+      // If seconds are >= 60, convert to minutes and remaining seconds
+      if (sec >= 60) {
+        const minutesToAdd = Math.floor(sec / 60);
+        const remainingSeconds = sec % 60;
+        setSecondsState(remainingSeconds);
+        setMinutes(Math.min(99, minutes + minutesToAdd));
+        return;
       }
       
       const validSec = Math.min(59, Math.max(0, sec));
@@ -192,8 +204,10 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         clearTimeout(pendingTimeUpdateRef.current);
       }
       
+      const validMin = Math.min(99, Math.max(0, min));
+      
       pendingTimeUpdateRef.current = setTimeout(() => {
-        setRestMinutesState(min);
+        setRestMinutesState(validMin);
         pendingTimeUpdateRef.current = null;
       }, 50);
     }
@@ -203,6 +217,15 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!isRunning) {
       if (pendingTimeUpdateRef.current) {
         clearTimeout(pendingTimeUpdateRef.current);
+      }
+      
+      // If rest seconds are >= 60, convert to minutes and remaining seconds
+      if (sec >= 60) {
+        const minutesToAdd = Math.floor(sec / 60);
+        const remainingSeconds = sec % 60;
+        setRestSecondsState(remainingSeconds);
+        setRestMinutes(Math.min(99, restMinutes + minutesToAdd));
+        return;
       }
       
       const validSec = Math.min(59, Math.max(0, sec));
