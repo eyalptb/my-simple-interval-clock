@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,15 +53,28 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
+				// Clock theme colors
+				clock: {
+					'black-white': {
+						background: '#000000',
+						text: '#FFFFFF'
+					},
+					'white-black': {
+						background: '#FFFFFF',
+						text: '#000000'
+					},
+					'neon-green': {
+						background: '#000000',
+						text: '#39FF14'
+					},
+					'neon-red': {
+						background: '#000000',
+						text: '#FF3131'
+					},
+					'neon-pink': {
+						background: '#FFFFFF', 
+						text: '#FF69B4'
+					}
 				}
 			},
 			borderRadius: {
@@ -84,11 +98,20 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'flip': {
+					'0%, 100%': {
+						transform: 'rotateX(0)'
+					},
+					'50%': {
+						transform: 'rotateX(-90deg)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'flip': 'flip 0.5s ease-in-out'
 			}
 		}
 	},
