@@ -9,19 +9,17 @@ interface AudioConfig {
 class AudioService {
   private static instance: AudioService;
   private audioConfig: AudioConfig = {
-    startSoundPath: '/audio/go.mp3',  // Updated path
-    endSoundPath: '/audio/whistle.mp3'  // Updated path
+    startSoundPath: 'sounds/go.mp3',
+    endSoundPath: 'sounds/thewhistle.mp3'
   };
   
   private goSound: HTMLAudioElement;
   private whistleSound: HTMLAudioElement;
 
   private constructor() {
-    // Use public asset paths
     this.goSound = new Audio(this.audioConfig.startSoundPath);
     this.whistleSound = new Audio(this.audioConfig.endSoundPath);
     
-    // Comprehensive audio setup
     this.setupAudioElement(this.goSound, 'start');
     this.setupAudioElement(this.whistleSound, 'end');
     
@@ -71,4 +69,3 @@ class AudioService {
 }
 
 export default AudioService;
-

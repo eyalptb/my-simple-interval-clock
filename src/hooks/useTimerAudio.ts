@@ -21,13 +21,13 @@ export const useTimerAudio = (isMuted: boolean) => {
   useEffect(() => {
     // Create audio elements
     if (!audioStore.current.startSound) {
-      audioStore.current.startSound = new Audio('/audio/go.mp3');
+      audioStore.current.startSound = new Audio('sounds/go.mp3');
       audioStore.current.startSound.volume = 1.0;
       audioStore.current.startSound.preload = "auto";
     }
     
     if (!audioStore.current.endSound) {
-      audioStore.current.endSound = new Audio('/audio/whistle.mp3');
+      audioStore.current.endSound = new Audio('sounds/thewhistle.mp3');
       audioStore.current.endSound.volume = 1.0;
       audioStore.current.endSound.preload = "auto";
     }
@@ -68,4 +68,3 @@ export const useTimerAudio = (isMuted: boolean) => {
     audioStore
   };
 };
-
