@@ -42,16 +42,9 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
   // Display title with appropriate label based on whether it's rest or workout
   const displayTitle = isRest ? "Rest Time" : title;
   
-  // Show running values when timer is active
-  // The key fix is here: only show the running timer values when the isRest state matches
-  // what this particular TimeDisplay is meant to show
-  const showMinutes = (isRunning || isPaused) ? 
-      (isRest === true ? minutes : displayMinutes) : 
-      displayMinutes;
-  
-  const showSeconds = (isRunning || isPaused) ? 
-      (isRest === true ? seconds : displaySeconds) : 
-      displaySeconds;
+  // Determine which values to show based on timer state
+  const showMinutes = isRunning || isPaused ? minutes : displayMinutes;
+  const showSeconds = isRunning || isPaused ? seconds : displaySeconds;
 
   return (
     <div className="space-y-2">

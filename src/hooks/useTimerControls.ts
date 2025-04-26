@@ -77,14 +77,22 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting(false);
     setCurrentRepetition(1);
     
+    // Store initial values that we'll use to reset
+    const initialWorkoutMin = timerRef.current.workoutMin;
+    const initialWorkoutSec = timerRef.current.workoutSec;
+    
     // Explicitly set timer values back to their initial values
-    state.setMinutesState(timerRef.current.workoutMin);
-    state.setSecondsState(timerRef.current.workoutSec);
+    state.setMinutesState(initialWorkoutMin);
+    state.setSecondsState(initialWorkoutSec);
+    
+    // Make sure to also reset rest minutes and seconds
+    state.setRestMinutesState(timerRef.current.restMin);
+    state.setRestSecondsState(timerRef.current.restSec);
     
     // Log for debugging
-    console.log('Reset timer:', {
-      workoutMin: timerRef.current.workoutMin, 
-      workoutSec: timerRef.current.workoutSec,
+    console.log('Reset timer to:', {
+      workoutMin: initialWorkoutMin, 
+      workoutSec: initialWorkoutSec,
       restMin: timerRef.current.restMin,
       restSec: timerRef.current.restSec
     });

@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import ControlButtons from './timer/ControlButtons';
 import RepetitionControls from './timer/RepetitionControls';
@@ -39,7 +40,7 @@ const TimerControls: React.FC = () => {
   const [inputRestMinutes, setInputRestMinutes] = React.useState(restMinutes);
   const [inputRestSeconds, setInputRestSeconds] = React.useState(restSeconds);
 
-  // Update input display values when timer is not running and not paused
+  // Update input display values when timer state changes (including resets)
   React.useEffect(() => {
     if (!isRunning && !isPaused) {
       setInputMinutes(minutes);
@@ -87,6 +88,14 @@ const TimerControls: React.FC = () => {
   const handleReset = () => {
     console.log("Reset button clicked");
     resetTimer();
+    
+    // Force update the input values immediately after reset
+    setTimeout(() => {
+      setInputMinutes(minutes);
+      setInputSeconds(seconds);
+      setInputRestMinutes(restMinutes);
+      setInputRestSeconds(restSeconds);
+    }, 0);
   };
 
   return (

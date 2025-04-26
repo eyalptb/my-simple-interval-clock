@@ -4,7 +4,7 @@ import FlipCard from './FlipCard';
 import { useTimer } from '@/contexts/TimerContext';
 
 const FlipClock: React.FC = () => {
-  const { minutes, seconds } = useTimer();
+  const { minutes, seconds, isResting } = useTimer();
   
   // Format minutes and seconds to double digits
   const formattedMinutes = String(minutes).padStart(2, '0');
@@ -28,6 +28,9 @@ const FlipClock: React.FC = () => {
         <div className="flex-1 aspect-square max-w-24">
           <FlipCard digit={formattedSeconds[1]} />
         </div>
+      </div>
+      <div className="text-center mt-2 text-sm opacity-75">
+        {isResting ? "Rest Time" : "Workout Time"}
       </div>
     </div>
   );
