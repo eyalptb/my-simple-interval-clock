@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import ControlButtons from './timer/ControlButtons';
@@ -134,10 +133,10 @@ const TimerControls: React.FC = () => {
       const resetValues: ResetTimerValues = resetTimer();
       
       // Force immediate UI update
-      setInputMinutes(resetValues.minutes);
-      setInputSeconds(resetValues.seconds);
-      setInputRestMinutes(resetValues.restMinutes);
-      setInputRestSeconds(resetValues.restSeconds);
+      setInputMinutes(0);
+      setInputSeconds(0);
+      setInputRestMinutes(0);
+      setInputRestSeconds(0);
     } catch (error) {
       console.error("Error in reset handler:", error);
     }

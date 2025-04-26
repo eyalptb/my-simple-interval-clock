@@ -1,3 +1,4 @@
+
 import { useRef } from 'react';
 import { TimerState, ResetTimerValues } from '@/types/timer';
 import { useTimerAudio } from './useTimerAudio';
@@ -108,7 +109,7 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting(false);
     setCurrentRepetition(1);
     
-    // Reset to 0 when user presses the reset button
+    // Ensure we explicitly set all values to 0
     setMinutesState(0);
     setSecondsState(0);
     setRestMinutesState(0);
@@ -117,7 +118,7 @@ export const useTimerControls = (state: TimerState) => {
     soundPlayedForThisSession.current = false;
     wasRecentlyPaused.current = false;
     
-    // Keep reference values unchanged for workout completion restoration
+    // Force reset values to be 0 in the return object as well
     return {
       minutes: 0,
       seconds: 0,
