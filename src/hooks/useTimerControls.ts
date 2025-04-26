@@ -39,12 +39,14 @@ export const useTimerControls = (state: TimerState) => {
   const isInResetState = useRef<boolean>(false);
   const intervalStore = useRef<{ id?: number }>({});
   const lastActionTime = useRef<number>(0);
+  // Track if we've already played start sound for iOS
+  const hasPlayedStartSound = useRef<boolean>(false);
 
   const startTimer = () => {
     // More aggressive rate limiting to prevent rapid action execution
     const now = Date.now();
-    if (now - lastActionTime.current < 2000) {
-      console.log("Action blocked: Too soon after last action (must wait 2 seconds)");
+    if (now - lastActionTime.current < 3000) { // Increased from 2000 to 3000ms
+      console.log("Action blocked: Too soon after last action (must wait 3 seconds)");
       return;
     }
     
@@ -69,8 +71,16 @@ export const useTimerControls = (state: TimerState) => {
           };
         }
         
-        // Only reset the iOS start sound played state
-        resetIOSSoundState();
+        // Always reset iOS sound played state before trying to play
+        if (!hasPlayedStartSound.current) {
+          console.log("First timer start of the session - ensuring iOS start sound can play");
+          resetIOSSoundState();
+          hasPlayedStartSound.current = true;
+        } else {
+          // For subsequent starts, we need to specifically reset just the start sound
+          AudioService.getInstance().resetSpecificIOSSound('start');
+          console.log("Subsequent timer start - iOS start sound state reset");
+        }
         
         // Play start sound when timer begins with a small delay
         setTimeout(() => {
@@ -82,7 +92,7 @@ export const useTimerControls = (state: TimerState) => {
         // Clear the reset state after handling this interaction
         setTimeout(() => {
           isInResetState.current = false;
-        }, 2000);
+        }, 3000); // Reduced to give a chance for next play
       }
       
       setIsRunning(true);
@@ -93,8 +103,8 @@ export const useTimerControls = (state: TimerState) => {
   const pauseTimer = () => {
     // More aggressive rate limiting
     const now = Date.now();
-    if (now - lastActionTime.current < 2000) {
-      console.log("Action blocked: Too soon after last action (must wait 2 seconds)");
+    if (now - lastActionTime.current < 3000) { // Increased from 2000 to 3000ms
+      console.log("Action blocked: Too soon after last action (must wait 3 seconds)");
       return;
     }
     lastActionTime.current = now;
@@ -112,8 +122,8 @@ export const useTimerControls = (state: TimerState) => {
   const resetTimer = (): ResetTimerValues => {
     // More aggressive rate limiting
     const now = Date.now();
-    if (now - lastActionTime.current < 3000) {
-      console.log("Reset blocked: Too soon after last action (must wait 3 seconds)");
+    if (now - lastActionTime.current < 5000) { // Increased from 3000 to 5000ms
+      console.log("Reset blocked: Too soon after last action (must wait 5 seconds)");
       // Still return the current values
       return {
         minutes: minutes,
@@ -132,8 +142,8 @@ export const useTimerControls = (state: TimerState) => {
     // Use the audio hook's method to disable sounds with longer timeout
     disableSoundsTemporarily();
     
-    // Also directly use the AudioService to block sounds
-    AudioService.getInstance().blockSoundsTemporarily(10000);
+    // Also directly use the AudioService to block sounds even more aggressively
+    AudioService.getInstance().blockSoundsTemporarily(15000); // Increased from 10000 to 15000ms
     
     // Clear any active interval
     if (intervalStore.current.id) {
@@ -166,7 +176,7 @@ export const useTimerControls = (state: TimerState) => {
     setTimeout(() => {
       isInResetState.current = false;
       console.log("Reset state cleared");
-    }, 10000);  // INCREASED FROM 5000ms to 10000ms
+    }, 15000);  // INCREASED FROM 10000ms to 15000ms
     
     // Return fixed reset values for immediate UI update
     return {
@@ -187,6 +197,7 @@ export const useTimerControls = (state: TimerState) => {
     playStartSound,
     playEndSound,
     isInResetState, // Export this so it can be used in other components
-    resetIOSSoundState
+    resetIOSSoundState,
+    hasPlayedStartSound // Export this to track if we've played start sound
   };
 };

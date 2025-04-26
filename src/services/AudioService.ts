@@ -1,7 +1,6 @@
-
 import goMp3 from '@/assets/audio/go.mp3';
 import whistleMp3 from '@/assets/audio/whistle.mp3';
-import { AudioConfig, AudioState } from '@/types/audio';
+import { AudioConfig, AudioState, SoundType } from '@/types/audio';
 import { createAudioElement, initializeWebAudio } from '@/utils/audioInitializer';
 import { IOSAudioHandler } from '@/utils/iOSAudioHandler';
 import { loadAudioBuffer } from '@/utils/audioBufferLoader';
@@ -19,6 +18,7 @@ class AudioService {
   private iOSHandler: IOSAudioHandler;
   private globalSoundEnabled: boolean = true;
   private lastResetTime: number = 0;
+  private lastPlusButtonTime: number = 0;
 
   private constructor() {
     this.state = {
@@ -67,7 +67,7 @@ class AudioService {
     }
   }
 
-  private async loadAudioBuffer(url: string, type: 'start' | 'end'): Promise<void> {
+  private async loadAudioBuffer(url: string, type: SoundType): Promise<void> {
     if (!this.state.audioContext) return;
     
     try {
@@ -114,7 +114,7 @@ class AudioService {
     }
   }
 
-  private async playIOSSound(type: 'start' | 'end'): Promise<void> {
+  private async playIOSSound(type: SoundType): Promise<void> {
     if (!this.iOSHandler.canPlaySound(type)) {
       console.log(`iOS: ${type} sound blocked by handler`);
       return;
@@ -138,7 +138,7 @@ class AudioService {
     }
   }
 
-  public blockSoundsTemporarily(durationMs: number = 10000): void {
+  public blockSoundsTemporarily(durationMs: number = 15000): void {
     console.log(`Blocking sounds for ${durationMs}ms from AudioService level`);
     this.lastResetTime = Date.now();
     this.iOSHandler.blockSounds(durationMs);
@@ -149,7 +149,24 @@ class AudioService {
     // Release the emergency block after a delay
     setTimeout(() => {
       this.iOSHandler.forceBlockSounds(false);
-    }, 5000);
+    }, 7000);
+  }
+
+  public trackPlusButtonPress(): void {
+    const now = Date.now();
+    this.lastPlusButtonTime = now;
+    
+    // If this is within 10 seconds of a reset, block start sound
+    if (now - this.lastResetTime < 10000) {
+      console.log('Plus button pressed shortly after reset - blocking start sound');
+      this.iOSHandler.blockStartSound(15000);
+      
+      // Also force block for a short period
+      this.iOSHandler.forceBlockSounds(true);
+      setTimeout(() => {
+        this.iOSHandler.forceBlockSounds(false);
+      }, 5000);
+    }
   }
 
   public disableAllSounds(): void {
@@ -165,7 +182,7 @@ class AudioService {
   public resetIOSPlayedState(): void {
     // Don't reset too soon after a reset operation
     const timeSinceReset = Date.now() - this.lastResetTime;
-    if (timeSinceReset < 5000) {
+    if (timeSinceReset < 10000) {
       console.log(`Ignoring resetIOSPlayedState - too soon after reset (${timeSinceReset}ms)`);
       return;
     }
@@ -173,10 +190,10 @@ class AudioService {
     this.iOSHandler.resetIOSSoundPlayed();
   }
 
-  public resetSpecificIOSSound(type: 'start' | 'end'): void {
+  public resetSpecificIOSSound(type: SoundType): void {
     // Don't reset too soon after a reset operation
     const timeSinceReset = Date.now() - this.lastResetTime;
-    if (timeSinceReset < 5000) {
+    if (timeSinceReset < 10000) {
       console.log(`Ignoring reset of ${type} sound - too soon after reset (${timeSinceReset}ms)`);
       return;
     }
@@ -185,10 +202,10 @@ class AudioService {
   }
 
   public isWithinResetCooldown(): boolean {
-    return (Date.now() - this.lastResetTime) < 10000;
+    return (Date.now() - this.lastResetTime) < 15000;
   }
 
-  public async playSound(type: 'start' | 'end'): Promise<void> {
+  public async playSound(type: SoundType): Promise<void> {
     // First check global sound enabled flag
     if (!this.globalSoundEnabled) {
       console.log('Sound blocked: global sound disabled');

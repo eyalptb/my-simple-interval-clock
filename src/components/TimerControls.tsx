@@ -5,6 +5,7 @@ import ControlButtons from './timer/ControlButtons';
 import RepetitionControls from './timer/RepetitionControls';
 import TimeSections from './timer/controls/TimeSections';
 import { ResetTimerValues } from '@/types/timer';
+import AudioService from '@/services/AudioService';
 
 const TimerControls: React.FC = () => {
   const { 
@@ -40,6 +41,8 @@ const TimerControls: React.FC = () => {
   const [inputSeconds, setInputSeconds] = React.useState(seconds);
   const [inputRestMinutes, setInputRestMinutes] = React.useState(restMinutes);
   const [inputRestSeconds, setInputRestSeconds] = React.useState(restSeconds);
+  // Track time increment buttons
+  const [lastButtonClick, setLastButtonClick] = React.useState<number>(0);
 
   // Update input display values when timer state changes (including resets)
   React.useEffect(() => {
@@ -78,11 +81,93 @@ const TimerControls: React.FC = () => {
     }
   };
 
+  // Wrapped time increment handlers to prevent sound issues after reset
+  const handleIncreaseMinutes = () => {
+    const now = Date.now();
+    // Rate limit button clicks
+    if (now - lastButtonClick < 1000) {
+      console.log("Ignored rapid button click");
+      return;
+    }
+    setLastButtonClick(now);
+    
+    // Track in AudioService to prevent iOS sounds after reset
+    AudioService.getInstance().trackPlusButtonPress();
+    incrementMinutes();
+  };
+  
+  const handleDecreaseMinutes = () => {
+    const now = Date.now();
+    if (now - lastButtonClick < 1000) return;
+    setLastButtonClick(now);
+    decrementMinutes();
+  };
+  
+  const handleIncreaseSeconds = () => {
+    const now = Date.now();
+    if (now - lastButtonClick < 1000) return;
+    setLastButtonClick(now);
+    
+    // Track in AudioService to prevent iOS sounds after reset
+    AudioService.getInstance().trackPlusButtonPress();
+    incrementSeconds();
+  };
+  
+  const handleDecreaseSeconds = () => {
+    const now = Date.now();
+    if (now - lastButtonClick < 1000) return;
+    setLastButtonClick(now);
+    decrementSeconds();
+  };
+  
+  const handleIncreaseRestMinutes = () => {
+    const now = Date.now();
+    if (now - lastButtonClick < 1000) return;
+    setLastButtonClick(now);
+    
+    // Track in AudioService to prevent iOS sounds after reset
+    AudioService.getInstance().trackPlusButtonPress();
+    incrementRestMinutes();
+  };
+  
+  const handleDecreaseRestMinutes = () => {
+    const now = Date.now();
+    if (now - lastButtonClick < 1000) return;
+    setLastButtonClick(now);
+    decrementRestMinutes();
+  };
+  
+  const handleIncreaseRestSeconds = () => {
+    const now = Date.now();
+    if (now - lastButtonClick < 1000) return;
+    setLastButtonClick(now);
+    
+    // Track in AudioService to prevent iOS sounds after reset
+    AudioService.getInstance().trackPlusButtonPress();
+    incrementRestSeconds();
+  };
+  
+  const handleDecreaseRestSeconds = () => {
+    const now = Date.now();
+    if (now - lastButtonClick < 1000) return;
+    setLastButtonClick(now);
+    decrementRestSeconds();
+  };
+
   const handleIncreaseReps = () => {
+    const now = Date.now();
+    if (now - lastButtonClick < 1000) return;
+    setLastButtonClick(now);
+    
+    // Track in AudioService to prevent iOS sounds after reset
+    AudioService.getInstance().trackPlusButtonPress();
     setTotalRepetitions(Math.min(20, totalRepetitions + 1));
   };
 
   const handleDecreaseReps = () => {
+    const now = Date.now();
+    if (now - lastButtonClick < 1000) return;
+    setLastButtonClick(now);
     setTotalRepetitions(Math.max(1, totalRepetitions - 1));
   };
 
@@ -143,14 +228,14 @@ const TimerControls: React.FC = () => {
         isPaused={isPaused}
         onMinutesChange={handleMinutesChange}
         onSecondsChange={handleSecondsChange}
-        onIncreaseMinutes={incrementMinutes}
-        onDecreaseMinutes={decrementMinutes}
-        onIncreaseSeconds={incrementSeconds}
-        onDecreaseSeconds={decrementSeconds}
-        onIncreaseRestMinutes={incrementRestMinutes}
-        onDecreaseRestMinutes={decrementRestMinutes}
-        onIncreaseRestSeconds={incrementRestSeconds}
-        onDecreaseRestSeconds={decrementRestSeconds}
+        onIncreaseMinutes={handleIncreaseMinutes}
+        onDecreaseMinutes={handleDecreaseMinutes}
+        onIncreaseSeconds={handleIncreaseSeconds}
+        onDecreaseSeconds={handleDecreaseSeconds}
+        onIncreaseRestMinutes={handleIncreaseRestMinutes}
+        onDecreaseRestMinutes={handleDecreaseRestMinutes}
+        onIncreaseRestSeconds={handleIncreaseRestSeconds}
+        onDecreaseRestSeconds={handleDecreaseRestSeconds}
       />
       
       <RepetitionControls

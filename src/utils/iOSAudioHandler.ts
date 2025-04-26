@@ -3,9 +3,10 @@ export class IOSAudioHandler {
   private lastPlayAttempt: number = 0;
   private soundBlockedUntil: number = 0;
   private iosSoundPlayed: { [key: string]: boolean } = { 'start': false, 'end': false };
-  private resetBlockTime: number = 10000; // Increased to 10 seconds
-  private rateBlockTime: number = 3000; // Increased to 3 seconds
+  private resetBlockTime: number = 15000; // Increased from 10s to 15s
+  private rateBlockTime: number = 5000;  // Increased from 3s to 5s
   private forceBlockedState: boolean = false;
+  private startButtonBlockedUntil: number = 0; // New property to track start button block
 
   canPlaySound(type: 'start' | 'end'): boolean {
     const now = Date.now();
@@ -22,16 +23,25 @@ export class IOSAudioHandler {
       return false;
     }
     
-    // Rate limiting protection
+    // Rate limiting protection - increased for better prevention
     if (now - this.lastPlayAttempt < this.rateBlockTime) {
       console.log(`iOS: Sound '${type}' prevented - rate limiting in effect (${this.rateBlockTime}ms)`);
       return false;
     }
     
-    // For start sound specifically, check if it was already played once
-    if (type === 'start' && this.iosSoundPlayed['start']) {
-      console.log('iOS: Start sound already played once this session');
-      return false;
+    // For start sound specifically:
+    if (type === 'start') {
+      // Is this sound type already played?
+      if (this.iosSoundPlayed['start']) {
+        console.log('iOS: Start sound already played once this session');
+        return false;
+      }
+      
+      // Check start button specific block (for Plus button interactions)
+      if (now < this.startButtonBlockedUntil) {
+        console.log(`iOS: Start sound specifically blocked until ${new Date(this.startButtonBlockedUntil).toLocaleTimeString()}`);
+        return false;
+      }
     }
     
     return true;
@@ -41,11 +51,18 @@ export class IOSAudioHandler {
     this.lastPlayAttempt = Date.now();
   }
 
-  blockSounds(durationMs: number = 10000): void {
+  blockSounds(durationMs: number = 15000): void {
     const now = Date.now();
     // Always use the longer duration between current block and new request
     this.soundBlockedUntil = Math.max(this.soundBlockedUntil, now + durationMs);
     console.log(`Sounds blocked until ${new Date(this.soundBlockedUntil).toLocaleTimeString()}`);
+  }
+
+  // Block specifically the start sound (used after reset + plus button)
+  blockStartSound(durationMs: number = 10000): void {
+    const now = Date.now();
+    this.startButtonBlockedUntil = Math.max(this.startButtonBlockedUntil, now + durationMs);
+    console.log(`Start sound specifically blocked until ${new Date(this.startButtonBlockedUntil).toLocaleTimeString()}`);
   }
 
   // Force block all sounds (emergency override)

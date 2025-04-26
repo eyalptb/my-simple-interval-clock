@@ -70,20 +70,20 @@ export const useTimerAudio = (isMuted: boolean) => {
       window.clearTimeout(resetTimeoutId.current);
     }
     
-    // Use the AudioService to block sounds at the service level - increased to 10 seconds
-    audioService.blockSoundsTemporarily(10000);
+    // Use the AudioService to block sounds at the service level - increased to 15 seconds
+    audioService.blockSoundsTemporarily(15000); // Increased from 10000 to 15000ms
     
-    // Re-enable sounds after a cooldown period - INCREASED FROM 5000 to 10000ms
+    // Re-enable sounds after a cooldown period - INCREASED FROM 10000 to 15000ms
     resetTimeoutId.current = window.setTimeout(() => {
       preventSoundAfterReset.current = false;
       resetTimeoutId.current = null;
       console.log('Sound prevention after reset has been cleared');
-    }, 10000) as unknown as number;
+    }, 15000) as unknown as number;
     
-    console.log('Sounds temporarily disabled after reset - extended time period (10s)');
+    console.log('Sounds temporarily disabled after reset - extended time period (15s)');
   }, [audioService]);
 
-  // Rate-limited sound player with type-specific handling
+  // Rate-limited sound player with type-specific handling and improved iOS handling
   const playSound = useCallback(async (type: 'start' | 'end') => {
     if (isMuted) {
       console.log('Audio is muted, not playing sound');
@@ -102,9 +102,9 @@ export const useTimerAudio = (isMuted: boolean) => {
       return;
     }
     
-    // Prevent rapid sound playback - INCREASED FROM 2000 to 3000ms
+    // Prevent rapid sound playback - INCREASED FROM 3000 to 5000ms
     const now = Date.now();
-    if (now - lastPlayTime.current < 3000) {
+    if (now - lastPlayTime.current < 5000) {
       console.log(`Preventing ${type} sound overlap - too soon after last play`);
       return;
     }
@@ -112,6 +112,13 @@ export const useTimerAudio = (isMuted: boolean) => {
     lastPlayTime.current = now;
     
     try {
+      // For start sound on iOS, ensure we can play it by resetting its state if needed
+      if (type === 'start') {
+        // Reset iOS start sound played state right before attempting to play
+        audioService.resetSpecificIOSSound('start');
+        console.log('Explicitly reset iOS start sound state before play attempt');
+      }
+      
       await audioService.playSound(type);
     } catch (error) {
       console.error(`Error playing ${type} sound:`, error);
@@ -120,7 +127,7 @@ export const useTimerAudio = (isMuted: boolean) => {
 
   // Reset iOS sound played state when timer is started
   const resetIOSSoundState = useCallback(() => {
-    // Only reset the start sound state to allow it to play again
+    // Reset iOS start sound played state to allow it to play again
     audioService.resetSpecificIOSSound('start');
     console.log('iOS start sound state reset specifically');
   }, [audioService]);
