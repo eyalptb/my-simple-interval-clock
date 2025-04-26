@@ -21,22 +21,33 @@ export const useTimerAudio = (isMuted: boolean) => {
     end: false
   });
 
-  // Function to manually force a short beep sound
+  // Function to play a short beep sound using Web Audio API
   const playFallbackBeep = (duration = 300, frequency = 800, volume = 0.5) => {
     try {
+      // Create an audio context
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Create oscillator and gain nodes
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       
+      // Connect the nodes
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      gainNode.gain.value = volume;
+      // Configure the sound
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
       oscillator.frequency.value = frequency;
       oscillator.type = 'sine';
       
+      // Start the oscillator
       oscillator.start();
       
+      // Fade out and stop
+      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration/1000);
+      
+      // Schedule stop
       setTimeout(() => {
         oscillator.stop();
         audioContext.close();
@@ -49,14 +60,25 @@ export const useTimerAudio = (isMuted: boolean) => {
     }
   };
 
+  // Initialize the audio on component mount
   useEffect(() => {
+    // For Safari, try to unlock audio context with a silent audio element
+    const unlockAudio = () => {
+      const silentAudio = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f/+MYxAAUAFL8AAAAAX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f/+MYxA8Ri8qEAFnGAX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19");
+      silentAudio.play().catch(() => {});
+    };
+    
+    // Try to unlock audio on page load and user interaction
+    unlockAudio();
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+    
+    // Initialize the audio service
     const audioService = AudioService.getInstance();
     
-    console.log('Initializing audio files from paths:', {
-      start: audioService['audioConfig'].startSoundPath,
-      end: audioService['audioConfig'].endSoundPath
-    });
+    console.log('Initializing audio files for timer sounds');
     
+    // Create audio elements
     const startSound = audioService.createAudio('start');
     const endSound = audioService.createAudio('end');
     
@@ -65,6 +87,7 @@ export const useTimerAudio = (isMuted: boolean) => {
       endSound: endSound ? 'created' : 'failed'
     });
     
+    // Store the audio elements
     audioStore.current = {
       startSound,
       endSound,
@@ -80,8 +103,6 @@ export const useTimerAudio = (isMuted: boolean) => {
       
       startSound.addEventListener('error', (e) => {
         console.error('Start sound failed to load:', e);
-        // Try using the fallback beep sound
-        audioStore.current.startSound = audioService.createBeep();
       });
     }
     
@@ -93,31 +114,40 @@ export const useTimerAudio = (isMuted: boolean) => {
       
       endSound.addEventListener('error', (e) => {
         console.error('End sound failed to load:', e);
-        // Try using the fallback beep sound
-        audioStore.current.endSound = audioService.createBeep();
       });
     }
 
-    // Explicitly trigger load
-    if (startSound) startSound.load();
-    if (endSound) endSound.load();
-    
-    // Try to manually pre-trigger audio context to work around autoplay restrictions
-    const silentContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    silentContext.close();
-    
+    // Pre-test audio playback to try to resolve autoplay restrictions
+    // This often works in browsers that have autoplay policies
+    const testSound = startSound || audioService.createBeep();
+    if (testSound) {
+      testSound.volume = 0.01; // Nearly silent
+      testSound.play().then(() => {
+        console.log('Audio pre-test successful, audio should work');
+        testSound.pause();
+        testSound.currentTime = 0;
+      }).catch(e => {
+        console.log('Audio pre-test failed, browser may block autoplay:', e);
+      });
+    }
+
+    // Cleanup function
     return () => {
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
+      
       if (audioStore.current.startSound) {
         audioStore.current.startSound.pause();
-        audioStore.current.startSound.removeAttribute('src');
+        audioStore.current.startSound.src = '';
       }
       if (audioStore.current.endSound) {
         audioStore.current.endSound.pause();
-        audioStore.current.endSound.removeAttribute('src');
+        audioStore.current.endSound.src = '';
       }
     };
   }, []);
 
+  // Function to play a sound
   const playSound = async (type: 'start' | 'end') => {
     if (isMuted) return;
     
@@ -132,10 +162,9 @@ export const useTimerAudio = (isMuted: boolean) => {
         audioStore.current.attemptedToPlay = true;
         console.log(`Playing ${type} sound...`);
         
-        // Try to play the sound
+        // Play the sound, handle autoplay restrictions with fallbacks
         const playPromise = sound.play();
         
-        // Modern browsers return a promise from the play function
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
@@ -145,20 +174,9 @@ export const useTimerAudio = (isMuted: boolean) => {
               console.error(`Error playing ${type} sound:`, error);
               
               // Try the Web Audio API fallback beep sound
-              if (!playFallbackBeep()) {
-                // Fall back to the default beep sound
-                const audioService = AudioService.getInstance();
-                const beepSound = audioService.createBeep();
-                
-                if (beepSound) {
-                  beepSound.play().catch(e => {
-                    console.error('Fallback beep also failed:', e);
-                  });
-                }
-              }
-              
-              // Only show the toast on the first attempt
-              if (!audioStore.current.attemptedToPlay) {
+              const frequency = type === 'start' ? 800 : 1200;
+              if (!playFallbackBeep(300, frequency, 0.5)) {
+                // Final fallback - show toast if nothing works
                 toast({
                   title: 'Audio Notice',
                   description: 'Some browsers require user interaction before playing audio.',
@@ -169,14 +187,16 @@ export const useTimerAudio = (isMuted: boolean) => {
         }
       } catch (error) {
         console.error(`Error playing ${type} sound:`, error);
-        // Try fallback beep
-        playFallbackBeep();
+        // Try Web Audio API fallback
+        const frequency = type === 'start' ? 800 : 1200;
+        playFallbackBeep(300, frequency, 0.5);
       }
     } else {
       console.error(`${type} sound is not available`);
       
-      // Try to use the Web Audio API fallback
-      playFallbackBeep();
+      // Fallback to direct Web Audio API beep
+      const frequency = type === 'start' ? 800 : 1200;
+      playFallbackBeep(300, frequency, 0.5);
     }
   };
 
