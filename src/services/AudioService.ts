@@ -17,6 +17,7 @@ class AudioService {
   
   private goSound: HTMLAudioElement;
   private whistleSound: HTMLAudioElement;
+  private audioInitialized: boolean = false;
 
   private constructor() {
     this.goSound = new Audio(this.audioConfig.startSoundPath);
@@ -50,20 +51,80 @@ class AudioService {
     return AudioService.instance;
   }
 
+  // New method to initialize both sounds silently
+  public async initializeSounds(): Promise<void> {
+    if (this.audioInitialized) return;
+    
+    try {
+      // Create separate temporary audio objects specifically for initialization
+      const tempStart = new Audio(this.audioConfig.startSoundPath);
+      const tempEnd = new Audio(this.audioConfig.endSoundPath);
+      
+      // Set to silent
+      tempStart.volume = 0;
+      tempEnd.volume = 0;
+      
+      // Try to play both sounds silently and catch any errors
+      await Promise.all([
+        tempStart.play().catch(() => {}),
+        tempEnd.play().catch(() => {})
+      ]);
+      
+      // Stop them immediately
+      setTimeout(() => {
+        tempStart.pause();
+        tempEnd.pause();
+        tempStart.currentTime = 0;
+        tempEnd.currentTime = 0;
+      }, 50);
+      
+      // Mark as initialized
+      this.audioInitialized = true;
+      console.log('Audio service: Both sounds pre-initialized');
+    } catch (error) {
+      console.log('Audio initialization attempt complete');
+    }
+  }
+
   public async playSound(type: 'start' | 'end'): Promise<void> {
     try {
       const audio = type === 'start' ? this.goSound : this.whistleSound;
       
       // Reset and play
       audio.currentTime = 0;
-      await audio.play().catch(error => {
-        console.error(`Play ${type} sound error:`, error);
-        toast({
-          title: 'Audio Playback Error',
-          description: `Could not play ${type} sound. Try interacting with the page first.`,
-          variant: 'destructive'
+      
+      // Try to play with a more robust approach
+      try {
+        // First, try the standard play method
+        await audio.play().catch(async (error) => {
+          console.warn(`First play attempt for ${type} sound failed, trying alternative approach:`, error);
+          
+          // On failure, create a new instance
+          const newAudio = new Audio(type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath);
+          newAudio.volume = audio.volume;
+          
+          // Try to play with the new instance
+          await newAudio.play().catch(secondError => {
+            console.error(`Second play attempt for ${type} sound failed:`, secondError);
+            toast({
+              title: 'Audio Playback Notice',
+              description: `Please tap or click the screen once to enable sound for ${type === 'start' ? 'start' : 'end'} sound.`,
+              variant: 'default'
+            });
+          });
+          
+          // If we got here without throwing, update our reference
+          if (type === 'start') {
+            this.goSound = newAudio;
+          } else {
+            this.whistleSound = newAudio;
+          }
         });
-      });
+        
+        console.log(`${type} sound played successfully`);
+      } catch (finalError) {
+        console.error(`All play attempts for ${type} sound failed:`, finalError);
+      }
     } catch (error) {
       console.error(`Unexpected error playing ${type} sound:`, error);
     }
