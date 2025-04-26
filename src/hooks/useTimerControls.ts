@@ -19,7 +19,7 @@ export const useTimerControls = (state: TimerState) => {
   } = state;
 
   // Initialize audio hooks with correct muting state
-  const { playStartSound, playEndSound, audioStore } = useTimerAudio(isMuted);
+  const { playStartSound, playEndSound } = useTimerAudio(isMuted);
 
   // Create refs for timer settings
   const timerRef = useRef<{
@@ -114,7 +114,6 @@ export const useTimerControls = (state: TimerState) => {
     timerRef,
     intervalStore,
     pendingTimeUpdateRef: state.pendingTimeUpdateRef,
-    audioStore,
     playStartSound,
     playEndSound,
   };

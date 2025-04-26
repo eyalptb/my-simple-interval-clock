@@ -18,13 +18,28 @@ class AudioService {
   private goSound: HTMLAudioElement;
   private whistleSound: HTMLAudioElement;
   private audioInitialized: boolean = false;
+  private audioContext: AudioContext | null = null;
+  private startAudioBuffer: AudioBuffer | null = null;
+  private endAudioBuffer: AudioBuffer | null = null;
 
   private constructor() {
+    // Create audio elements
     this.goSound = new Audio(this.audioConfig.startSoundPath);
     this.whistleSound = new Audio(this.audioConfig.endSoundPath);
     
     this.setupAudioElement(this.goSound, 'start');
     this.setupAudioElement(this.whistleSound, 'end');
+    
+    // Try to initialize WebAudio API if available
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContext) {
+        this.audioContext = new AudioContext();
+        console.log('Audio Context created successfully');
+      }
+    } catch (e) {
+      console.log('WebAudio API not supported, falling back to HTML Audio API');
+    }
     
     console.log('Audio Service initialized with paths:', this.audioConfig);
   }
@@ -51,11 +66,72 @@ class AudioService {
     return AudioService.instance;
   }
 
+  // Improved method to initialize audio context and load buffers
+  public async initializeAudioContext(): Promise<void> {
+    if (!this.audioContext) {
+      try {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        this.audioContext = new AudioContext();
+        console.log('Audio Context initialized on user interaction');
+      } catch (e) {
+        console.error('Failed to create audio context:', e);
+        return;
+      }
+    }
+    
+    // Resume audio context if suspended
+    if (this.audioContext.state === 'suspended') {
+      try {
+        await this.audioContext.resume();
+        console.log('Audio context resumed successfully');
+      } catch (e) {
+        console.error('Failed to resume audio context:', e);
+      }
+    }
+    
+    // Load audio buffers if not already loaded
+    if (!this.startAudioBuffer) {
+      this.loadAudioBuffer(this.audioConfig.startSoundPath, 'start');
+    }
+    
+    if (!this.endAudioBuffer) {
+      this.loadAudioBuffer(this.audioConfig.endSoundPath, 'end');
+    }
+  }
+  
+  private async loadAudioBuffer(url: string, type: 'start' | 'end'): Promise<void> {
+    if (!this.audioContext) return;
+    
+    try {
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      
+      this.audioContext.decodeAudioData(
+        arrayBuffer, 
+        (buffer) => {
+          if (type === 'start') {
+            this.startAudioBuffer = buffer;
+            console.log('Start sound buffer loaded');
+          } else {
+            this.endAudioBuffer = buffer;
+            console.log('End sound buffer loaded');
+          }
+        },
+        (error) => console.error(`Error decoding ${type} sound:`, error)
+      );
+    } catch (error) {
+      console.error(`Error loading ${type} sound buffer:`, error);
+    }
+  }
+
   // New method to initialize both sounds silently
   public async initializeSounds(): Promise<void> {
     if (this.audioInitialized) return;
     
     try {
+      // Try to initialize Web Audio API
+      await this.initializeAudioContext();
+      
       // Create separate temporary audio objects specifically for initialization
       const tempStart = new Audio(this.audioConfig.startSoundPath);
       const tempEnd = new Audio(this.audioConfig.endSoundPath);
@@ -66,8 +142,12 @@ class AudioService {
       
       // Try to play both sounds silently and catch any errors
       await Promise.all([
-        tempStart.play().catch(() => {}),
-        tempEnd.play().catch(() => {})
+        tempStart.play().catch(() => {
+          console.log('Silent start initialization - expected error on iOS');
+        }),
+        tempEnd.play().catch(() => {
+          console.log('Silent end initialization - expected error on iOS');
+        })
       ]);
       
       // Stop them immediately
@@ -87,33 +167,58 @@ class AudioService {
   }
 
   public async playSound(type: 'start' | 'end'): Promise<void> {
+    // First, try to ensure audio context is ready
+    await this.initializeAudioContext();
+    
     try {
+      // Try to play using Web Audio API first if available
+      if (this.audioContext && 
+          ((type === 'start' && this.startAudioBuffer) || 
+           (type === 'end' && this.endAudioBuffer))) {
+          
+        const buffer = type === 'start' ? this.startAudioBuffer : this.endAudioBuffer;
+        if (buffer) {
+          const source = this.audioContext.createBufferSource();
+          source.buffer = buffer;
+          source.connect(this.audioContext.destination);
+          source.start(0);
+          console.log(`${type} sound played using Web Audio API`);
+          return;
+        }
+      }
+      
+      // Fall back to HTML Audio API
       const audio = type === 'start' ? this.goSound : this.whistleSound;
       
-      // Reset and play
+      // Reset and prepare to play
       audio.currentTime = 0;
       
-      // Try to play with a more robust approach
+      // Try multiple play strategies
       try {
-        // First, try the standard play method
+        // First attempt: standard play
         await audio.play().catch(async (error) => {
-          console.warn(`First play attempt for ${type} sound failed, trying alternative approach:`, error);
+          console.warn(`First play attempt for ${type} sound failed, trying alternative:`, error);
           
-          // On failure, create a new instance
+          // Second attempt: create a new audio instance on failure
           const newAudio = new Audio(type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath);
-          newAudio.volume = audio.volume;
+          newAudio.volume = 1.0;
           
-          // Try to play with the new instance
-          await newAudio.play().catch(secondError => {
-            console.error(`Second play attempt for ${type} sound failed:`, secondError);
-            toast({
-              title: 'Audio Playback Notice',
-              description: `Please tap or click the screen once to enable sound for ${type === 'start' ? 'start' : 'end'} sound.`,
-              variant: 'default'
-            });
+          await newAudio.play().catch(e => {
+            // Last resort: show user a toast suggesting interaction
+            console.error(`All play attempts for ${type} sound failed:`, e);
+            
+            // Only show toast for problematic devices
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            if (isIOS) {
+              toast({
+                title: 'Audio Playback',
+                description: `Tap anywhere on screen to enable ${type === 'start' ? 'start' : 'end'} sounds.`,
+                duration: 3000,
+              });
+            }
           });
           
-          // If we got here without throwing, update our reference
+          // If second attempt succeeded, update our reference
           if (type === 'start') {
             this.goSound = newAudio;
           } else {

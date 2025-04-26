@@ -1,121 +1,56 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import AudioService from '@/services/AudioService';
-import goMp3 from '@/assets/audio/go.mp3';
-import whistleMp3 from '@/assets/audio/whistle.mp3';
-
-interface AudioStore {
-  startSound: HTMLAudioElement | null;
-  endSound: HTMLAudioElement | null;
-  attemptedToPlay: boolean;
-  audioContext: AudioContext | null;
-}
 
 export const useTimerAudio = (isMuted: boolean) => {
-  const audioStore = useRef<AudioStore>({
-    startSound: null,
-    endSound: null,
-    attemptedToPlay: false,
-    audioContext: null
-  });
-  
+  // We'll use a ref to track if we've tried to initialize audio
+  const hasInitialized = useRef(false);
   const audioService = AudioService.getInstance();
 
+  // Enhanced initialization with multiple user interaction events
   useEffect(() => {
-    // Create audio elements
-    if (!audioStore.current.startSound) {
-      audioStore.current.startSound = new Audio(goMp3);
-      audioStore.current.startSound.volume = 1.0;
-      audioStore.current.startSound.preload = "auto";
-    }
+    if (hasInitialized.current) return;
     
-    if (!audioStore.current.endSound) {
-      audioStore.current.endSound = new Audio(whistleMp3);
-      audioStore.current.endSound.volume = 1.0;
-      audioStore.current.endSound.preload = "auto";
-    }
-    
-    // Better initialization approach for iOS compatibility
-    const initializeAudioContext = () => {
-      try {
-        if (!audioStore.current.audioContext) {
-          // Use type assertion to handle webkit prefix
-          const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-          audioStore.current.audioContext = new AudioContext();
-          console.log('Audio context initialized successfully');
-        }
-        
-        // Enhanced preloading of audio files - both sounds at once
-        const preloadAudio = async () => {
-          try {
-            // Create separate temporary Audio objects for initialization
-            // This prevents interference with the main audio objects
-            const tempStart = new Audio(goMp3);
-            const tempEnd = new Audio(whistleMp3);
-            
-            // Set to silent
-            tempStart.volume = 0;
-            tempEnd.volume = 0;
-            
-            // Play and immediately pause both
-            await Promise.all([
-              tempStart.play().catch(() => console.log("Silent start init - expected error on iOS")),
-              tempEnd.play().catch(() => console.log("Silent end init - expected error on iOS"))
-            ]);
-            
-            // Pause immediately
-            setTimeout(() => {
-              tempStart.pause();
-              tempEnd.pause();
-              console.log("Both sounds initialized silently");
-            }, 10);
-            
-            // Also initialize the service's audio objects separately
-            audioService.initializeSounds();
-            
-          } catch (e) {
-            console.log("Silent initialization attempt completed");
-          }
-        };
-        
-        // Run the preloader
-        preloadAudio();
-        
-      } catch (error) {
-        console.error('Failed to initialize audio context:', error);
-      }
+    const initializeAudio = () => {
+      audioService.initializeAudioContext()
+        .then(() => {
+          // After successfully initializing, try to load and pre-initialize both sounds
+          audioService.initializeSounds();
+          hasInitialized.current = true;
+        });
     };
 
-    // Add event listeners to try initializing audio on various interactions
-    const initEvents = ['touchstart', 'click', 'mousedown', 'keydown'];
-    const initHandler = () => {
-      initializeAudioContext();
-      // Remove all listeners after first interaction
-      initEvents.forEach(event => {
-        document.removeEventListener(event, initHandler);
-      });
-    };
-
-    // Add listeners for all events
-    initEvents.forEach(event => {
-      document.addEventListener(event, initHandler, { once: true });
+    // Add event listeners for common user interactions
+    const userEvents = ['touchstart', 'mousedown', 'keydown', 'click'];
+    
+    // Create one-time event handlers for each event
+    const eventHandlers = userEvents.map(eventName => {
+      const handler = () => {
+        console.log(`Audio initialized via ${eventName} event`);
+        initializeAudio();
+        // Remove all event listeners after first interaction
+        userEvents.forEach((event, i) => {
+          document.removeEventListener(event, eventHandlers[i]);
+        });
+      };
+      
+      // Add the event listener
+      document.addEventListener(eventName, handler, { once: true });
+      return handler;
     });
     
+    // We should also try to initialize immediately in case permissions already exist
+    initializeAudio();
+    
+    // Clean up function
     return () => {
-      // Cleanup listeners and sounds
-      initEvents.forEach(event => {
-        document.removeEventListener(event, initHandler);
+      userEvents.forEach((event, i) => {
+        document.removeEventListener(event, eventHandlers[i]);
       });
-      
-      if (audioStore.current.startSound) {
-        audioStore.current.startSound.pause();
-      }
-      if (audioStore.current.endSound) {
-        audioStore.current.endSound.pause();
-      }
     };
   }, [audioService]);
 
+  // Simple wrapper for playing sounds through the service
   const playSound = useCallback(async (type: 'start' | 'end') => {
     if (isMuted) {
       console.log('Audio is muted, not playing sound');
@@ -123,12 +58,6 @@ export const useTimerAudio = (isMuted: boolean) => {
     }
     
     try {
-      // Ensure the audio context is resumed before playing
-      if (audioStore.current.audioContext && audioStore.current.audioContext.state === 'suspended') {
-        await audioStore.current.audioContext.resume();
-      }
-      
-      // Use the audio service to play the sound
       await audioService.playSound(type);
     } catch (error) {
       console.error(`Error playing ${type} sound:`, error);
@@ -138,6 +67,6 @@ export const useTimerAudio = (isMuted: boolean) => {
   return {
     playStartSound: () => playSound('start'),
     playEndSound: () => playSound('end'),
-    audioStore
+    // We don't need to expose audioStore anymore since AudioService handles state
   };
 };
