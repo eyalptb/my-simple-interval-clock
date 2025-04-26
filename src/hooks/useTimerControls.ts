@@ -40,12 +40,14 @@ export const useTimerControls = (state: TimerState) => {
   const intervalStore = useRef<{ id?: number }>({});
   const lastActionTime = useRef<number>(0);
   const soundPlayedForThisSession = useRef<boolean>(false);
+  const wasRecentlyPaused = useRef<boolean>(false);
 
   const startTimer = () => {
     // Removed delay check
     
-    if (!state.isRunning && (minutes > 0 || seconds > 0)) {
-      if (!state.isResting) {
+    // Fix for issue #1: Allow timer to start even at 00:00 when in paused state
+    if ((!state.isRunning && (minutes > 0 || seconds > 0)) || state.isPaused) {
+      if (!state.isResting && !state.isPaused) {
         timerRef.current = {
           workoutMin: minutes,
           workoutSec: seconds,
@@ -54,15 +56,21 @@ export const useTimerControls = (state: TimerState) => {
         };
       }
       
-      prepareStartSound();
-      soundPlayedForThisSession.current = false;
+      // Only prepare and play start sound if not resuming from pause
+      if (!state.isPaused) {
+        prepareStartSound();
+        soundPlayedForThisSession.current = false;
+        
+        setTimeout(() => {
+          playStartSound();
+        }, 100);
+      } else {
+        // Mark that we're resuming from pause to avoid playing sound
+        wasRecentlyPaused.current = true;
+      }
       
       setIsRunning(true);
       setIsPaused(false);
-      
-      setTimeout(() => {
-        playStartSound();
-      }, 100);
     }
   };
 
@@ -109,6 +117,7 @@ export const useTimerControls = (state: TimerState) => {
     setRestSecondsState(0);
     
     soundPlayedForThisSession.current = false;
+    wasRecentlyPaused.current = false;
     
     return {
       minutes: 0,
@@ -129,6 +138,7 @@ export const useTimerControls = (state: TimerState) => {
     pendingTimeUpdateRef: state.pendingTimeUpdateRef,
     playStartSound,
     playEndSound,
-    registerPlusButton
+    registerPlusButton,
+    wasRecentlyPaused
   };
 };

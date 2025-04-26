@@ -14,6 +14,7 @@ export const useTimerInterval = (
     resetTimer: () => void;
     playStartSound: () => void;
     playEndSound: () => void;
+    wasRecentlyPaused?: React.MutableRefObject<boolean>;
   }
 ) => {
   const intervalStore = useRef<{ id?: number }>({});
@@ -33,6 +34,11 @@ export const useTimerInterval = (
     if (!isRunning) return;
     
     const intervalId = window.setInterval(() => {
+      // Reset the paused flag after first tick
+      if (controls.wasRecentlyPaused && controls.wasRecentlyPaused.current) {
+        controls.wasRecentlyPaused.current = false;
+      }
+      
       if (seconds > 0) {
         state.setSecondsState(seconds - 1);
       } else if (minutes > 0) {

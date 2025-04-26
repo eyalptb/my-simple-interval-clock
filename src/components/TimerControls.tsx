@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import ControlButtons from './timer/ControlButtons';
@@ -147,7 +148,7 @@ const TimerControls: React.FC = () => {
       <ControlButtons 
         isRunning={isRunning}
         isMuted={isMuted}
-        canStart={minutes > 0 || seconds > 0}
+        canStart={minutes > 0 || seconds > 0 || isPaused}
         onStart={startTimer}
         onPause={pauseTimer}
         onReset={handleReset}

@@ -36,7 +36,7 @@ interface TimerContextType {
   decrementRestSeconds: () => void;
   incrementRestMinutes: () => void;
   decrementRestMinutes: () => void;
-  registerPlusButton: () => void; // Added the missing property
+  registerPlusButton: () => void;
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);

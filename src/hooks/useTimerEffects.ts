@@ -20,6 +20,7 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     resetTimer, 
     playStartSound, 
     playEndSound,
+    wasRecentlyPaused
   } = controls;
   
   // Pass the sound functions to the interval handler
@@ -28,6 +29,7 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     resetTimer,
     playStartSound,
     playEndSound,
+    wasRecentlyPaused
   });
 
   // Update timer reference when values change
