@@ -146,18 +146,17 @@ class AudioService {
   }
 
   public registerReset(): void {
-    this.isResetOperation = true;
-    
     if (this.isIOSDevice) {
       this.iOSHandler.registerResetPress();
     }
     
-    console.log('Reset operation registered - progress sounds blocked');
+    console.log('Reset operation registered');
     
+    this.isResetOperation = true;
     setTimeout(() => {
       this.isResetOperation = false;
       console.log('Reset operation cleared');
-    }, 30000);
+    }, 3000);
   }
 
   public setMute(muted: boolean): void {
