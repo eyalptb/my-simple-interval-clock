@@ -42,12 +42,8 @@ export const useTimerControls = (state: TimerState) => {
   const soundPlayedForThisSession = useRef<boolean>(false);
 
   const startTimer = () => {
-    const now = Date.now();
-    if (now - lastActionTime.current < 3000) {
-      return;
-    }
-    lastActionTime.current = now;
-
+    // Removed delay check
+    
     if (!state.isRunning && (minutes > 0 || seconds > 0)) {
       if (!state.isResting) {
         timerRef.current = {
@@ -71,11 +67,7 @@ export const useTimerControls = (state: TimerState) => {
   };
 
   const pauseTimer = () => {
-    const now = Date.now();
-    if (now - lastActionTime.current < 3000) {
-      return;
-    }
-    lastActionTime.current = now;
+    // Removed delay check
     
     if (state.isRunning) {
       setIsRunning(false);

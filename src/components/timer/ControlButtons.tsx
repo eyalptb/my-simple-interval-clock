@@ -23,11 +23,8 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   onReset,
   onToggleMute,
 }) => {
-  // Track click times with longer prevention periods
-  const [lastClickTime, setLastClickTime] = useState<number>(0);
+  // Track click times with longer prevention periods for reset only
   const [lastResetTime, setLastResetTime] = useState<number>(0);
-  const [lastStartTime, setLastStartTime] = useState<number>(0);
-  const [lastPauseTime, setLastPauseTime] = useState<number>(0);
   const [lastMuteTime, setLastMuteTime] = useState<number>(0);
   
   // Enhanced reset button handler
@@ -42,8 +39,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
       return;
     }
     
-    // Update timestamps
-    setLastClickTime(now);
+    // Update timestamp
     setLastResetTime(now);
     
     console.log("Reset button clicked - registering silent reset");
@@ -55,72 +51,29 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
     onReset();
   };
   
-  // Start button with improved handling
+  // Start button with no delay
   const handleStart = () => {
-    const now = Date.now();
-    
-    // Global click cooldown
-    if (now - lastClickTime < 1000) {
-      console.log("Ignored rapid click - global cooldown");
-      return;
-    }
-    
-    // Button-specific cooldown (3 seconds)
-    if (now - lastStartTime < 3000) {
-      console.log("Ignored rapid start click - must wait 3 seconds");
-      return;
-    }
-    
-    setLastClickTime(now);
-    setLastStartTime(now);
-    
     // Prepare audio service for start sound
     AudioService.getInstance().prepareStartSound();
-    
     onStart();
   };
   
-  // Pause button with rate limiting
+  // Pause button with no delay
   const handlePause = () => {
-    const now = Date.now();
-    
-    // Global click cooldown
-    if (now - lastClickTime < 1000) {
-      console.log("Ignored rapid click - global cooldown");
-      return;
-    }
-    
-    // Button-specific cooldown (2 seconds)
-    if (now - lastPauseTime < 2000) {
-      console.log("Ignored rapid pause click");
-      return;
-    }
-    
-    setLastClickTime(now);
-    setLastPauseTime(now);
-    
     onPause();
   };
   
-  // Mute button
+  // Mute button with shorter delay
   const handleToggleMute = () => {
     const now = Date.now();
     
-    // Global click cooldown
-    if (now - lastClickTime < 1000) {
-      console.log("Ignored rapid click - global cooldown");
-      return;
-    }
-    
-    // Button-specific cooldown (1.5 seconds)
-    if (now - lastMuteTime < 1500) {
+    // Button-specific cooldown (1 second)
+    if (now - lastMuteTime < 1000) {
       console.log("Ignored rapid mute click");
       return;
     }
     
-    setLastClickTime(now);
     setLastMuteTime(now);
-    
     onToggleMute();
   };
 
