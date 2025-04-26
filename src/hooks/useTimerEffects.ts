@@ -20,16 +20,14 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     resetTimer, 
     playStartSound, 
     playEndSound,
-    isInResetState
   } = controls;
   
-  // Pass the sound functions and isInResetState to the interval handler
+  // Pass the sound functions to the interval handler
   const intervalStore = useTimerInterval(state, {
     timerRef,
     resetTimer,
     playStartSound,
     playEndSound,
-    isInResetState
   });
 
   // Update timer reference when values change
