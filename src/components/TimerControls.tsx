@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import ControlButtons from './timer/ControlButtons';
@@ -35,21 +36,26 @@ const TimerControls: React.FC = () => {
     registerPlusButton
   } = useTimer();
 
-  // Store input values
+  // Store input values - these should be the configured values, not the running countdown
   const [inputMinutes, setInputMinutes] = React.useState(minutes);
   const [inputSeconds, setInputSeconds] = React.useState(seconds);
   const [inputRestMinutes, setInputRestMinutes] = React.useState(restMinutes);
   const [inputRestSeconds, setInputRestSeconds] = React.useState(restSeconds);
-  const [lastButtonClick, setLastButtonClick] = React.useState<number>(0);
 
-  // Update input display values when timer state changes
+  // Update input display values when timer state changes and timer is not running
   React.useEffect(() => {
-    console.log("Effect triggered - timer state changed:", { minutes, seconds, restMinutes, restSeconds });
     if (!isRunning && !isPaused) {
       setInputMinutes(minutes);
       setInputSeconds(seconds);
       setInputRestMinutes(restMinutes);
       setInputRestSeconds(restSeconds);
+      
+      console.log("Input values updated:", {
+        inputMinutes: minutes,
+        inputSeconds: seconds,
+        inputRestMinutes: restMinutes,
+        inputRestSeconds: restSeconds
+      });
     }
   }, [minutes, seconds, restMinutes, restSeconds, isRunning, isPaused]);
 

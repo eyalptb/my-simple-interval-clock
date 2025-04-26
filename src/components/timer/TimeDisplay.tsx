@@ -43,6 +43,8 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
   const displayTitle = isRest ? "Rest Time" : title;
   
   // Determine which values to show based on timer state
+  // When running, show the current countdown values
+  // When not running, show the input values
   const showMinutes = isRunning || isPaused ? minutes : displayMinutes;
   const showSeconds = isRunning || isPaused ? seconds : displaySeconds;
 
@@ -75,7 +77,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
                 />
               ) : (
                 <span className="text-lg font-bold">
-                  {showMinutes.toString().padStart(2, '0')}
+                  {displayMinutes.toString().padStart(2, '0')}
                 </span>
               )}
             </div>
@@ -111,7 +113,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
                 />
               ) : (
                 <span className="text-lg font-bold">
-                  {showSeconds.toString().padStart(2, '0')}
+                  {displaySeconds.toString().padStart(2, '0')}
                 </span>
               )}
             </div>
