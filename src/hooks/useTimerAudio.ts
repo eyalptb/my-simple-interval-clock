@@ -21,6 +21,34 @@ export const useTimerAudio = (isMuted: boolean) => {
     end: false
   });
 
+  // Function to manually force a short beep sound
+  const playFallbackBeep = (duration = 300, frequency = 800, volume = 0.5) => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      gainNode.gain.value = volume;
+      oscillator.frequency.value = frequency;
+      oscillator.type = 'sine';
+      
+      oscillator.start();
+      
+      setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, duration);
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to play fallback beep:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     const audioService = AudioService.getInstance();
     
@@ -74,6 +102,10 @@ export const useTimerAudio = (isMuted: boolean) => {
     if (startSound) startSound.load();
     if (endSound) endSound.load();
     
+    // Try to manually pre-trigger audio context to work around autoplay restrictions
+    const silentContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    silentContext.close();
+    
     return () => {
       if (audioStore.current.startSound) {
         audioStore.current.startSound.pause();
@@ -112,14 +144,17 @@ export const useTimerAudio = (isMuted: boolean) => {
             .catch(error => {
               console.error(`Error playing ${type} sound:`, error);
               
-              // Fall back to the default beep sound
-              const audioService = AudioService.getInstance();
-              const beepSound = audioService.createBeep();
-              
-              if (beepSound) {
-                beepSound.play().catch(e => {
-                  console.error('Fallback beep also failed:', e);
-                });
+              // Try the Web Audio API fallback beep sound
+              if (!playFallbackBeep()) {
+                // Fall back to the default beep sound
+                const audioService = AudioService.getInstance();
+                const beepSound = audioService.createBeep();
+                
+                if (beepSound) {
+                  beepSound.play().catch(e => {
+                    console.error('Fallback beep also failed:', e);
+                  });
+                }
               }
               
               // Only show the toast on the first attempt
@@ -134,19 +169,14 @@ export const useTimerAudio = (isMuted: boolean) => {
         }
       } catch (error) {
         console.error(`Error playing ${type} sound:`, error);
+        // Try fallback beep
+        playFallbackBeep();
       }
     } else {
       console.error(`${type} sound is not available`);
       
-      // Try to use the fallback beep
-      const audioService = AudioService.getInstance();
-      const beepSound = audioService.createBeep();
-      
-      if (beepSound) {
-        beepSound.play().catch(e => {
-          console.error('Fallback beep failed:', e);
-        });
-      }
+      // Try to use the Web Audio API fallback
+      playFallbackBeep();
     }
   };
 
