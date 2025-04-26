@@ -41,7 +41,6 @@ class AudioService {
   }
 
   public async playSound(type: 'start' | 'end'): Promise<void> {
-    // We'll use a more direct and forceful approach to play audio
     try {
       // Create a fresh instance every time to avoid any playback issues
       const audio = new Audio(type === 'start' ? 
@@ -54,15 +53,10 @@ class AudioService {
       
       console.log(`Playing ${type} sound`);
       
-      // Try to play the sound multiple times if needed
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch(error => {
           console.error(`Error playing ${type} sound:`, error);
-          // Try again with user interaction simulation
-          document.addEventListener('click', () => {
-            audio.play().catch(e => console.error('Second attempt failed:', e));
-          }, { once: true });
         });
       }
     } catch (error) {

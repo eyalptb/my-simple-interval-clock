@@ -44,11 +44,9 @@ export const useTimerControls = (state: TimerState) => {
         };
       }
       
-      // Force play start sound when timer begins
-      setTimeout(() => {
-        console.log("Timer started: Playing start sound");
-        playStartSound();
-      }, 10);
+      // Play start sound when timer begins
+      playStartSound();
+      console.log("Timer started: Playing start sound");
       
       setIsRunning(true);
       setIsPaused(false);

@@ -3,15 +3,15 @@ import { useEffect, useRef, useCallback } from 'react';
 import AudioService from '@/services/AudioService';
 
 interface AudioStore {
-  startSound: HTMLAudioElement | undefined;
-  endSound: HTMLAudioElement | undefined;
+  startSound: HTMLAudioElement | null;
+  endSound: HTMLAudioElement | null;
   attemptedToPlay: boolean;
 }
 
 export const useTimerAudio = (isMuted: boolean) => {
   const audioStore = useRef<AudioStore>({
-    startSound: undefined,
-    endSound: undefined,
+    startSound: null,
+    endSound: null,
     attemptedToPlay: false
   });
   
@@ -20,8 +20,17 @@ export const useTimerAudio = (isMuted: boolean) => {
   // Initialize the audio on component mount
   useEffect(() => {
     // Create audio elements
-    audioStore.current.startSound = audioService.createAudio('start');
-    audioStore.current.endSound = audioService.createAudio('end');
+    if (!audioStore.current.startSound) {
+      audioStore.current.startSound = new Audio('/assets/audio/go.mp3');
+      audioStore.current.startSound.volume = 1.0;
+      audioStore.current.startSound.preload = "auto";
+    }
+    
+    if (!audioStore.current.endSound) {
+      audioStore.current.endSound = new Audio('/assets/audio/whistle.mp3');
+      audioStore.current.endSound.volume = 1.0;
+      audioStore.current.endSound.preload = "auto";
+    }
     
     console.log('Audio files initialized in useTimerAudio');
 
@@ -53,9 +62,35 @@ export const useTimerAudio = (isMuted: boolean) => {
     }
     
     try {
-      // Use the singleton AudioService to play sounds
-      await audioService.playSound(type);
-      audioStore.current.attemptedToPlay = true;
+      const audio = type === 'start' ? audioStore.current.startSound : audioStore.current.endSound;
+      
+      if (audio) {
+        // Reset the audio to start
+        audio.currentTime = 0;
+        
+        console.log(`Playing ${type} sound`);
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.error(`Error playing ${type} sound:`, error);
+            
+            // Create a fresh audio element and try again
+            const newAudio = new Audio(type === 'start' ? '/assets/audio/go.mp3' : '/assets/audio/whistle.mp3');
+            newAudio.volume = 1.0;
+            newAudio.play().catch(e => console.error('Second attempt failed:', e));
+            
+            // Update the reference
+            if (type === 'start') {
+              audioStore.current.startSound = newAudio;
+            } else {
+              audioStore.current.endSound = newAudio;
+            }
+          });
+        }
+        
+        audioStore.current.attemptedToPlay = true;
+      }
     } catch (error) {
       console.error(`Error in useTimerAudio playing ${type} sound:`, error);
     }
