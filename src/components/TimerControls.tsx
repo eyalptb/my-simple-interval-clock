@@ -42,6 +42,7 @@ const TimerControls: React.FC = () => {
 
   // Update input display values when timer state changes (including resets)
   React.useEffect(() => {
+    console.log("Effect triggered - timer state changed:", { minutes, seconds, restMinutes, restSeconds });
     if (!isRunning && !isPaused) {
       setInputMinutes(minutes);
       setInputSeconds(seconds);
@@ -86,16 +87,17 @@ const TimerControls: React.FC = () => {
 
   // Custom reset handler to ensure the reset happens properly
   const handleReset = () => {
-    console.log("Reset button clicked");
+    console.log("Reset button clicked in TimerControls");
     resetTimer();
     
     // Force update the input values immediately after reset
     setTimeout(() => {
+      console.log("Updating input fields after reset", { minutes, seconds, restMinutes, restSeconds });
       setInputMinutes(minutes);
       setInputSeconds(seconds);
       setInputRestMinutes(restMinutes);
       setInputRestSeconds(restSeconds);
-    }, 0);
+    }, 10);
   };
 
   return (

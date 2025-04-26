@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Play, Pause, Volume, VolumeX } from 'lucide-react';
+import { Play, Pause, Volume, VolumeX, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ControlButtonsProps {
@@ -23,7 +23,9 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   onToggleMute,
 }) => {
   // Debug handler for reset button to ensure click is captured
-  const handleResetClick = () => {
+  const handleResetClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("Reset button clicked inside ControlButtons");
     onReset();
   };
@@ -36,7 +38,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         onClick={handleResetClick}
         className="rounded-full bg-[#ea384c] hover:bg-[#d1323e] text-white border-none relative group"
       >
-        <span className="absolute font-bold text-sm group-hover:text-white">R</span>
+        <RefreshCw className="h-5 w-5" />
       </Button>
       
       {!isRunning ? (
