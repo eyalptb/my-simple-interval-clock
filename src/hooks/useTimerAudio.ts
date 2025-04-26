@@ -1,13 +1,16 @@
-
 import { useEffect, useRef, useCallback } from 'react';
 import AudioService from '@/services/AudioService';
+import { useIOSTimerAudio } from './useIOSTimerAudio';
 
 export const useTimerAudio = (isMuted: boolean) => {
   const hasInitialized = useRef(false);
   const audioService = AudioService.getInstance();
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  
+  const iOSAudio = useIOSTimerAudio(isMuted);
   
   useEffect(() => {
-    if (hasInitialized.current) return;
+    if (hasInitialized.current || isIOS) return;
     
     const initializeAudio = () => {
       audioService.initializeAudioContext()
@@ -37,40 +40,54 @@ export const useTimerAudio = (isMuted: boolean) => {
         document.removeEventListener(event, eventHandlers[i]);
       });
     };
-  }, [audioService]);
+  }, [audioService, isIOS]);
 
   useEffect(() => {
-    audioService.setMute(isMuted);
-  }, [isMuted, audioService]);
+    if (!isIOS) {
+      audioService.setMute(isMuted);
+    }
+  }, [isMuted, audioService, isIOS]);
 
   const playStartSound = useCallback(async () => {
     if (isMuted) return;
     
-    try {
-      audioService.prepareStartSound();
-      await audioService.playSound('start');
-    } catch (error) {
-      console.error('Error playing start sound:', error);
+    if (isIOS) {
+      await iOSAudio.playStartSound();
+    } else {
+      try {
+        audioService.prepareStartSound();
+        await audioService.playSound('start');
+      } catch (error) {
+        console.error('Error playing start sound:', error);
+      }
     }
-  }, [isMuted, audioService]);
+  }, [isMuted, audioService, isIOS, iOSAudio]);
 
   const playEndSound = useCallback(async () => {
     if (isMuted) return;
     
-    try {
-      await audioService.playSound('end');
-    } catch (error) {
-      console.error('Error playing end sound:', error);
+    if (isIOS) {
+      await iOSAudio.playEndSound();
+    } else {
+      try {
+        await audioService.playSound('end');
+      } catch (error) {
+        console.error('Error playing end sound:', error);
+      }
     }
-  }, [isMuted, audioService]);
+  }, [isMuted, audioService, isIOS, iOSAudio]);
 
   const registerReset = useCallback(() => {
-    audioService.registerReset();
-  }, [audioService]);
+    if (!isIOS) {
+      audioService.registerReset();
+    }
+  }, [audioService, isIOS]);
 
   const prepareStartSound = useCallback(() => {
-    audioService.prepareStartSound();
-  }, [audioService]);
+    if (!isIOS) {
+      audioService.prepareStartSound();
+    }
+  }, [audioService, isIOS]);
 
   return {
     playStartSound,
