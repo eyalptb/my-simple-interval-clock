@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { TimerProvider } from '@/contexts/TimerContext';
 import FlipClock from '@/components/FlipClock';
@@ -13,6 +14,9 @@ const Index = () => {
         <div className="container mx-auto px-4 py-8 flex-1 max-w-md">
           <header className="mb-8 text-center">
             <h1 className="text-3xl font-bold tracking-tight">Interval Clock</h1>
+            <h2 className="text-xl mt-2 text-muted-foreground">
+              Enjoy the use of this free online interval timer made with love
+            </h2>
           </header>
           
           <div className="space-y-8">
