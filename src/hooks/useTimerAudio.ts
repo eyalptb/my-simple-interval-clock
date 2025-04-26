@@ -6,8 +6,9 @@ export const useTimerAudio = (isMuted: boolean) => {
   // We'll use a ref to track if we've tried to initialize audio
   const hasInitialized = useRef(false);
   const audioService = AudioService.getInstance();
+  const lastPlayTime = useRef<number>(0);
 
-  // Enhanced initialization with multiple user interaction events
+  // Enhanced initialization with improved iOS support
   useEffect(() => {
     if (hasInitialized.current) return;
     
@@ -50,12 +51,21 @@ export const useTimerAudio = (isMuted: boolean) => {
     };
   }, [audioService]);
 
-  // Simple wrapper for playing sounds through the service
+  // Rate-limited sound player to prevent overlapping sounds
   const playSound = useCallback(async (type: 'start' | 'end') => {
     if (isMuted) {
       console.log('Audio is muted, not playing sound');
       return;
     }
+    
+    // Prevent rapid sound playback
+    const now = Date.now();
+    if (now - lastPlayTime.current < 500) {
+      console.log('Preventing sound overlap - too soon after last play');
+      return;
+    }
+    
+    lastPlayTime.current = now;
     
     try {
       await audioService.playSound(type);
@@ -67,6 +77,5 @@ export const useTimerAudio = (isMuted: boolean) => {
   return {
     playStartSound: () => playSound('start'),
     playEndSound: () => playSound('end'),
-    // We don't need to expose audioStore anymore since AudioService handles state
   };
 };

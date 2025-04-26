@@ -1,6 +1,5 @@
 
 import { useEffect, useRef } from 'react';
-import { toast } from '@/hooks/use-toast';
 import { TimerState } from '@/types/timer';
 
 export const useTimerInterval = (
@@ -58,22 +57,11 @@ export const useTimerInterval = (
             
             state.setMinutesState(controls.timerRef.current.workoutMin);
             state.setSecondsState(controls.timerRef.current.workoutSec);
-            
-            toast({
-              title: `Starting repetition ${currentRepetition + 1} of ${totalRepetitions}`,
-              duration: 3000,
-            });
           } else {
             // Workout completely finished
             isResetOperation.current = true;
             controls.resetTimer();
             isResetOperation.current = false;
-            
-            toast({
-              title: "Workout completed!",
-              description: `Completed all ${totalRepetitions} repetitions.`,
-              duration: 5000,
-            });
           }
         } else {
           // Workout period ended - Play end sound
@@ -99,33 +87,16 @@ export const useTimerInterval = (
               
               state.setMinutesState(controls.timerRef.current.workoutMin);
               state.setSecondsState(controls.timerRef.current.workoutSec);
-              
-              toast({
-                title: `Starting repetition ${currentRepetition + 1} of ${totalRepetitions}`,
-                duration: 3000,
-              });
             } else {
               // Rest time is configured, start rest period
               state.setIsResting(true);
               state.setMinutesState(restMinutes);
               state.setSecondsState(restSeconds);
-              
-              toast({
-                title: "Rest period",
-                description: `Rest for ${restMinutes}:${restSeconds.toString().padStart(2, '0')}`,
-                duration: 3000,
-              });
             }
           } else {
             isResetOperation.current = true;
             controls.resetTimer();
             isResetOperation.current = false;
-            
-            toast({
-              title: "Workout completed!",
-              description: `Completed all ${totalRepetitions} repetitions.`,
-              duration: 5000,
-            });
           }
         }
       }
