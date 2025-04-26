@@ -9,7 +9,7 @@ const WorkoutStatus: React.FC = () => {
     <div className="flex items-center justify-center mb-2">
       {!isRunning && (
         <div className="text-lg font-semibold text-primary text-center">
-          Every rep brings you closer to the best version of yourself
+          Every rep builds a better you
         </div>
       )}
       {isRunning && !isResting && (
@@ -27,3 +27,4 @@ const WorkoutStatus: React.FC = () => {
 };
 
 export default WorkoutStatus;
+
