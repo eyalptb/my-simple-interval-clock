@@ -19,11 +19,45 @@ export const useTimerAudio = (isMuted: boolean) => {
   useEffect(() => {
     const audioService = AudioService.getInstance();
     
+    console.log('Initializing audio files from paths:', {
+      start: audioService['audioConfig'].startSoundPath,
+      end: audioService['audioConfig'].endSoundPath
+    });
+    
+    const startSound = audioService.createAudio('start');
+    const endSound = audioService.createAudio('end');
+    
+    console.log('Audio elements created:', { 
+      startSound: startSound ? 'created' : 'failed',
+      endSound: endSound ? 'created' : 'failed'
+    });
+    
     audioStore.current = {
-      startSound: audioService.createAudio('start'),
-      endSound: audioService.createAudio('end'),
+      startSound,
+      endSound,
       attemptedToPlay: false
     };
+
+    // Add event listeners to monitor audio loading status
+    if (startSound) {
+      startSound.addEventListener('canplaythrough', () => {
+        console.log('Start sound loaded successfully');
+      });
+      
+      startSound.addEventListener('error', (e) => {
+        console.error('Start sound failed to load:', e);
+      });
+    }
+    
+    if (endSound) {
+      endSound.addEventListener('canplaythrough', () => {
+        console.log('End sound loaded successfully');
+      });
+      
+      endSound.addEventListener('error', (e) => {
+        console.error('End sound failed to load:', e);
+      });
+    }
 
     return () => {
       if (audioStore.current.startSound) audioStore.current.startSound.pause();
@@ -42,7 +76,9 @@ export const useTimerAudio = (isMuted: boolean) => {
       try {
         sound.currentTime = 0;
         audioStore.current.attemptedToPlay = true;
+        console.log(`Playing ${type} sound...`);
         await sound.play();
+        console.log(`${type} sound played successfully`);
       } catch (error) {
         console.error(`Error playing ${type} sound:`, error);
         toast({
@@ -51,6 +87,8 @@ export const useTimerAudio = (isMuted: boolean) => {
           variant: 'destructive'
         });
       }
+    } else {
+      console.error(`${type} sound is not available`);
     }
   };
 
