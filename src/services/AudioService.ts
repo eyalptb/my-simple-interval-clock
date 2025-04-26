@@ -9,8 +9,8 @@ interface AudioConfig {
 class AudioService {
   private static instance: AudioService;
   private audioConfig: AudioConfig = {
-    startSoundPath: '/src/assets/audio/go.mp3',
-    endSoundPath: '/src/assets/audio/whistle.mp3'
+    startSoundPath: './src/assets/audio/go.mp3',
+    endSoundPath: './src/assets/audio/whistle.mp3'
   };
   
   private goSound: HTMLAudioElement;
@@ -35,7 +35,7 @@ class AudioService {
       console.error(`Error loading ${type} sound:`, e);
       toast({
         title: 'Audio Error',
-        description: `Could not load ${type} sound`,
+        description: `Could not load ${type} sound. Please check the file path: ${audio.src}`,
         variant: 'destructive'
       });
     };
@@ -58,7 +58,7 @@ class AudioService {
         console.error(`Play ${type} sound error:`, error);
         toast({
           title: 'Audio Playback Error',
-          description: `Could not play ${type} sound`,
+          description: `Could not play ${type} sound. Try interacting with the page first.`,
           variant: 'destructive'
         });
       });
