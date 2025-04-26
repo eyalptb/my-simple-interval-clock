@@ -1,4 +1,3 @@
-
 import { useRef } from 'react';
 import { TimerState, ResetTimerValues } from '@/types/timer';
 import { useTimerAudio } from './useTimerAudio';
@@ -24,8 +23,6 @@ export const useTimerControls = (state: TimerState) => {
   const { 
     playStartSound, 
     playEndSound, 
-    registerReset,
-    prepareStartSound 
   } = useTimerAudio(isMuted);
 
   const timerRef = useRef<{
@@ -68,10 +65,7 @@ export const useTimerControls = (state: TimerState) => {
           setMinutesState(timerRef.current.workoutMin);
           setSecondsState(timerRef.current.workoutSec);
           
-          prepareStartSound();
-          setTimeout(() => {
-            playStartSound();
-          }, 100);
+          playStartSound();
         } else {
           // End of all repetitions
           setIsRunning(false);
@@ -84,12 +78,9 @@ export const useTimerControls = (state: TimerState) => {
       
       // Only prepare and play start sound if not resuming from pause
       if (!state.isPaused) {
-        prepareStartSound();
         soundPlayedForThisSession.current = false;
         
-        setTimeout(() => {
-          playStartSound();
-        }, 100);
+        playStartSound();
       } else {
         // Mark that we're resuming from pause to avoid playing sound
         wasRecentlyPaused.current = true;
@@ -123,8 +114,6 @@ export const useTimerControls = (state: TimerState) => {
     }
     lastActionTime.current = now;
     
-    registerReset();
-    
     if (intervalStore.current.id) {
       window.clearInterval(intervalStore.current.id);
       intervalStore.current.id = undefined;
@@ -135,7 +124,6 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting(false);
     setCurrentRepetition(1);
     
-    // Ensure we explicitly set all values to 0
     setMinutesState(0);
     setSecondsState(0);
     setRestMinutesState(0);
@@ -144,7 +132,6 @@ export const useTimerControls = (state: TimerState) => {
     soundPlayedForThisSession.current = false;
     wasRecentlyPaused.current = false;
     
-    // Force reset values to be 0 in the return object as well
     return {
       minutes: 0,
       seconds: 0,
@@ -152,8 +139,6 @@ export const useTimerControls = (state: TimerState) => {
       restSeconds: 0
     };
   };
-  
-  const registerPlusButton = () => {};
 
   return {
     startTimer,
@@ -164,7 +149,6 @@ export const useTimerControls = (state: TimerState) => {
     pendingTimeUpdateRef: state.pendingTimeUpdateRef,
     playStartSound,
     playEndSound,
-    registerPlusButton,
     wasRecentlyPaused
   };
 };

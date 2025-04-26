@@ -1,8 +1,6 @@
-
 import React, { useState } from 'react';
 import { Play, Pause, Volume, VolumeX, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import AudioService from '@/services/AudioService';
 
 interface ControlButtonsProps {
   isRunning: boolean;
@@ -23,51 +21,34 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   onReset,
   onToggleMute,
 }) => {
-  // Track click times with longer prevention periods for reset only
   const [lastResetTime, setLastResetTime] = useState<number>(0);
   const [lastMuteTime, setLastMuteTime] = useState<number>(0);
   
-  // Enhanced reset button handler
   const handleResetClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Prevent rapid clicking (5 seconds for reset)
     const now = Date.now();
     if (now - lastResetTime < 5000) {
       console.log("Ignored rapid reset click - must wait 5 seconds between resets");
       return;
     }
     
-    // Update timestamp
     setLastResetTime(now);
-    
-    console.log("Reset button clicked - registering silent reset");
-    
-    // Register reset with AudioService
-    AudioService.getInstance().registerReset();
-    
-    // Call the reset function
     onReset();
   };
   
-  // Start button with no delay
   const handleStart = () => {
-    // Prepare audio service for start sound
-    AudioService.getInstance().prepareStartSound();
     onStart();
   };
   
-  // Pause button with no delay
   const handlePause = () => {
     onPause();
   };
   
-  // Mute button with shorter delay
   const handleToggleMute = () => {
     const now = Date.now();
     
-    // Button-specific cooldown (1 second)
     if (now - lastMuteTime < 1000) {
       console.log("Ignored rapid mute click");
       return;

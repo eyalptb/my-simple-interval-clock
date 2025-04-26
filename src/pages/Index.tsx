@@ -1,48 +1,12 @@
-
-import React, { useEffect } from 'react';
+import React from 'react';
 import { TimerProvider } from '@/contexts/TimerContext';
 import FlipClock from '@/components/FlipClock';
 import TimerControls from '@/components/TimerControls';
 import ThemeSelector from '@/components/ThemeSelector';
 import Advertisement from '@/components/Advertisement';
 import WorkoutStatus from '@/components/WorkoutStatus';
-import AudioService from '@/services/AudioService';
 
 const Index = () => {
-  // Initialize audio service on page load
-  useEffect(() => {
-    const audioService = AudioService.getInstance();
-    
-    // Create a handler for user interaction to initialize audio
-    const handleInteraction = () => {
-      audioService.initializeAudioContext().then(() => {
-        audioService.initializeSounds();
-        
-        // Remove the event listeners after successful initialization
-        ['click', 'touchstart', 'keydown'].forEach(event => {
-          document.removeEventListener(event, handleInteraction);
-        });
-      });
-    };
-    
-    // Add event listeners for user interaction
-    ['click', 'touchstart', 'keydown'].forEach(event => {
-      document.addEventListener(event, handleInteraction, { once: true });
-    });
-    
-    // Also try to initialize immediately (may work if permissions already granted)
-    audioService.initializeAudioContext().then(() => {
-      audioService.initializeSounds();
-    });
-    
-    // Cleanup
-    return () => {
-      ['click', 'touchstart', 'keydown'].forEach(event => {
-        document.removeEventListener(event, handleInteraction);
-      });
-    };
-  }, []);
-  
   return (
     <TimerProvider>
       <main className="min-h-screen flex flex-col bg-background">
