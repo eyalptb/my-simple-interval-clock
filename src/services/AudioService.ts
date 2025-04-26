@@ -1,5 +1,7 @@
 
 import { toast } from '@/hooks/use-toast';
+import goMp3 from '@/assets/audio/go.mp3';
+import whistleMp3 from '@/assets/audio/whistle.mp3';
 
 interface AudioConfig {
   startSoundPath: string;
@@ -9,8 +11,8 @@ interface AudioConfig {
 class AudioService {
   private static instance: AudioService;
   private audioConfig: AudioConfig = {
-    startSoundPath: './src/assets/audio/go.mp3',
-    endSoundPath: './src/assets/audio/whistle.mp3'
+    startSoundPath: goMp3,
+    endSoundPath: whistleMp3
   };
   
   private goSound: HTMLAudioElement;

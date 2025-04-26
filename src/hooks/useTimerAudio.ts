@@ -1,6 +1,7 @@
-
 import { useEffect, useRef, useCallback } from 'react';
 import AudioService from '@/services/AudioService';
+import goMp3 from '@/assets/audio/go.mp3';
+import whistleMp3 from '@/assets/audio/whistle.mp3';
 
 interface AudioStore {
   startSound: HTMLAudioElement | null;
@@ -17,17 +18,16 @@ export const useTimerAudio = (isMuted: boolean) => {
   
   const audioService = AudioService.getInstance();
 
-  // Initialize the audio on component mount
   useEffect(() => {
     // Create audio elements
     if (!audioStore.current.startSound) {
-      audioStore.current.startSound = new Audio('./src/assets/audio/go.mp3');
+      audioStore.current.startSound = new Audio(goMp3);
       audioStore.current.startSound.volume = 1.0;
       audioStore.current.startSound.preload = "auto";
     }
     
     if (!audioStore.current.endSound) {
-      audioStore.current.endSound = new Audio('./src/assets/audio/whistle.mp3');
+      audioStore.current.endSound = new Audio(whistleMp3);
       audioStore.current.endSound.volume = 1.0;
       audioStore.current.endSound.preload = "auto";
     }
