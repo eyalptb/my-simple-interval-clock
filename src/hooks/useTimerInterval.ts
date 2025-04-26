@@ -14,6 +14,7 @@ export const useTimerInterval = (
     resetTimer: () => void;
     playStartSound: () => void;
     playEndSound: () => void;
+    isInResetState?: React.MutableRefObject<boolean>;
   }
 ) => {
   const intervalStore = useRef<{ id?: number }>({});
