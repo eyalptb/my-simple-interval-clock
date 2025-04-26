@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useCallback } from 'react';
 import AudioService from '@/services/AudioService';
 import goMp3 from '@/assets/audio/go.mp3';
@@ -32,18 +33,47 @@ export const useTimerAudio = (isMuted: boolean) => {
       audioStore.current.endSound.preload = "auto";
     }
     
-    console.log('Audio files initialized in useTimerAudio');
+    // Initialize audio context for iOS compatibility
+    const initializeAudioContext = () => {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create a silent buffer and play it
+        const buffer = audioContext.createBuffer(1, 1, 22050);
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start(0);
 
-    // Auto-play a silent sound to unlock audio on iOS
-    const unlockAudio = () => {
-      const silentSound = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAJbvABgAABQgGB0REREZGRkfHx8mJiYtLS0zMzM6Ojo/Pz9GRkZNTU1TU1NaWlpgYGBoaGhvb293d3d+fn6EhISKioqSkpKYmJienp6lpaWrq6uxsbG5ubm/v7/FxcXLy8vS0tLY2Nje3t7l5eXr6+vx8fH4+Pj+/v7///8AAAA5TEFNRTMuMTAwAUEAALYgJALkTYAAAA4AA5wBAOgYQD/+M4wC4PHYAQMQAAAP8ZJDkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk/+MYxA8AAANIAAAAABYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhY/+MYxBoFEANYAUwAAFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhY");
-      silentSound.play().catch(() => {});
+        // Attempt to play both sounds to initialize them
+        audioStore.current.startSound?.play().catch(() => {});
+        audioStore.current.endSound?.play().catch(() => {});
+
+        console.log('Audio context initialized for iOS compatibility');
+      } catch (error) {
+        console.error('Failed to initialize audio context:', error);
+      }
     };
-    
-    document.addEventListener('touchstart', unlockAudio, { once: true });
-    document.addEventListener('click', unlockAudio, { once: true });
+
+    // Add event listeners to try initializing audio on various interactions
+    const initEvents = ['touchstart', 'click', 'mousedown'];
+    const initHandler = () => {
+      initializeAudioContext();
+      initEvents.forEach(event => {
+        document.removeEventListener(event, initHandler);
+      });
+    };
+
+    initEvents.forEach(event => {
+      document.addEventListener(event, initHandler, { once: true });
+    });
     
     return () => {
+      // Cleanup listeners and sounds
+      initEvents.forEach(event => {
+        document.removeEventListener(event, initHandler);
+      });
+      
       if (audioStore.current.startSound) {
         audioStore.current.startSound.pause();
       }
@@ -68,3 +98,4 @@ export const useTimerAudio = (isMuted: boolean) => {
     audioStore
   };
 };
+
