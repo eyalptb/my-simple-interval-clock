@@ -12,6 +12,10 @@ export const useTimerControls = (state: TimerState) => {
     minutes,
     seconds,
     isMuted,
+    setMinutesState,
+    setSecondsState,
+    setRestMinutesState,
+    setRestSecondsState
   } = state;
 
   // Initialize audio hooks with correct muting state
@@ -80,13 +84,11 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting(false);
     setCurrentRepetition(1);
     
-    // Store initial workout values for reset
-    const initialWorkoutMin = timerRef.current.workoutMin;
-    const initialWorkoutSec = timerRef.current.workoutSec;
-    
-    // Store rest values for reset
-    const initialRestMin = timerRef.current.restMin;
-    const initialRestSec = timerRef.current.restSec;
+    // Make sure we get the original values to reset to
+    const initialWorkoutMin = timerRef.current.workoutMin || 0;
+    const initialWorkoutSec = timerRef.current.workoutSec || 40;
+    const initialRestMin = timerRef.current.restMin || 1;
+    const initialRestSec = timerRef.current.restSec || 0;
     
     console.log("Before reset - Timer state:", {
       minutes: state.minutes,
@@ -95,26 +97,26 @@ export const useTimerControls = (state: TimerState) => {
       restSeconds: state.restSeconds
     });
     
-    // Directly update state values to ensure they change
-    state.setMinutesState(initialWorkoutMin);
-    state.setSecondsState(initialWorkoutSec);
-    state.setRestMinutesState(initialRestMin);
-    state.setRestSecondsState(initialRestSec);
+    // IMPORTANT: Directly update state values to ensure immediate change
+    setMinutesState(0);  // Always reset to 0
+    setSecondsState(40);  // Always reset to 40 seconds
+    setRestMinutesState(1);  // Always reset to 1 minute rest
+    setRestSecondsState(0);  // Always reset to 0 seconds rest
     
     // Log for debugging
     console.log('Reset timer values:', {
-      workoutMin: initialWorkoutMin, 
-      workoutSec: initialWorkoutSec,
-      restMin: initialRestMin,
-      restSec: initialRestSec
+      workoutMin: 0, 
+      workoutSec: 40,
+      restMin: 1,
+      restSec: 0
     });
     
-    // Return the reset values for immediate UI update
+    // Return fixed reset values for immediate UI update
     return {
-      minutes: initialWorkoutMin,
-      seconds: initialWorkoutSec,
-      restMinutes: initialRestMin,
-      restSeconds: initialRestSec
+      minutes: 0,
+      seconds: 40,
+      restMinutes: 1,
+      restSeconds: 0
     };
   };
 

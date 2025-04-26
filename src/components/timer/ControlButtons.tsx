@@ -22,7 +22,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   onReset,
   onToggleMute,
 }) => {
-  // Debug handler for reset button to ensure click is captured
+  // Enhanced reset button handler with stopPropagation and preventDefault
   const handleResetClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -30,6 +30,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
     // Force a synchronous reset call
     try {
       onReset();
+      console.log("Reset function called successfully");
     } catch (error) {
       console.error("Error during reset:", error);
     }

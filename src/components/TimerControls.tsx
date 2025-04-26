@@ -86,16 +86,36 @@ const TimerControls: React.FC = () => {
     setTotalRepetitions(Math.max(1, totalRepetitions - 1));
   };
 
-  // Custom reset handler to ensure the reset happens properly
+  // Enhanced reset handler with proper error handling
   const handleReset = () => {
     console.log("Reset button clicked in TimerControls");
-    const resetValues: ResetTimerValues = resetTimer();
     
-    console.log("Directly updating input fields after reset", resetValues);
-    setInputMinutes(resetValues.minutes);
-    setInputSeconds(resetValues.seconds);
-    setInputRestMinutes(resetValues.restMinutes);
-    setInputRestSeconds(resetValues.restSeconds);
+    try {
+      // Get reset values and immediately update UI
+      const resetValues: ResetTimerValues = resetTimer();
+      
+      console.log("Directly updating input fields after reset", resetValues);
+      
+      // Force immediate UI update
+      setInputMinutes(resetValues.minutes);
+      setInputSeconds(resetValues.seconds);
+      setInputRestMinutes(resetValues.restMinutes);
+      setInputRestSeconds(resetValues.restSeconds);
+      
+      // Double-check that the context values are updated
+      console.log("After reset - New state values:", {
+        contextMinutes: minutes,
+        contextSeconds: seconds,
+        contextRestMinutes: restMinutes,
+        contextRestSeconds: restSeconds,
+        inputMinutes: resetValues.minutes,
+        inputSeconds: resetValues.seconds,
+        inputRestMinutes: resetValues.restMinutes,
+        inputRestSeconds: resetValues.restSeconds
+      });
+    } catch (error) {
+      console.error("Error in reset handler:", error);
+    }
   };
 
   return (
