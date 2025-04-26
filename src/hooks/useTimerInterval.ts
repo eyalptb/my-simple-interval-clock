@@ -40,9 +40,11 @@ export const useTimerInterval = (
         state.setMinutesState(minutes - 1);
         state.setSecondsState(59);
       } else {
+        // Play the end sound at the end of any period
         controls.playEndSound();
         
         if (isResting) {
+          // When rest period ends, start workout
           if (currentRepetition < totalRepetitions) {
             state.setCurrentRepetition(currentRepetition + 1);
             state.setIsResting(false);
@@ -55,6 +57,7 @@ export const useTimerInterval = (
               duration: 3000,
             });
             
+            // Play start sound when starting next workout after rest
             controls.playStartSound();
           } else {
             controls.resetTimer();
@@ -66,8 +69,10 @@ export const useTimerInterval = (
             });
           }
         } else {
+          // When workout period ends
           if (currentRepetition < totalRepetitions) {
             if (restMinutes === 0 && restSeconds === 0) {
+              // No rest time configured, move directly to next repetition
               state.setCurrentRepetition(currentRepetition + 1);
               
               state.setMinutesState(controls.timerRef.current.workoutMin);
@@ -78,8 +83,10 @@ export const useTimerInterval = (
                 duration: 3000,
               });
               
+              // Play start sound for next workout repetition
               controls.playStartSound();
             } else {
+              // Rest time is configured, start rest period
               state.setIsResting(true);
               state.setMinutesState(restMinutes);
               state.setSecondsState(restSeconds);
@@ -89,6 +96,8 @@ export const useTimerInterval = (
                 description: `Rest for ${restMinutes}:${restSeconds.toString().padStart(2, '0')}`,
                 duration: 3000,
               });
+              
+              // No specific sound for entering rest period - just the end of workout sound already played
             }
           } else {
             controls.resetTimer();

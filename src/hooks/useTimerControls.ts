@@ -14,7 +14,7 @@ export const useTimerControls = (state: TimerState) => {
     isMuted,
   } = state;
 
-  const { audioStore } = useTimerAudio(isMuted);
+  const { audioStore, playStartSound } = useTimerAudio(isMuted);
 
   // Create refs for timer settings
   const timerRef = useRef<{
@@ -43,6 +43,9 @@ export const useTimerControls = (state: TimerState) => {
         };
       }
       
+      // Play start sound when timer begins
+      playStartSound();
+      
       setIsRunning(true);
       setIsPaused(false);
     }
@@ -70,17 +73,10 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting(false);
     setCurrentRepetition(1);
     
-    state.setMinutesState(0);
-    state.setSecondsState(0);
-    state.setRestMinutesState(0);
-    state.setRestSecondsState(0);
-    
-    timerRef.current = {
-      workoutMin: 0,
-      workoutSec: 0,
-      restMin: 0,
-      restSec: 0
-    };
+    state.setMinutesState(timerRef.current.workoutMin);
+    state.setSecondsState(timerRef.current.workoutSec);
+    state.setRestMinutesState(timerRef.current.restMin);
+    state.setRestSecondsState(timerRef.current.restSec);
   };
 
   return {
