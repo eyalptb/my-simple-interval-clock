@@ -55,6 +55,7 @@ export const useTimerInterval = (
             state.setCurrentRepetition(currentRepetition + 1);
             state.setIsResting(false);
             
+            // Set workout time values for next repetition
             state.setMinutesState(controls.timerRef.current.workoutMin);
             state.setSecondsState(controls.timerRef.current.workoutSec);
           } else {

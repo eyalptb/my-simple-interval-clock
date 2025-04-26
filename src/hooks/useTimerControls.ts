@@ -15,7 +15,10 @@ export const useTimerControls = (state: TimerState) => {
     setMinutesState,
     setSecondsState,
     setRestMinutesState,
-    setRestSecondsState
+    setRestSecondsState,
+    isResting,
+    currentRepetition,
+    totalRepetitions
   } = state;
 
   const { 
@@ -43,7 +46,7 @@ export const useTimerControls = (state: TimerState) => {
   const wasRecentlyPaused = useRef<boolean>(false);
 
   const startTimer = () => {
-    // Fix for issue #1: Allow timer to start even at 00:00 when in paused state
+    // Allow timer to start even at 00:00 when in paused state
     if ((!state.isRunning && (minutes > 0 || seconds > 0)) || state.isPaused) {
       // Always update timerRef with current values when starting
       // This ensures we have the latest values for reset after completing all repetitions
@@ -54,6 +57,29 @@ export const useTimerControls = (state: TimerState) => {
           restMin: state.restMinutes,
           restSec: state.restSeconds
         };
+      }
+      
+      // Handle special case: if we're paused at 00:00 during rest and trying to resume
+      if (state.isPaused && minutes === 0 && seconds === 0 && state.isResting) {
+        // Move to the next workout period
+        if (currentRepetition < totalRepetitions) {
+          setCurrentRepetition(currentRepetition + 1);
+          setIsResting(false);
+          setMinutesState(timerRef.current.workoutMin);
+          setSecondsState(timerRef.current.workoutSec);
+          
+          prepareStartSound();
+          setTimeout(() => {
+            playStartSound();
+          }, 100);
+        } else {
+          // End of all repetitions
+          setIsRunning(false);
+          setIsPaused(false);
+          setIsResting(false);
+          setCurrentRepetition(1);
+          return;
+        }
       }
       
       // Only prepare and play start sound if not resuming from pause
