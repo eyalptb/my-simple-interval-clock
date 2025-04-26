@@ -43,11 +43,11 @@ export const useTimerControls = (state: TimerState) => {
   const wasRecentlyPaused = useRef<boolean>(false);
 
   const startTimer = () => {
-    // Removed delay check
-    
     // Fix for issue #1: Allow timer to start even at 00:00 when in paused state
     if ((!state.isRunning && (minutes > 0 || seconds > 0)) || state.isPaused) {
-      if (!state.isResting && !state.isPaused) {
+      // Always update timerRef with current values when starting
+      // This ensures we have the latest values for reset after completing all repetitions
+      if (!state.isResting) {
         timerRef.current = {
           workoutMin: minutes,
           workoutSec: seconds,
@@ -111,19 +111,20 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting(false);
     setCurrentRepetition(1);
     
-    setMinutesState(0);
-    setSecondsState(0);
-    setRestMinutesState(0);
-    setRestSecondsState(0);
+    // Don't reset to 0, use the stored reference values
+    setMinutesState(timerRef.current.workoutMin);
+    setSecondsState(timerRef.current.workoutSec);
+    setRestMinutesState(timerRef.current.restMin);
+    setRestSecondsState(timerRef.current.restSec);
     
     soundPlayedForThisSession.current = false;
     wasRecentlyPaused.current = false;
     
     return {
-      minutes: 0,
-      seconds: 0,
-      restMinutes: 0,
-      restSeconds: 0
+      minutes: timerRef.current.workoutMin,
+      seconds: timerRef.current.workoutSec,
+      restMinutes: timerRef.current.restMin,
+      restSeconds: timerRef.current.restSec
     };
   };
   

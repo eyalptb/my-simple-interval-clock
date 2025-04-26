@@ -58,8 +58,21 @@ export const useTimerInterval = (
             state.setMinutesState(controls.timerRef.current.workoutMin);
             state.setSecondsState(controls.timerRef.current.workoutSec);
           } else {
-            // Workout completely finished
-            controls.resetTimer();
+            // Workout completely finished - restore original values instead of resetting to 0
+            state.setIsRunning(false);
+            state.setIsPaused(false);
+            state.setIsResting(false);
+            state.setCurrentRepetition(1);
+            
+            // Set the timer back to the original values instead of resetting to 0
+            state.setMinutesState(controls.timerRef.current.workoutMin);
+            state.setSecondsState(controls.timerRef.current.workoutSec);
+            state.setRestMinutesState(controls.timerRef.current.restMin);
+            state.setRestSecondsState(controls.timerRef.current.restSec);
+            
+            // Clear interval
+            window.clearInterval(intervalId);
+            intervalStore.current.id = undefined;
           }
         } else {
           // Workout period ended
@@ -83,7 +96,21 @@ export const useTimerInterval = (
               state.setSecondsState(restSeconds);
             }
           } else {
-            controls.resetTimer();
+            // Workout completely finished - restore original values instead of resetting to 0
+            state.setIsRunning(false);
+            state.setIsPaused(false);
+            state.setIsResting(false);
+            state.setCurrentRepetition(1);
+            
+            // Set the timer back to the original values instead of resetting to 0
+            state.setMinutesState(controls.timerRef.current.workoutMin);
+            state.setSecondsState(controls.timerRef.current.workoutSec);
+            state.setRestMinutesState(controls.timerRef.current.restMin);
+            state.setRestSecondsState(controls.timerRef.current.restSec);
+            
+            // Clear interval
+            window.clearInterval(intervalId);
+            intervalStore.current.id = undefined;
           }
         }
       }
