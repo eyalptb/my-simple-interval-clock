@@ -44,15 +44,11 @@ export interface TimerControls {
     restMin: number;
     restSec: number;
   }>;
-  audioStore: React.MutableRefObject<{
-    startSound?: HTMLAudioElement;
-    endSound?: HTMLAudioElement;
-    attemptedToPlay?: boolean;
-  }>;
   intervalStore: React.MutableRefObject<{
     id?: number;
   }>;
   pendingTimeUpdateRef: React.RefObject<NodeJS.Timeout>;
   playStartSound: () => void;
   playEndSound: () => void;
+  // Removed audioStore as it's no longer being used since we now use AudioService
 }

@@ -40,7 +40,7 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
         restSec: restSeconds
       };
     }
-  }, [minutes, seconds, restMinutes, restSeconds, isRunning, isResting]);
+  }, [minutes, seconds, restMinutes, restSeconds, isRunning, isResting, timerRef]);
 
   return {
     intervalStore,
