@@ -46,4 +46,6 @@ export interface TimerControls {
     id?: number;
   }>;
   pendingTimeUpdateRef: React.RefObject<NodeJS.Timeout>;
+  playStartSound: () => void;
+  playEndSound: () => void;
 }

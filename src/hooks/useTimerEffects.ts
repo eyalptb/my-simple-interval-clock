@@ -2,7 +2,6 @@
 import { useEffect } from 'react';
 import { TimerState } from '@/types/timer';
 import { TimerControls } from '@/types/timer';
-import { useTimerAudio } from './useTimerAudio';
 import { useTimerInterval } from './useTimerInterval';
 
 export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
@@ -16,10 +15,12 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
     restSeconds,
   } = state;
 
-  const { timerRef, resetTimer, audioStore } = controls;
-
-  // Initialize audio with correct muting state
-  const { playStartSound, playEndSound } = useTimerAudio(isMuted);
+  const { 
+    timerRef, 
+    resetTimer, 
+    playStartSound, 
+    playEndSound 
+  } = controls;
   
   // Pass the sound functions to the interval handler
   const intervalStore = useTimerInterval(state, {

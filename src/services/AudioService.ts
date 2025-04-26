@@ -10,8 +10,28 @@ class AudioService {
     startSoundPath: '/assets/audio/go.mp3',
     endSoundPath: '/assets/audio/whistle.mp3'
   };
+  
+  private startAudio: HTMLAudioElement | null = null;
+  private endAudio: HTMLAudioElement | null = null;
 
-  private constructor() {}
+  private constructor() {
+    this.initializeAudio();
+  }
+
+  private initializeAudio(): void {
+    try {
+      this.startAudio = new Audio(this.audioConfig.startSoundPath);
+      this.endAudio = new Audio(this.audioConfig.endSoundPath);
+      
+      // Preload audio files
+      this.startAudio.preload = "auto";
+      this.endAudio.preload = "auto";
+      
+      console.log('Audio initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize audio:', error);
+    }
+  }
 
   public static getInstance(): AudioService {
     if (!AudioService.instance) {
@@ -20,6 +40,23 @@ class AudioService {
     return AudioService.instance;
   }
 
+  public async playSound(type: 'start' | 'end'): Promise<void> {
+    if (type !== 'start' && type !== 'end') return;
+    
+    try {
+      // Create a fresh audio instance each time to avoid playback issues
+      const audio = new Audio(type === 'start' ? 
+        this.audioConfig.startSoundPath : 
+        this.audioConfig.endSoundPath
+      );
+      
+      console.log(`Playing ${type} sound`);
+      await audio.play();
+    } catch (error) {
+      console.error(`Error playing ${type} sound:`, error);
+    }
+  }
+  
   public createAudio(type: 'start' | 'end'): HTMLAudioElement | undefined {
     try {
       const audio = new Audio();

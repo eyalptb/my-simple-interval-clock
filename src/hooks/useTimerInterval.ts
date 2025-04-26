@@ -43,12 +43,11 @@ export const useTimerInterval = (
         // Timer has reached zero
         
         if (isResting) {
-          // Rest period ended
+          // Rest period ended - Play start sound for the next workout period
+          controls.playStartSound();
+          console.log("Rest ended: Playing GO sound for next workout");
+          
           if (currentRepetition < totalRepetitions) {
-            // Play start sound for next workout period
-            controls.playStartSound();
-            console.log("Rest ended: Playing GO sound for next workout");
-            
             state.setCurrentRepetition(currentRepetition + 1);
             state.setIsResting(false);
             
@@ -70,8 +69,7 @@ export const useTimerInterval = (
             });
           }
         } else {
-          // Workout period ended
-          // Play end sound at the end of workout period
+          // Workout period ended - Play end sound
           controls.playEndSound();
           console.log("Workout ended: Playing WHISTLE sound");
           
@@ -81,8 +79,10 @@ export const useTimerInterval = (
               state.setCurrentRepetition(currentRepetition + 1);
               
               // Play start sound for the next repetition
-              controls.playStartSound();
-              console.log("No rest period: Playing GO sound for next workout");
+              setTimeout(() => {
+                controls.playStartSound();
+                console.log("No rest period: Playing GO sound for next workout");
+              }, 1000); // Small delay between whistle and go sounds
               
               state.setMinutesState(controls.timerRef.current.workoutMin);
               state.setSecondsState(controls.timerRef.current.workoutSec);

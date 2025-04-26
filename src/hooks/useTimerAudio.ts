@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import AudioService from '@/services/AudioService';
 
@@ -15,15 +15,16 @@ export const useTimerAudio = (isMuted: boolean) => {
     endSound: undefined,
     attemptedToPlay: false
   });
+  
+  const audioService = AudioService.getInstance();
 
   // Initialize the audio on component mount
   useEffect(() => {
     // Create audio elements
-    const audioService = AudioService.getInstance();
-    audioStore.current.startSound = new Audio('/assets/audio/go.mp3');
-    audioStore.current.endSound = new Audio('/assets/audio/whistle.mp3');
+    audioStore.current.startSound = audioService.createAudio('start');
+    audioStore.current.endSound = audioService.createAudio('end');
     
-    console.log('Audio files initialized');
+    console.log('Audio files initialized in useTimerAudio');
 
     // Cleanup function
     return () => {
@@ -36,44 +37,29 @@ export const useTimerAudio = (isMuted: boolean) => {
     };
   }, []);
 
-  // Function to play a sound
-  const playSound = async (type: 'start' | 'end') => {
+  const playSound = useCallback(async (type: 'start' | 'end') => {
     if (isMuted) {
       console.log('Audio is muted, not playing sound');
       return;
     }
     
-    console.log(`Attempting to play ${type} sound...`);
-    
     try {
-      const sound = type === 'start' 
-        ? new Audio('/assets/audio/go.mp3') 
-        : new Audio('/assets/audio/whistle.mp3');
-      
-      console.log(`Playing ${type} sound...`);
-      
-      const playPromise = sound.play();
-      
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log(`${type} sound played successfully`);
-          })
-          .catch(error => {
-            console.error(`Error playing ${type} sound:`, error);
-            
-            // Show toast if there's an issue
-            toast({
-              title: 'Audio Notice',
-              description: 'Please interact with the page to enable sound playback.',
-              variant: 'default'
-            });
-          });
-      }
+      // Use the singleton AudioService to play sounds
+      await audioService.playSound(type);
+      audioStore.current.attemptedToPlay = true;
     } catch (error) {
-      console.error(`Error playing ${type} sound:`, error);
+      console.error(`Error in useTimerAudio playing ${type} sound:`, error);
+      
+      if (!audioStore.current.attemptedToPlay) {
+        toast({
+          title: 'Audio Notice',
+          description: 'Please interact with the page to enable sound playback.',
+          variant: 'default'
+        });
+        audioStore.current.attemptedToPlay = true;
+      }
     }
-  };
+  }, [isMuted]);
 
   return {
     playStartSound: () => playSound('start'),
