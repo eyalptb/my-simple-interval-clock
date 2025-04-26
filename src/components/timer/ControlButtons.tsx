@@ -22,12 +22,18 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   onReset,
   onToggleMute,
 }) => {
+  // Debug handler for reset button to ensure click is captured
+  const handleResetClick = () => {
+    console.log("Reset button clicked inside ControlButtons");
+    onReset();
+  };
+
   return (
     <div className="flex justify-center space-x-4">
       <Button 
         variant="outline" 
         size="icon"
-        onClick={onReset}
+        onClick={handleResetClick}
         className="rounded-full bg-[#ea384c] hover:bg-[#d1323e] text-white border-none relative group"
       >
         <span className="absolute font-bold text-sm group-hover:text-white">R</span>
@@ -71,4 +77,3 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
 };
 
 export default ControlButtons;
-

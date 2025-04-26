@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import ControlButtons from './timer/ControlButtons';
@@ -84,6 +83,12 @@ const TimerControls: React.FC = () => {
     setTotalRepetitions(Math.max(1, totalRepetitions - 1));
   };
 
+  // Custom reset handler to ensure the reset happens properly
+  const handleReset = () => {
+    console.log("Reset button clicked");
+    resetTimer();
+  };
+
   return (
     <div className="w-full space-y-6">
       <ControlButtons 
@@ -92,7 +97,7 @@ const TimerControls: React.FC = () => {
         canStart={minutes > 0 || seconds > 0}
         onStart={startTimer}
         onPause={pauseTimer}
-        onReset={resetTimer}
+        onReset={handleReset}
         onToggleMute={toggleMute}
       />
       

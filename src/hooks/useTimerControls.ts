@@ -65,20 +65,29 @@ export const useTimerControls = (state: TimerState) => {
   };
 
   const resetTimer = () => {
+    // Clear any active interval
     if (intervalStore.current.id) {
       window.clearInterval(intervalStore.current.id);
       intervalStore.current.id = undefined;
     }
     
+    // Reset timer state
     setIsRunning(false);
     setIsPaused(false);
     setIsResting(false);
     setCurrentRepetition(1);
     
+    // Explicitly set timer values back to their initial values
     state.setMinutesState(timerRef.current.workoutMin);
     state.setSecondsState(timerRef.current.workoutSec);
-    state.setRestMinutesState(timerRef.current.restMin);
-    state.setRestSecondsState(timerRef.current.restSec);
+    
+    // Log for debugging
+    console.log('Reset timer:', {
+      workoutMin: timerRef.current.workoutMin, 
+      workoutSec: timerRef.current.workoutSec,
+      restMin: timerRef.current.restMin,
+      restSec: timerRef.current.restSec
+    });
   };
 
   return {
