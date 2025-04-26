@@ -1,4 +1,6 @@
 
+import { toast } from '@/hooks/use-toast';
+
 interface AudioConfig {
   startSoundPath: string;
   endSoundPath: string;
@@ -7,26 +9,38 @@ interface AudioConfig {
 class AudioService {
   private static instance: AudioService;
   private audioConfig: AudioConfig = {
-    startSoundPath: '/audio/go.mp3',
-    endSoundPath: '/audio/whistle.mp3'
+    startSoundPath: '/audio/go.mp3',  // Updated path
+    endSoundPath: '/audio/whistle.mp3'  // Updated path
   };
   
   private goSound: HTMLAudioElement;
   private whistleSound: HTMLAudioElement;
 
   private constructor() {
+    // Use public asset paths
     this.goSound = new Audio(this.audioConfig.startSoundPath);
     this.whistleSound = new Audio(this.audioConfig.endSoundPath);
     
-    // Preload audio files
-    this.goSound.preload = "auto";
-    this.whistleSound.preload = "auto";
+    // Comprehensive audio setup
+    this.setupAudioElement(this.goSound, 'start');
+    this.setupAudioElement(this.whistleSound, 'end');
     
-    // Set maximum volume
-    this.goSound.volume = 1.0;
-    this.whistleSound.volume = 1.0;
+    console.log('Audio Service initialized with paths:', this.audioConfig);
+  }
+
+  private setupAudioElement(audio: HTMLAudioElement, type: 'start' | 'end') {
+    audio.preload = 'auto';
+    audio.volume = 1.0;
     
-    console.log('Audio Service initialized');
+    // Add error handlers
+    audio.onerror = (e) => {
+      console.error(`Error loading ${type} sound:`, e);
+      toast({
+        title: 'Audio Error',
+        description: `Could not load ${type} sound`,
+        variant: 'destructive'
+      });
+    };
   }
 
   public static getInstance(): AudioService {
@@ -40,23 +54,18 @@ class AudioService {
     try {
       const audio = type === 'start' ? this.goSound : this.whistleSound;
       
-      // Reset the audio to start
+      // Reset and play
       audio.currentTime = 0;
-      
-      console.log(`Playing ${type} sound`);
-      const playPromise = audio.play();
-      
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.error(`Error playing ${type} sound:`, error);
-          // Create a fresh instance as fallback
-          const newAudio = new Audio(type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath);
-          newAudio.volume = 1.0;
-          return newAudio.play();
+      await audio.play().catch(error => {
+        console.error(`Play ${type} sound error:`, error);
+        toast({
+          title: 'Audio Playback Error',
+          description: `Could not play ${type} sound`,
+          variant: 'destructive'
         });
-      }
+      });
     } catch (error) {
-      console.error(`Error in AudioService playing ${type} sound:`, error);
+      console.error(`Unexpected error playing ${type} sound:`, error);
     }
   }
 }
