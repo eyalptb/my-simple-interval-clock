@@ -1,3 +1,4 @@
+
 import goMp3 from '@/assets/audio/go.mp3';
 import whistleMp3 from '@/assets/audio/whistle.mp3';
 import { AudioConfig, AudioState, SoundType } from '@/types/audio';
@@ -16,11 +17,13 @@ class AudioService {
   private whistleSound: HTMLAudioElement;
   private state: AudioState;
   private iOSHandler: IOSAudioHandler;
-  private globalSoundEnabled: boolean = true;
-  private lastResetTime: number = 0;
-  private lastPlusButtonTime: number = 0;
+  private globalMute: boolean = false;
+  private isResetOperation: boolean = false;
+  private isIOSDevice: boolean;
 
   private constructor() {
+    this.isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
     this.state = {
       audioInitialized: false,
       audioContext: null,
@@ -28,13 +31,15 @@ class AudioService {
       endAudioBuffer: null,
       lastIOSPlayAttempt: 0,
       soundBlockedUntil: 0,
-      isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent)
+      isIOS: this.isIOSDevice
     };
     
     this.iOSHandler = new IOSAudioHandler();
     this.goSound = createAudioElement(this.audioConfig.startSoundPath);
     this.whistleSound = createAudioElement(this.audioConfig.endSoundPath);
     this.state.audioContext = initializeWebAudio();
+    
+    console.log(`AudioService initialized, iOS: ${this.isIOSDevice}`);
   }
 
   public static getInstance(): AudioService {
@@ -114,14 +119,18 @@ class AudioService {
     }
   }
 
+  // Dedicated iOS sound player
   private async playIOSSound(type: SoundType): Promise<void> {
+    // Special iOS sound permission check
     if (!this.iOSHandler.canPlaySound(type)) {
       console.log(`iOS: ${type} sound blocked by handler`);
       return;
     }
     
+    // Update handler timestamps
     this.iOSHandler.updateLastPlayAttempt();
     
+    // For iOS, we need new audio elements each time
     const newSound = createAudioElement(
       type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath
     );
@@ -130,114 +139,99 @@ class AudioService {
       newSound.currentTime = 0;
       await newSound.play();
       
-      // Mark this specific sound type as played
-      this.iOSHandler.setIOSSoundPlayed(type, true);
-      console.log(`iOS: ${type} sound played and marked as played`);
-    } catch (error) {
-      console.error(`iOS ${type} play attempt failed:`, error);
-    }
-  }
-
-  public blockSoundsTemporarily(durationMs: number = 15000): void {
-    console.log(`Blocking sounds for ${durationMs}ms from AudioService level`);
-    this.lastResetTime = Date.now();
-    this.iOSHandler.blockSounds(durationMs);
-    
-    // Emergency override on reset to ensure absolutely no sounds play
-    this.iOSHandler.forceBlockSounds(true);
-    
-    // Release the emergency block after a delay
-    setTimeout(() => {
-      this.iOSHandler.forceBlockSounds(false);
-    }, 7000);
-  }
-
-  public trackPlusButtonPress(): void {
-    const now = Date.now();
-    this.lastPlusButtonTime = now;
-    
-    // If this is within 10 seconds of a reset, block start sound
-    if (now - this.lastResetTime < 10000) {
-      console.log('Plus button pressed shortly after reset - blocking start sound');
-      this.iOSHandler.blockStartSound(15000);
+      // Mark start sound as played
+      if (type === 'start') {
+        this.iOSHandler.markStartSoundPlayed();
+        console.log('iOS start sound played and marked');
+      }
       
-      // Also force block for a short period
-      this.iOSHandler.forceBlockSounds(true);
+      console.log(`iOS: ${type} sound played successfully`);
+    } catch (error) {
+      console.error(`iOS ${type} sound play failed:`, error);
+    }
+  }
+
+  // Register a reset operation to prevent sounds
+  public registerReset(): void {
+    this.isResetOperation = true;
+    
+    // Use iOS handler to block sounds more aggressively
+    if (this.isIOSDevice) {
+      this.iOSHandler.registerResetPress();
+      this.iOSHandler.setGlobalSoundBlock(true);
+      
+      // Release the complete block after a delay
       setTimeout(() => {
-        this.iOSHandler.forceBlockSounds(false);
-      }, 5000);
-    }
-  }
-
-  public disableAllSounds(): void {
-    this.globalSoundEnabled = false;
-    console.log('All sounds disabled globally');
-  }
-
-  public enableAllSounds(): void {
-    this.globalSoundEnabled = true;
-    console.log('All sounds enabled globally');
-  }
-
-  public resetIOSPlayedState(): void {
-    // Don't reset too soon after a reset operation
-    const timeSinceReset = Date.now() - this.lastResetTime;
-    if (timeSinceReset < 10000) {
-      console.log(`Ignoring resetIOSPlayedState - too soon after reset (${timeSinceReset}ms)`);
-      return;
+        this.iOSHandler.setGlobalSoundBlock(false);
+      }, 10000);
     }
     
-    this.iOSHandler.resetIOSSoundPlayed();
+    console.log('Reset operation registered - sounds blocked');
+    
+    // Auto-clear reset state after a delay
+    setTimeout(() => {
+      this.isResetOperation = false;
+      console.log('Reset operation cleared');
+    }, 30000); // 30 seconds
   }
 
-  public resetSpecificIOSSound(type: SoundType): void {
-    // Don't reset too soon after a reset operation
-    const timeSinceReset = Date.now() - this.lastResetTime;
-    if (timeSinceReset < 10000) {
-      console.log(`Ignoring reset of ${type} sound - too soon after reset (${timeSinceReset}ms)`);
-      return;
+  // Register a plus button press to track potential abuse
+  public registerPlusButtonPress(): void {
+    if (this.isIOSDevice) {
+      this.iOSHandler.registerPlusButtonPress();
+    }
+  }
+
+  // Set global mute state
+  public setMute(muted: boolean): void {
+    this.globalMute = muted;
+    console.log(`Global audio mute set to: ${muted}`);
+  }
+
+  // Check if we can play sounds at all
+  private canPlaySounds(): boolean {
+    if (this.globalMute) {
+      return false;
     }
     
-    this.iOSHandler.resetIOSSoundPlayed(type);
+    if (this.isResetOperation) {
+      return false;
+    }
+    
+    return true;
   }
 
-  public isWithinResetCooldown(): boolean {
-    return (Date.now() - this.lastResetTime) < 15000;
+  // Called at timer start - ensures iOS can play start sound
+  public prepareStartSound(): void {
+    if (this.isIOSDevice) {
+      // Reset the start sound played state to allow it to play
+      this.iOSHandler.resetStartSoundStatus();
+      console.log('iOS start sound prepared for playback');
+    }
   }
 
+  // Main sound playing method
   public async playSound(type: SoundType): Promise<void> {
-    // First check global sound enabled flag
-    if (!this.globalSoundEnabled) {
-      console.log('Sound blocked: global sound disabled');
-      return;
-    }
-    
-    // Emergency check for reset cooldown
-    if (this.isWithinResetCooldown()) {
-      console.log(`${type} sound blocked - within reset cooldown period`);
-      return;
-    }
-    
-    // Check iOS handler permissions
-    if (this.state.isIOS && !this.iOSHandler.canPlaySound(type)) {
-      console.log(`${type} sound blocked by iOS handler with type-specific check`);
+    // Global checks first
+    if (!this.canPlaySounds()) {
+      console.log(`${type} sound blocked - global restriction`);
       return;
     }
     
     await this.initializeAudioContext();
     
+    // Special iOS handling
+    if (this.isIOSDevice) {
+      await this.playIOSSound(type);
+      return;
+    }
+    
+    // Regular devices with Web Audio API
     try {
-      // Special handling for iOS devices
-      if (this.state.isIOS) {
-        await this.playIOSSound(type);
-        return;
-      }
-      
-      // Non-iOS devices use Web Audio API if available
       if (this.state.audioContext && 
           ((type === 'start' && this.state.startAudioBuffer) || 
            (type === 'end' && this.state.endAudioBuffer))) {
-          
+        
         const buffer = type === 'start' ? this.state.startAudioBuffer : this.state.endAudioBuffer;
         if (buffer) {
           const source = this.state.audioContext.createBufferSource();
@@ -249,31 +243,13 @@ class AudioService {
         }
       }
       
-      // Fallback to HTML Audio elements
+      // Fallback to HTML Audio
       const audio = type === 'start' ? this.goSound : this.whistleSound;
       audio.currentTime = 0;
-      
-      await audio.play().catch(async () => {
-        console.warn(`Play attempt for ${type} sound failed, trying alternative`);
-        
-        const newAudio = createAudioElement(
-          type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath
-        );
-        
-        await newAudio.play().catch(e => {
-          console.error(`All play attempts for ${type} sound failed:`, e);
-        });
-        
-        if (type === 'start') {
-          this.goSound = newAudio;
-        } else {
-          this.whistleSound = newAudio;
-        }
-      });
-      
-      console.log(`${type} sound played successfully`);
+      await audio.play();
+      console.log(`${type} sound played using HTML Audio`);
     } catch (error) {
-      console.error(`Unexpected error playing ${type} sound:`, error);
+      console.error(`Error playing ${type} sound:`, error);
     }
   }
 }

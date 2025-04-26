@@ -34,17 +34,17 @@ const TimerControls: React.FC = () => {
     decrementRestSeconds,
     incrementRestMinutes,
     decrementRestMinutes,
+    registerPlusButton // New method to register plus button presses
   } = useTimer();
 
-  // Store the initial values for input display
+  // Store input values
   const [inputMinutes, setInputMinutes] = React.useState(minutes);
   const [inputSeconds, setInputSeconds] = React.useState(seconds);
   const [inputRestMinutes, setInputRestMinutes] = React.useState(restMinutes);
   const [inputRestSeconds, setInputRestSeconds] = React.useState(restSeconds);
-  // Track time increment buttons
   const [lastButtonClick, setLastButtonClick] = React.useState<number>(0);
 
-  // Update input display values when timer state changes (including resets)
+  // Update input display values when timer state changes
   React.useEffect(() => {
     console.log("Effect triggered - timer state changed:", { minutes, seconds, restMinutes, restSeconds });
     if (!isRunning && !isPaused) {
@@ -81,18 +81,17 @@ const TimerControls: React.FC = () => {
     }
   };
 
-  // Wrapped time increment handlers to prevent sound issues after reset
+  // Handle plus button presses with improved iOS detection
   const handleIncreaseMinutes = () => {
     const now = Date.now();
-    // Rate limit button clicks
     if (now - lastButtonClick < 1000) {
       console.log("Ignored rapid button click");
       return;
     }
     setLastButtonClick(now);
     
-    // Track in AudioService to prevent iOS sounds after reset
-    AudioService.getInstance().trackPlusButtonPress();
+    // Register plus button press for iOS
+    registerPlusButton();
     incrementMinutes();
   };
   
@@ -108,8 +107,8 @@ const TimerControls: React.FC = () => {
     if (now - lastButtonClick < 1000) return;
     setLastButtonClick(now);
     
-    // Track in AudioService to prevent iOS sounds after reset
-    AudioService.getInstance().trackPlusButtonPress();
+    // Register plus button press for iOS
+    registerPlusButton();
     incrementSeconds();
   };
   
@@ -125,8 +124,8 @@ const TimerControls: React.FC = () => {
     if (now - lastButtonClick < 1000) return;
     setLastButtonClick(now);
     
-    // Track in AudioService to prevent iOS sounds after reset
-    AudioService.getInstance().trackPlusButtonPress();
+    // Register plus button press for iOS
+    registerPlusButton();
     incrementRestMinutes();
   };
   
@@ -142,8 +141,8 @@ const TimerControls: React.FC = () => {
     if (now - lastButtonClick < 1000) return;
     setLastButtonClick(now);
     
-    // Track in AudioService to prevent iOS sounds after reset
-    AudioService.getInstance().trackPlusButtonPress();
+    // Register plus button press for iOS
+    registerPlusButton();
     incrementRestSeconds();
   };
   
@@ -159,8 +158,8 @@ const TimerControls: React.FC = () => {
     if (now - lastButtonClick < 1000) return;
     setLastButtonClick(now);
     
-    // Track in AudioService to prevent iOS sounds after reset
-    AudioService.getInstance().trackPlusButtonPress();
+    // Register plus button press for iOS
+    registerPlusButton();
     setTotalRepetitions(Math.min(20, totalRepetitions + 1));
   };
 
@@ -176,28 +175,13 @@ const TimerControls: React.FC = () => {
     console.log("Reset button clicked in TimerControls");
     
     try {
-      // Get reset values and immediately update UI
       const resetValues: ResetTimerValues = resetTimer();
-      
-      console.log("Directly updating input fields after reset", resetValues);
       
       // Force immediate UI update
       setInputMinutes(resetValues.minutes);
       setInputSeconds(resetValues.seconds);
       setInputRestMinutes(resetValues.restMinutes);
       setInputRestSeconds(resetValues.restSeconds);
-      
-      // Double-check that the context values are updated
-      console.log("After reset - New state values:", {
-        contextMinutes: minutes,
-        contextSeconds: seconds,
-        contextRestMinutes: restMinutes,
-        contextRestSeconds: restSeconds,
-        inputMinutes: resetValues.minutes,
-        inputSeconds: resetValues.seconds,
-        inputRestMinutes: resetValues.restMinutes,
-        inputRestSeconds: resetValues.restSeconds
-      });
     } catch (error) {
       console.error("Error in reset handler:", error);
     }

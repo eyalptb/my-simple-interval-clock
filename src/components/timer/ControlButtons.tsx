@@ -23,91 +23,76 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   onReset,
   onToggleMute,
 }) => {
-  // Track last clicked time with longer prevention periods for each button type
+  // Track click times with longer prevention periods
   const [lastClickTime, setLastClickTime] = useState<number>(0);
   const [lastResetTime, setLastResetTime] = useState<number>(0);
   const [lastStartTime, setLastStartTime] = useState<number>(0);
   const [lastPauseTime, setLastPauseTime] = useState<number>(0);
   const [lastMuteTime, setLastMuteTime] = useState<number>(0);
   
-  // Enhanced reset button handler with additional safeguards
+  // Enhanced reset button handler with aggressive iOS prevention
   const handleResetClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Prevent rapid clicking with more aggressive threshold for reset (3 seconds)
+    // Prevent rapid clicking (5 seconds for reset)
     const now = Date.now();
-    if (now - lastResetTime < 3000) {
-      console.log("Ignored rapid reset click - must wait 3 seconds between resets");
+    if (now - lastResetTime < 5000) {
+      console.log("Ignored rapid reset click - must wait 5 seconds between resets");
       return;
     }
     
-    // Update all click times to prevent any button clicks right after reset
+    // Update timestamps
     setLastClickTime(now);
     setLastResetTime(now);
-    setLastStartTime(now);
-    setLastPauseTime(now);
-    setLastMuteTime(now);
     
-    console.log("Reset button clicked inside ControlButtons - SILENT RESET");
+    console.log("Reset button clicked - registering silent reset");
     
-    // Block sounds at service level even more aggressively for iOS - 10 seconds
-    AudioService.getInstance().blockSoundsTemporarily(10000);
+    // Register reset with AudioService
+    AudioService.getInstance().registerReset();
     
-    // Force a synchronous reset call
-    try {
-      onReset();
-      console.log("Reset function called successfully - NO SOUNDS");
-    } catch (error) {
-      console.error("Error during reset:", error);
-    }
+    // Call the reset function
+    onReset();
   };
   
-  // Control start with aggressive rate limiting
+  // Start button with improved iOS handling
   const handleStart = () => {
     const now = Date.now();
     
-    // General click cooldown
+    // Global click cooldown
     if (now - lastClickTime < 1000) {
-      console.log("Ignored rapid click - general cooldown");
+      console.log("Ignored rapid click - global cooldown");
       return;
     }
     
-    // Button-specific cooldown (2 seconds)
-    if (now - lastStartTime < 2000) {
-      console.log("Ignored rapid start click - must wait 2 seconds between start clicks");
-      return;
-    }
-    
-    // Check if we're in reset cooldown via AudioService
-    if (AudioService.getInstance().isWithinResetCooldown()) {
-      console.log("Start prevented - still in reset cooldown period");
+    // Button-specific cooldown (3 seconds)
+    if (now - lastStartTime < 3000) {
+      console.log("Ignored rapid start click - must wait 3 seconds");
       return;
     }
     
     setLastClickTime(now);
     setLastStartTime(now);
     
-    // Reset iOS sound played state when starting timer to allow start sound
-    AudioService.getInstance().resetSpecificIOSSound('start');
-    console.log('iOS start sound state reset before starting timer');
+    // Prepare audio service for start sound
+    AudioService.getInstance().prepareStartSound();
     
     onStart();
   };
   
-  // Control pause with aggressive rate limiting
+  // Pause button with rate limiting
   const handlePause = () => {
     const now = Date.now();
     
-    // General click cooldown
+    // Global click cooldown
     if (now - lastClickTime < 1000) {
-      console.log("Ignored rapid click - general cooldown");
+      console.log("Ignored rapid click - global cooldown");
       return;
     }
     
     // Button-specific cooldown (2 seconds)
     if (now - lastPauseTime < 2000) {
-      console.log("Ignored rapid pause click - must wait 2 seconds between pause clicks");
+      console.log("Ignored rapid pause click");
       return;
     }
     
@@ -117,19 +102,19 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
     onPause();
   };
   
-  // Control mute with rate limiting
+  // Mute button
   const handleToggleMute = () => {
     const now = Date.now();
     
-    // General click cooldown
+    // Global click cooldown
     if (now - lastClickTime < 1000) {
-      console.log("Ignored rapid click - general cooldown");
+      console.log("Ignored rapid click - global cooldown");
       return;
     }
     
     // Button-specific cooldown (1.5 seconds)
     if (now - lastMuteTime < 1500) {
-      console.log("Ignored rapid mute click - must wait 1.5 seconds between mute toggles");
+      console.log("Ignored rapid mute click");
       return;
     }
     

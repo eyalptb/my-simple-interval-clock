@@ -1,45 +1,66 @@
 
 export class IOSAudioHandler {
+  // Track all interaction timestamps with longer cooldown periods
   private lastPlayAttempt: number = 0;
-  private soundBlockedUntil: number = 0;
-  private iosSoundPlayed: { [key: string]: boolean } = { 'start': false, 'end': false };
-  private resetBlockTime: number = 15000; // Increased from 10s to 15s
-  private rateBlockTime: number = 5000;  // Increased from 3s to 5s
-  private forceBlockedState: boolean = false;
-  private startButtonBlockedUntil: number = 0; // New property to track start button block
+  private lastResetTime: number = 0;
+  private soundsBlockedGlobally: boolean = false;
+  private soundsBlockedUntil: number = 0;
+  private startSoundPlayed: boolean = false;
+  private soundInhibitAfterReset: boolean = true;
+  private plusButtonPressCount: number = 0;
+  private plusButtonResetTimestamp: number = 0;
+  private consecutivePlusPresses: boolean = false;
+  
+  // Constants for timing
+  private readonly RESET_BLOCK_DURATION = 30000; // 30 seconds
+  private readonly RATE_LIMIT_DURATION = 8000;   // 8 seconds
+  private readonly PLUS_BUTTON_MONITOR_WINDOW = 10000; // 10 seconds
+  
+  constructor() {
+    // Reset plus button counter every 10 seconds
+    setInterval(() => {
+      if (Date.now() - this.plusButtonResetTimestamp > this.PLUS_BUTTON_MONITOR_WINDOW) {
+        this.plusButtonPressCount = 0;
+        this.consecutivePlusPresses = false;
+      }
+    }, this.PLUS_BUTTON_MONITOR_WINDOW);
+  }
 
+  // Main method to check if sound can play
   canPlaySound(type: 'start' | 'end'): boolean {
     const now = Date.now();
     
-    // Absolute block (emergency override)
-    if (this.forceBlockedState) {
-      console.log(`iOS: Sound '${type}' blocked - forced block active`);
+    // Global block check (most restrictive)
+    if (this.soundsBlockedGlobally) {
+      console.log(`iOS: Sound '${type}' blocked - Global block active`);
       return false;
     }
     
-    // Block sound if we're in reset cooldown period
-    if (now < this.soundBlockedUntil) {
-      console.log(`iOS: Sound '${type}' blocked due to recent reset or UI interaction until ${new Date(this.soundBlockedUntil).toLocaleTimeString()}`);
+    // Time-based block check
+    if (now < this.soundsBlockedUntil) {
+      console.log(`iOS: Sound '${type}' blocked until ${new Date(this.soundsBlockedUntil).toLocaleTimeString()}`);
       return false;
     }
     
-    // Rate limiting protection - increased for better prevention
-    if (now - this.lastPlayAttempt < this.rateBlockTime) {
-      console.log(`iOS: Sound '${type}' prevented - rate limiting in effect (${this.rateBlockTime}ms)`);
+    // Rate limiting protection
+    if (now - this.lastPlayAttempt < this.RATE_LIMIT_DURATION) {
+      console.log(`iOS: Sound '${type}' prevented - rate limiting in effect (${this.RATE_LIMIT_DURATION}ms)`);
       return false;
     }
     
-    // For start sound specifically:
+    // Start sound-specific checks
     if (type === 'start') {
-      // Is this sound type already played?
-      if (this.iosSoundPlayed['start']) {
-        console.log('iOS: Start sound already played once this session');
+      // After reset with consecutive plus buttons, block start sound
+      if (this.consecutivePlusPresses && 
+          now - this.lastResetTime < this.RESET_BLOCK_DURATION) {
+        console.log('iOS: Start sound blocked due to consecutive plus buttons after reset');
         return false;
       }
       
-      // Check start button specific block (for Plus button interactions)
-      if (now < this.startButtonBlockedUntil) {
-        console.log(`iOS: Start sound specifically blocked until ${new Date(this.startButtonBlockedUntil).toLocaleTimeString()}`);
+      // Special handling to allow start sound to play only once per session
+      // unless explicitly reset
+      if (this.startSoundPlayed && this.soundInhibitAfterReset) {
+        console.log('iOS: Start sound already played, inhibiting playback');
         return false;
       }
     }
@@ -47,53 +68,62 @@ export class IOSAudioHandler {
     return true;
   }
 
+  // Record a play attempt
   updateLastPlayAttempt(): void {
     this.lastPlayAttempt = Date.now();
   }
-
-  blockSounds(durationMs: number = 15000): void {
-    const now = Date.now();
-    // Always use the longer duration between current block and new request
-    this.soundBlockedUntil = Math.max(this.soundBlockedUntil, now + durationMs);
-    console.log(`Sounds blocked until ${new Date(this.soundBlockedUntil).toLocaleTimeString()}`);
+  
+  // Handle reset button presses
+  registerResetPress(): void {
+    this.lastResetTime = Date.now();
+    this.soundsBlockedUntil = Date.now() + this.RESET_BLOCK_DURATION;
+    this.soundInhibitAfterReset = true;
+    this.plusButtonPressCount = 0;
+    this.consecutivePlusPresses = false;
+    console.log(`iOS: Reset pressed - sounds blocked for ${this.RESET_BLOCK_DURATION/1000}s`);
   }
-
-  // Block specifically the start sound (used after reset + plus button)
-  blockStartSound(durationMs: number = 10000): void {
+  
+  // Handle plus button presses
+  registerPlusButtonPress(): void {
     const now = Date.now();
-    this.startButtonBlockedUntil = Math.max(this.startButtonBlockedUntil, now + durationMs);
-    console.log(`Start sound specifically blocked until ${new Date(this.startButtonBlockedUntil).toLocaleTimeString()}`);
-  }
-
-  // Force block all sounds (emergency override)
-  forceBlockSounds(blocked: boolean): void {
-    this.forceBlockedState = blocked;
-    if (blocked) {
-      console.log('EMERGENCY: All iOS sounds forcefully blocked');
-    } else {
-      console.log('EMERGENCY: iOS sound force block released');
+    
+    // Update plus button monitoring
+    this.plusButtonResetTimestamp = now;
+    this.plusButtonPressCount++;
+    
+    // Set consecutive flag if we detect multiple presses
+    if (this.plusButtonPressCount >= 2) {
+      this.consecutivePlusPresses = true;
+      console.log('iOS: Multiple plus buttons detected, blocking start sound');
+      
+      // Set global sound block for a short period
+      this.blockAllSounds(5000);
     }
   }
-
-  // Track specific sound types that have been played
-  setIOSSoundPlayed(type: 'start' | 'end', value: boolean): void {
-    this.iosSoundPlayed[type] = value;
-    console.log(`iOS ${type} sound played state set to ${value}`);
+  
+  // Set start sound played status
+  markStartSoundPlayed(): void {
+    this.startSoundPlayed = true;
+    console.log('iOS: Start sound marked as played');
   }
-
-  hasIOSSoundPlayed(type: 'start' | 'end'): boolean {
-    return this.iosSoundPlayed[type] === true;
+  
+  // Reset start sound played status (when we specifically want to play it again)
+  resetStartSoundStatus(): void {
+    this.startSoundPlayed = false;
+    this.soundInhibitAfterReset = false;
+    console.log('iOS: Start sound status reset - will play on next attempt');
   }
-
-  // Reset played state for specific sound type
-  resetIOSSoundPlayed(type?: 'start' | 'end'): void {
-    if (type) {
-      this.iosSoundPlayed[type] = false;
-      console.log(`iOS ${type} sound played state reset`);
-    } else {
-      // Reset all sound types if no specific type provided
-      this.iosSoundPlayed = { 'start': false, 'end': false };
-      console.log('All iOS sound played states reset');
-    }
+  
+  // Block all sounds for a duration
+  blockAllSounds(durationMs: number = 15000): void {
+    const now = Date.now();
+    this.soundsBlockedUntil = Math.max(this.soundsBlockedUntil, now + durationMs);
+    console.log(`iOS: All sounds blocked for ${durationMs/1000}s`);
+  }
+  
+  // Complete global sound block (emergency)
+  setGlobalSoundBlock(blocked: boolean): void {
+    this.soundsBlockedGlobally = blocked;
+    console.log(`iOS: Global sound block set to ${blocked}`);
   }
 }
