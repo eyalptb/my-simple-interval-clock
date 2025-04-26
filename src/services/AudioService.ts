@@ -22,6 +22,10 @@ class AudioService {
   private endAudioBuffer: AudioBuffer | null = null;
   private isIOS: boolean = false;
 
+  // Add specific prevention for iOS rapid button presses
+  private lastIOSPlayAttempt: number = 0;
+  private soundBlockedUntil: number = 0;
+
   private constructor() {
     // Check if running on iOS
     this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -161,6 +165,23 @@ class AudioService {
 
   // iOS-specific play method with enhanced iOS compatibility
   private async playIOSSound(sound: HTMLAudioElement): Promise<void> {
+    // iOS-specific reset state handling - PROTECT AGAINST RAPID PRESSES
+    const now = Date.now();
+    
+    // Block sounds if we are in a reset/blocked period
+    if (now < this.soundBlockedUntil) {
+      console.log('iOS: Sound blocked due to recent reset');
+      return;
+    }
+    
+    // Prevent multiple requests for iOS
+    if (now - this.lastIOSPlayAttempt < 1200) {
+      console.log('iOS: Sound prevented - too many rapid button presses');
+      return;
+    }
+    
+    this.lastIOSPlayAttempt = now;
+    
     // For iOS, create a new audio element each time for better compatibility
     const newSound = new Audio(sound === this.goSound ? 
                                this.audioConfig.startSoundPath : 
@@ -175,11 +196,23 @@ class AudioService {
     }
   }
 
+  // Method to explicitly block sounds (can be called externally)
+  public blockSoundsTemporarily(durationMs: number = 2500): void {
+    this.soundBlockedUntil = Date.now() + durationMs;
+    console.log(`Sounds blocked for ${durationMs}ms from AudioService level`);
+  }
+
   // Main play sound method with better iOS handling
   public async playSound(type: 'start' | 'end'): Promise<void> {
-    // Prevent both sounds from playing at once
+    // Check if we're in a sound blocked period (reset protection)
     const now = Date.now();
-    if (this._lastPlayedTime && now - this._lastPlayedTime < 500) {
+    if (now < this.soundBlockedUntil) {
+      console.log(`Sound play attempt (${type}) blocked - in cooldown period`);
+      return;
+    }
+    
+    // Prevent both sounds from playing at once - INCREASED FROM 500ms to 1200ms
+    if (this._lastPlayedTime && now - this._lastPlayedTime < 1200) {
       console.log('Skipping sound playback - too close to previous sound');
       return;
     }

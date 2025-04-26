@@ -8,7 +8,7 @@ export const useTimerAudio = (isMuted: boolean) => {
   const audioService = AudioService.getInstance();
   const lastPlayTime = useRef<number>(0);
 
-  // Special flag to prevent sound after reset
+  // Special flag to prevent sound after reset - INCREASED TIMEOUT
   const preventSoundAfterReset = useRef<boolean>(false);
   const resetTimeoutId = useRef<number | null>(null);
 
@@ -61,7 +61,7 @@ export const useTimerAudio = (isMuted: boolean) => {
     };
   }, [audioService]);
 
-  // Function to temporarily disable sounds after reset
+  // Function to temporarily disable sounds after reset - INCREASED TIMEOUT
   const disableSoundsTemporarily = useCallback(() => {
     preventSoundAfterReset.current = true;
     
@@ -70,14 +70,14 @@ export const useTimerAudio = (isMuted: boolean) => {
       window.clearTimeout(resetTimeoutId.current);
     }
     
-    // Re-enable sounds after a cooldown period
+    // Re-enable sounds after a cooldown period - INCREASED FROM 1500 to 2500ms
     resetTimeoutId.current = window.setTimeout(() => {
       preventSoundAfterReset.current = false;
       resetTimeoutId.current = null;
       console.log('Sound prevention after reset has been cleared');
-    }, 1500) as unknown as number;
+    }, 2500) as unknown as number;
     
-    console.log('Sounds temporarily disabled after reset');
+    console.log('Sounds temporarily disabled after reset - extended time period');
   }, []);
 
   // Rate-limited sound player to prevent overlapping sounds
@@ -87,15 +87,15 @@ export const useTimerAudio = (isMuted: boolean) => {
       return;
     }
     
-    // Check our reset prevention flag
+    // Check our reset prevention flag - FORCE LOG WHEN BLOCKED
     if (preventSoundAfterReset.current) {
-      console.log('Sounds prevented due to recent reset operation');
+      console.log('Sound prevented: reset protection active', {type});
       return;
     }
     
-    // Prevent rapid sound playback
+    // Prevent rapid sound playback - INCREASED FROM 800 to 1000ms
     const now = Date.now();
-    if (now - lastPlayTime.current < 800) { // Increased from 500ms to 800ms
+    if (now - lastPlayTime.current < 1000) {
       console.log('Preventing sound overlap - too soon after last play');
       return;
     }

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Play, Pause, Volume, VolumeX, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import AudioService from '@/services/AudioService';
 
 interface ControlButtonsProps {
   isRunning: boolean;
@@ -27,6 +28,10 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
     e.preventDefault();
     e.stopPropagation();
     console.log("Reset button clicked inside ControlButtons - SILENT RESET");
+    
+    // Block sounds at service level (iOS needs this additional blocking)
+    AudioService.getInstance().blockSoundsTemporarily(3000);
+    
     // Force a synchronous reset call
     try {
       onReset();

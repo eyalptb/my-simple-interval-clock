@@ -34,7 +34,7 @@ export const useTimerControls = (state: TimerState) => {
     restSec: state.restSeconds
   });
 
-  // Add a ref to track if we're in a reset state to prevent sounds from playing
+  // Add a ref to track if we're in a reset state to prevent sounds from playing - MORE AGGRESSIVELY RESET
   const isInResetState = useRef<boolean>(false);
   const intervalStore = useRef<{ id?: number }>({});
 
@@ -85,7 +85,7 @@ export const useTimerControls = (state: TimerState) => {
     // Set the reset state to prevent sounds
     isInResetState.current = true;
     
-    // Also use the audio hook's method to disable sounds
+    // Also use the audio hook's method to disable sounds with longer timeout
     disableSoundsTemporarily();
     
     // Clear any active interval
@@ -115,11 +115,11 @@ export const useTimerControls = (state: TimerState) => {
       restSec: 0
     });
     
-    // Clear reset state after a delay to prevent sounds on immediate button presses
+    // Clear reset state after a longer delay to prevent sounds on immediate button presses
     setTimeout(() => {
       isInResetState.current = false;
       console.log("Reset state cleared");
-    }, 1000);
+    }, 2500);  // INCREASED FROM 1000ms to 2500ms
     
     // Return fixed reset values for immediate UI update
     return {
