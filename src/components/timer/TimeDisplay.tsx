@@ -71,10 +71,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
                 />
               ) : (
                 <span className="text-lg font-bold">
-                  {(isRunning || isPaused) ? 
-                    minutes.toString().padStart(2, '0') : 
-                    displayMinutes.toString().padStart(2, '0')
-                  }
+                  {displayMinutes.toString().padStart(2, '0')}
                 </span>
               )}
             </div>
@@ -110,10 +107,7 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
                 />
               ) : (
                 <span className="text-lg font-bold">
-                  {(isRunning || isPaused) ? 
-                    seconds.toString().padStart(2, '0') : 
-                    displaySeconds.toString().padStart(2, '0')
-                  }
+                  {displaySeconds.toString().padStart(2, '0')}
                 </span>
               )}
             </div>
