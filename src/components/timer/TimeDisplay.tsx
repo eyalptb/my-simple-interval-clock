@@ -42,12 +42,6 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
   // Display title with appropriate label based on whether it's rest or workout
   const displayTitle = isRest ? "Rest Time" : title;
   
-  // Determine which values to show based on timer state
-  // When running, show the current countdown values
-  // When not running, show the input values
-  const showMinutes = isRunning || isPaused ? minutes : displayMinutes;
-  const showSeconds = isRunning || isPaused ? seconds : displaySeconds;
-
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-center">
@@ -77,7 +71,10 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
                 />
               ) : (
                 <span className="text-lg font-bold">
-                  {displayMinutes.toString().padStart(2, '0')}
+                  {(isRunning || isPaused) ? 
+                    minutes.toString().padStart(2, '0') : 
+                    displayMinutes.toString().padStart(2, '0')
+                  }
                 </span>
               )}
             </div>
@@ -113,7 +110,10 @@ const TimeDisplay: React.FC<TimeDisplayProps> = ({
                 />
               ) : (
                 <span className="text-lg font-bold">
-                  {displaySeconds.toString().padStart(2, '0')}
+                  {(isRunning || isPaused) ? 
+                    seconds.toString().padStart(2, '0') : 
+                    displaySeconds.toString().padStart(2, '0')
+                  }
                 </span>
               )}
             </div>
