@@ -2,6 +2,7 @@
 import { useRef } from 'react';
 import { TimerState, ResetTimerValues } from '@/types/timer';
 import { useTimerAudio } from './useTimerAudio';
+import AudioService from '@/services/AudioService';
 
 export const useTimerControls = (state: TimerState) => {
   const {
@@ -34,18 +35,25 @@ export const useTimerControls = (state: TimerState) => {
     restSec: state.restSeconds
   });
 
-  // Add a ref to track if we're in a reset state to prevent sounds from playing - MORE AGGRESSIVELY RESET
+  // Add a ref to track if we're in a reset state to prevent sounds
   const isInResetState = useRef<boolean>(false);
   const intervalStore = useRef<{ id?: number }>({});
   const lastActionTime = useRef<number>(0);
 
   const startTimer = () => {
-    // Rate limiting to prevent rapid action execution
+    // More aggressive rate limiting to prevent rapid action execution
     const now = Date.now();
-    if (now - lastActionTime.current < 1000) {
-      console.log("Action blocked: Too soon after last action");
+    if (now - lastActionTime.current < 2000) {
+      console.log("Action blocked: Too soon after last action (must wait 2 seconds)");
       return;
     }
+    
+    // Check if AudioService thinks we're in reset cooldown
+    if (AudioService.getInstance().isWithinResetCooldown()) {
+      console.log("Start blocked: Still in reset cooldown period");
+      return;
+    }
+    
     lastActionTime.current = now;
 
     if (!state.isRunning && (minutes > 0 || seconds > 0)) {
@@ -61,18 +69,20 @@ export const useTimerControls = (state: TimerState) => {
           };
         }
         
-        // Reset iOS sound played state to allow start sound
+        // Only reset the iOS start sound played state
         resetIOSSoundState();
         
-        // Play start sound when timer begins
-        playStartSound();
-        console.log("Timer started: Playing start sound");
+        // Play start sound when timer begins with a small delay
+        setTimeout(() => {
+          playStartSound();
+          console.log("Timer started: Playing start sound (delayed)");
+        }, 100);
       } else {
         console.log("In reset state, not playing start sound");
         // Clear the reset state after handling this interaction
         setTimeout(() => {
           isInResetState.current = false;
-        }, 1000);
+        }, 2000);
       }
       
       setIsRunning(true);
@@ -81,10 +91,10 @@ export const useTimerControls = (state: TimerState) => {
   };
 
   const pauseTimer = () => {
-    // Rate limiting to prevent rapid action execution
+    // More aggressive rate limiting
     const now = Date.now();
-    if (now - lastActionTime.current < 1000) {
-      console.log("Action blocked: Too soon after last action");
+    if (now - lastActionTime.current < 2000) {
+      console.log("Action blocked: Too soon after last action (must wait 2 seconds)");
       return;
     }
     lastActionTime.current = now;
@@ -100,10 +110,10 @@ export const useTimerControls = (state: TimerState) => {
   };
 
   const resetTimer = (): ResetTimerValues => {
-    // Rate limiting to prevent rapid action execution
+    // More aggressive rate limiting
     const now = Date.now();
-    if (now - lastActionTime.current < 1000) {
-      console.log("Reset blocked: Too soon after last action");
+    if (now - lastActionTime.current < 3000) {
+      console.log("Reset blocked: Too soon after last action (must wait 3 seconds)");
       // Still return the current values
       return {
         minutes: minutes,
@@ -116,11 +126,14 @@ export const useTimerControls = (state: TimerState) => {
     
     console.log("Starting reset timer function - SILENT reset");
     
-    // Set the reset state to prevent sounds
+    // Set the reset state to prevent sounds for a longer period
     isInResetState.current = true;
     
-    // Also use the audio hook's method to disable sounds with longer timeout
+    // Use the audio hook's method to disable sounds with longer timeout
     disableSoundsTemporarily();
+    
+    // Also directly use the AudioService to block sounds
+    AudioService.getInstance().blockSoundsTemporarily(10000);
     
     // Clear any active interval
     if (intervalStore.current.id) {
@@ -153,7 +166,7 @@ export const useTimerControls = (state: TimerState) => {
     setTimeout(() => {
       isInResetState.current = false;
       console.log("Reset state cleared");
-    }, 5000);  // INCREASED FROM 2500ms to 5000ms
+    }, 10000);  // INCREASED FROM 5000ms to 10000ms
     
     // Return fixed reset values for immediate UI update
     return {

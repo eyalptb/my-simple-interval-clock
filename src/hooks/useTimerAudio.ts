@@ -61,7 +61,7 @@ export const useTimerAudio = (isMuted: boolean) => {
     };
   }, [audioService]);
 
-  // Function to temporarily disable sounds after reset - INCREASED TIMEOUT
+  // Function to temporarily disable sounds after reset with increased timeout
   const disableSoundsTemporarily = useCallback(() => {
     preventSoundAfterReset.current = true;
     
@@ -70,36 +70,42 @@ export const useTimerAudio = (isMuted: boolean) => {
       window.clearTimeout(resetTimeoutId.current);
     }
     
-    // Use the AudioService to block sounds at the service level
-    audioService.blockSoundsTemporarily(5000); // Block for 5 seconds
+    // Use the AudioService to block sounds at the service level - increased to 10 seconds
+    audioService.blockSoundsTemporarily(10000);
     
-    // Re-enable sounds after a cooldown period - INCREASED FROM 2500 to 5000ms
+    // Re-enable sounds after a cooldown period - INCREASED FROM 5000 to 10000ms
     resetTimeoutId.current = window.setTimeout(() => {
       preventSoundAfterReset.current = false;
       resetTimeoutId.current = null;
       console.log('Sound prevention after reset has been cleared');
-    }, 5000) as unknown as number;
+    }, 10000) as unknown as number;
     
-    console.log('Sounds temporarily disabled after reset - extended time period');
+    console.log('Sounds temporarily disabled after reset - extended time period (10s)');
   }, [audioService]);
 
-  // Rate-limited sound player to prevent overlapping sounds
+  // Rate-limited sound player with type-specific handling
   const playSound = useCallback(async (type: 'start' | 'end') => {
     if (isMuted) {
       console.log('Audio is muted, not playing sound');
       return;
     }
     
-    // Check our reset prevention flag - FORCE LOG WHEN BLOCKED
+    // Check if we're in a reset prevention period
     if (preventSoundAfterReset.current) {
       console.log('Sound prevented: reset protection active', {type});
       return;
     }
     
-    // Prevent rapid sound playback - INCREASED FROM 1000 to 2000ms
+    // Check if AudioService thinks we're in reset cooldown
+    if (audioService.isWithinResetCooldown()) {
+      console.log(`Sound prevented: AudioService reports we're in reset cooldown - ${type}`);
+      return;
+    }
+    
+    // Prevent rapid sound playback - INCREASED FROM 2000 to 3000ms
     const now = Date.now();
-    if (now - lastPlayTime.current < 2000) {
-      console.log('Preventing sound overlap - too soon after last play');
+    if (now - lastPlayTime.current < 3000) {
+      console.log(`Preventing ${type} sound overlap - too soon after last play`);
       return;
     }
     
@@ -112,10 +118,11 @@ export const useTimerAudio = (isMuted: boolean) => {
     }
   }, [isMuted, audioService]);
 
-  // Reset iOS sound played state when timer is stopped
+  // Reset iOS sound played state when timer is started
   const resetIOSSoundState = useCallback(() => {
-    audioService.resetIOSPlayedState();
-    console.log('iOS sound state reset');
+    // Only reset the start sound state to allow it to play again
+    audioService.resetSpecificIOSSound('start');
+    console.log('iOS start sound state reset specifically');
   }, [audioService]);
 
   return {

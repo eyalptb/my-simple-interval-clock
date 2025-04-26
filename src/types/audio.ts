@@ -13,3 +13,5 @@ export interface AudioState {
   soundBlockedUntil: number;
   isIOS: boolean;
 }
+
+export type SoundType = 'start' | 'end';
