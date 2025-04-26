@@ -36,7 +36,8 @@ export const useTimerAudio = (isMuted: boolean) => {
     // Initialize audio context for iOS compatibility
     const initializeAudioContext = () => {
       try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Use type assertion to handle webkit prefix
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
         
         // Create a silent buffer and play it
         const buffer = audioContext.createBuffer(1, 1, 22050);
@@ -98,4 +99,3 @@ export const useTimerAudio = (isMuted: boolean) => {
     audioStore
   };
 };
-
