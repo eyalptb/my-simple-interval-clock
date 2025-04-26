@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Play, Pause, Volume, VolumeX, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AudioService from '@/services/AudioService';
@@ -23,14 +23,26 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   onReset,
   onToggleMute,
 }) => {
-  // Enhanced reset button handler with stopPropagation and preventDefault
+  // Track last clicked time to prevent rapid clicks
+  const [lastClickTime, setLastClickTime] = useState<number>(0);
+  
+  // Enhanced reset button handler with additional safeguards
   const handleResetClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Prevent rapid clicking
+    const now = Date.now();
+    if (now - lastClickTime < 1000) {
+      console.log("Ignored rapid reset click");
+      return;
+    }
+    setLastClickTime(now);
+    
     console.log("Reset button clicked inside ControlButtons - SILENT RESET");
     
-    // Block sounds at service level (iOS needs this additional blocking)
-    AudioService.getInstance().blockSoundsTemporarily(3000);
+    // Block sounds at service level even more aggressively for iOS
+    AudioService.getInstance().blockSoundsTemporarily(5000);
     
     // Force a synchronous reset call
     try {
@@ -39,6 +51,32 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
     } catch (error) {
       console.error("Error during reset:", error);
     }
+  };
+  
+  // Control start with rate limiting
+  const handleStart = () => {
+    const now = Date.now();
+    if (now - lastClickTime < 1000) {
+      console.log("Ignored rapid start click");
+      return;
+    }
+    setLastClickTime(now);
+    
+    // Reset iOS sound state when starting timer to allow start sound
+    AudioService.getInstance().resetIOSPlayedState();
+    onStart();
+  };
+  
+  // Control pause with rate limiting
+  const handlePause = () => {
+    const now = Date.now();
+    if (now - lastClickTime < 1000) {
+      console.log("Ignored rapid pause click");
+      return;
+    }
+    setLastClickTime(now);
+    
+    onPause();
   };
 
   return (
@@ -57,7 +95,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         <Button 
           variant="default" 
           size="icon"
-          onClick={onStart}
+          onClick={handleStart}
           className="rounded-full bg-green-500 hover:bg-green-600"
           disabled={!canStart}
           aria-label="Start timer"
@@ -68,7 +106,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         <Button 
           variant="default" 
           size="icon"
-          onClick={onPause}
+          onClick={handlePause}
           className="rounded-full bg-amber-500 hover:bg-amber-600"
           aria-label="Pause timer"
         >

@@ -51,4 +51,5 @@ export interface TimerControls {
   playStartSound: () => void;
   playEndSound: () => void;
   isInResetState?: React.MutableRefObject<boolean>; // Add optional isInResetState ref
+  resetIOSSoundState?: () => void; // Add optional method to reset iOS sound state
 }

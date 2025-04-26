@@ -19,7 +19,7 @@ export const useTimerControls = (state: TimerState) => {
   } = state;
 
   // Initialize audio hooks with correct muting state
-  const { playStartSound, playEndSound, disableSoundsTemporarily } = useTimerAudio(isMuted);
+  const { playStartSound, playEndSound, disableSoundsTemporarily, resetIOSSoundState } = useTimerAudio(isMuted);
 
   // Create refs for timer settings
   const timerRef = useRef<{
@@ -37,8 +37,17 @@ export const useTimerControls = (state: TimerState) => {
   // Add a ref to track if we're in a reset state to prevent sounds from playing - MORE AGGRESSIVELY RESET
   const isInResetState = useRef<boolean>(false);
   const intervalStore = useRef<{ id?: number }>({});
+  const lastActionTime = useRef<number>(0);
 
   const startTimer = () => {
+    // Rate limiting to prevent rapid action execution
+    const now = Date.now();
+    if (now - lastActionTime.current < 1000) {
+      console.log("Action blocked: Too soon after last action");
+      return;
+    }
+    lastActionTime.current = now;
+
     if (!state.isRunning && (minutes > 0 || seconds > 0)) {
       // Don't play sounds if we're in a reset state
       if (!isInResetState.current) {
@@ -51,6 +60,9 @@ export const useTimerControls = (state: TimerState) => {
             restSec: state.restSeconds
           };
         }
+        
+        // Reset iOS sound played state to allow start sound
+        resetIOSSoundState();
         
         // Play start sound when timer begins
         playStartSound();
@@ -69,6 +81,14 @@ export const useTimerControls = (state: TimerState) => {
   };
 
   const pauseTimer = () => {
+    // Rate limiting to prevent rapid action execution
+    const now = Date.now();
+    if (now - lastActionTime.current < 1000) {
+      console.log("Action blocked: Too soon after last action");
+      return;
+    }
+    lastActionTime.current = now;
+    
     if (state.isRunning) {
       setIsRunning(false);
       setIsPaused(true);
@@ -80,6 +100,20 @@ export const useTimerControls = (state: TimerState) => {
   };
 
   const resetTimer = (): ResetTimerValues => {
+    // Rate limiting to prevent rapid action execution
+    const now = Date.now();
+    if (now - lastActionTime.current < 1000) {
+      console.log("Reset blocked: Too soon after last action");
+      // Still return the current values
+      return {
+        minutes: minutes,
+        seconds: seconds,
+        restMinutes: state.restMinutes,
+        restSeconds: state.restSeconds
+      };
+    }
+    lastActionTime.current = now;
+    
     console.log("Starting reset timer function - SILENT reset");
     
     // Set the reset state to prevent sounds
@@ -119,7 +153,7 @@ export const useTimerControls = (state: TimerState) => {
     setTimeout(() => {
       isInResetState.current = false;
       console.log("Reset state cleared");
-    }, 2500);  // INCREASED FROM 1000ms to 2500ms
+    }, 5000);  // INCREASED FROM 2500ms to 5000ms
     
     // Return fixed reset values for immediate UI update
     return {
@@ -140,5 +174,6 @@ export const useTimerControls = (state: TimerState) => {
     playStartSound,
     playEndSound,
     isInResetState, // Export this so it can be used in other components
+    resetIOSSoundState
   };
 };

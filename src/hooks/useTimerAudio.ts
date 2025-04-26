@@ -70,15 +70,18 @@ export const useTimerAudio = (isMuted: boolean) => {
       window.clearTimeout(resetTimeoutId.current);
     }
     
-    // Re-enable sounds after a cooldown period - INCREASED FROM 1500 to 2500ms
+    // Use the AudioService to block sounds at the service level
+    audioService.blockSoundsTemporarily(5000); // Block for 5 seconds
+    
+    // Re-enable sounds after a cooldown period - INCREASED FROM 2500 to 5000ms
     resetTimeoutId.current = window.setTimeout(() => {
       preventSoundAfterReset.current = false;
       resetTimeoutId.current = null;
       console.log('Sound prevention after reset has been cleared');
-    }, 2500) as unknown as number;
+    }, 5000) as unknown as number;
     
     console.log('Sounds temporarily disabled after reset - extended time period');
-  }, []);
+  }, [audioService]);
 
   // Rate-limited sound player to prevent overlapping sounds
   const playSound = useCallback(async (type: 'start' | 'end') => {
@@ -93,9 +96,9 @@ export const useTimerAudio = (isMuted: boolean) => {
       return;
     }
     
-    // Prevent rapid sound playback - INCREASED FROM 800 to 1000ms
+    // Prevent rapid sound playback - INCREASED FROM 1000 to 2000ms
     const now = Date.now();
-    if (now - lastPlayTime.current < 1000) {
+    if (now - lastPlayTime.current < 2000) {
       console.log('Preventing sound overlap - too soon after last play');
       return;
     }
@@ -109,9 +112,16 @@ export const useTimerAudio = (isMuted: boolean) => {
     }
   }, [isMuted, audioService]);
 
+  // Reset iOS sound played state when timer is stopped
+  const resetIOSSoundState = useCallback(() => {
+    audioService.resetIOSPlayedState();
+    console.log('iOS sound state reset');
+  }, [audioService]);
+
   return {
     playStartSound: () => playSound('start'),
     playEndSound: () => playSound('end'),
     disableSoundsTemporarily,
+    resetIOSSoundState
   };
 };

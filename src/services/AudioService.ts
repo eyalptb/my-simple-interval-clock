@@ -17,6 +17,7 @@ class AudioService {
   private whistleSound: HTMLAudioElement;
   private state: AudioState;
   private iOSHandler: IOSAudioHandler;
+  private globalSoundEnabled: boolean = true;
 
   private constructor() {
     this.state = {
@@ -114,6 +115,7 @@ class AudioService {
 
   private async playIOSSound(sound: HTMLAudioElement): Promise<void> {
     if (!this.iOSHandler.canPlaySound()) {
+      console.log('iOS: Sound blocked by handler');
       return;
     }
     
@@ -126,17 +128,51 @@ class AudioService {
     try {
       newSound.currentTime = 0;
       await newSound.play();
+      
+      if (sound === this.goSound) {
+        this.iOSHandler.setIOSSoundPlayed(true);
+        console.log('iOS: Start sound played and marked as played');
+      }
     } catch (error) {
       console.error('iOS play attempt failed:', error);
     }
   }
 
-  public blockSoundsTemporarily(durationMs: number = 2500): void {
+  public blockSoundsTemporarily(durationMs: number = 5000): void {
+    console.log(`Blocking sounds for ${durationMs}ms from AudioService level`);
     this.iOSHandler.blockSounds(durationMs);
   }
 
+  public disableAllSounds(): void {
+    this.globalSoundEnabled = false;
+    console.log('All sounds disabled globally');
+  }
+
+  public enableAllSounds(): void {
+    this.globalSoundEnabled = true;
+    console.log('All sounds enabled globally');
+  }
+
+  public resetIOSPlayedState(): void {
+    this.iOSHandler.resetIOSSoundPlayed();
+  }
+
   public async playSound(type: 'start' | 'end'): Promise<void> {
+    // First check global sound enabled flag
+    if (!this.globalSoundEnabled) {
+      console.log('Sound blocked: global sound disabled');
+      return;
+    }
+    
+    // Check iOS handler permissions
     if (!this.iOSHandler.canPlaySound()) {
+      console.log(`${type} sound blocked by iOS handler`);
+      return;
+    }
+    
+    // Special iOS handling for start sound to prevent duplicates
+    if (this.state.isIOS && type === 'start' && this.iOSHandler.hasIOSSoundPlayed()) {
+      console.log('iOS: Start sound already played once, blocking duplicate');
       return;
     }
     
