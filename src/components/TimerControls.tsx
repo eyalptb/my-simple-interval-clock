@@ -33,7 +33,7 @@ const TimerControls: React.FC = () => {
     decrementRestSeconds,
     incrementRestMinutes,
     decrementRestMinutes,
-    registerPlusButton // Interface requires this
+    registerPlusButton
   } = useTimer();
 
   // Store input values
@@ -80,77 +80,48 @@ const TimerControls: React.FC = () => {
     }
   };
 
-  // Simplified button handlers
+  // Optimized button handlers with minimal delay
   const handleIncreaseMinutes = () => {
-    const now = Date.now();
-    if (now - lastButtonClick < 1000) {
-      console.log("Ignored rapid button click");
-      return;
-    }
-    setLastButtonClick(now);
     incrementMinutes();
+    registerPlusButton();
   };
   
   const handleDecreaseMinutes = () => {
-    const now = Date.now();
-    if (now - lastButtonClick < 1000) return;
-    setLastButtonClick(now);
     decrementMinutes();
   };
   
   const handleIncreaseSeconds = () => {
-    const now = Date.now();
-    if (now - lastButtonClick < 1000) return;
-    setLastButtonClick(now);
     incrementSeconds();
+    registerPlusButton();
   };
   
   const handleDecreaseSeconds = () => {
-    const now = Date.now();
-    if (now - lastButtonClick < 1000) return;
-    setLastButtonClick(now);
     decrementSeconds();
   };
   
   const handleIncreaseRestMinutes = () => {
-    const now = Date.now();
-    if (now - lastButtonClick < 1000) return;
-    setLastButtonClick(now);
     incrementRestMinutes();
+    registerPlusButton();
   };
   
   const handleDecreaseRestMinutes = () => {
-    const now = Date.now();
-    if (now - lastButtonClick < 1000) return;
-    setLastButtonClick(now);
     decrementRestMinutes();
   };
   
   const handleIncreaseRestSeconds = () => {
-    const now = Date.now();
-    if (now - lastButtonClick < 1000) return;
-    setLastButtonClick(now);
     incrementRestSeconds();
+    registerPlusButton();
   };
   
   const handleDecreaseRestSeconds = () => {
-    const now = Date.now();
-    if (now - lastButtonClick < 1000) return;
-    setLastButtonClick(now);
     decrementRestSeconds();
   };
 
   const handleIncreaseReps = () => {
-    const now = Date.now();
-    if (now - lastButtonClick < 1000) return;
-    setLastButtonClick(now);
     setTotalRepetitions(Math.min(20, totalRepetitions + 1));
   };
 
   const handleDecreaseReps = () => {
-    const now = Date.now();
-    if (now - lastButtonClick < 1000) return;
-    setLastButtonClick(now);
     setTotalRepetitions(Math.max(1, totalRepetitions - 1));
   };
 

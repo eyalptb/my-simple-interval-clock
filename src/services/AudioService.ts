@@ -197,22 +197,38 @@ class AudioService {
         }
       }
       
-      console.log(`Playing ${type} sound using HTML Audio`);
-      const audio = type === 'start' ? this.goSound : this.whistleSound;
-      audio.currentTime = 0;
-      await audio.play();
-      console.log(`${type} sound played successfully using HTML Audio`);
-    } catch (error) {
-      console.error(`Error playing ${type} sound:`, error);
+      const useNewElement = true; // Always use a fresh audio element for more reliable playback
       
-      try {
-        console.log(`Attempting recovery play for ${type} sound with fresh audio element`);
+      if (useNewElement) {
         const freshAudio = new Audio(type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath);
         freshAudio.volume = 1.0;
         await freshAudio.play();
-        console.log(`${type} sound played using fresh HTML Audio element (recovery attempt)`);
-      } catch (recoveryError) {
-        console.error(`Final attempt to play ${type} sound failed:`, recoveryError);
+        console.log(`${type} sound played using fresh HTML Audio element`);
+      } else {
+        console.log(`Playing ${type} sound using HTML Audio`);
+        const audio = type === 'start' ? this.goSound : this.whistleSound;
+        audio.currentTime = 0;
+        await audio.play();
+        console.log(`${type} sound played successfully using HTML Audio`);
+      }
+    } catch (error) {
+      console.error(`Error playing ${type} sound, trying final backup method:`, error);
+      
+      try {
+        console.log(`Final attempt to play ${type} sound with emergency audio element`);
+        const emergencyAudio = document.createElement('audio');
+        emergencyAudio.src = type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath;
+        emergencyAudio.volume = 1.0;
+        document.body.appendChild(emergencyAudio);
+        
+        await emergencyAudio.play();
+        console.log(`${type} sound played using emergency audio element`);
+        
+        setTimeout(() => {
+          document.body.removeChild(emergencyAudio);
+        }, 2000);
+      } catch (finalError) {
+        console.error(`All attempts to play ${type} sound failed:`, finalError);
       }
     }
   }
