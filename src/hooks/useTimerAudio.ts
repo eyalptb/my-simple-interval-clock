@@ -8,6 +8,10 @@ export const useTimerAudio = (isMuted: boolean) => {
   const audioService = AudioService.getInstance();
   const lastPlayTime = useRef<number>(0);
 
+  // Special flag to prevent sound after reset
+  const preventSoundAfterReset = useRef<boolean>(false);
+  const resetTimeoutId = useRef<number | null>(null);
+
   // Enhanced initialization with improved iOS support
   useEffect(() => {
     if (hasInitialized.current) return;
@@ -48,8 +52,33 @@ export const useTimerAudio = (isMuted: boolean) => {
       userEvents.forEach((event, i) => {
         document.removeEventListener(event, eventHandlers[i]);
       });
+
+      // Clear any pending timeout
+      if (resetTimeoutId.current) {
+        window.clearTimeout(resetTimeoutId.current);
+        resetTimeoutId.current = null;
+      }
     };
   }, [audioService]);
+
+  // Function to temporarily disable sounds after reset
+  const disableSoundsTemporarily = useCallback(() => {
+    preventSoundAfterReset.current = true;
+    
+    // Clear any existing timeout
+    if (resetTimeoutId.current) {
+      window.clearTimeout(resetTimeoutId.current);
+    }
+    
+    // Re-enable sounds after a cooldown period
+    resetTimeoutId.current = window.setTimeout(() => {
+      preventSoundAfterReset.current = false;
+      resetTimeoutId.current = null;
+      console.log('Sound prevention after reset has been cleared');
+    }, 1500) as unknown as number;
+    
+    console.log('Sounds temporarily disabled after reset');
+  }, []);
 
   // Rate-limited sound player to prevent overlapping sounds
   const playSound = useCallback(async (type: 'start' | 'end') => {
@@ -58,9 +87,15 @@ export const useTimerAudio = (isMuted: boolean) => {
       return;
     }
     
+    // Check our reset prevention flag
+    if (preventSoundAfterReset.current) {
+      console.log('Sounds prevented due to recent reset operation');
+      return;
+    }
+    
     // Prevent rapid sound playback
     const now = Date.now();
-    if (now - lastPlayTime.current < 500) {
+    if (now - lastPlayTime.current < 800) { // Increased from 500ms to 800ms
       console.log('Preventing sound overlap - too soon after last play');
       return;
     }
@@ -77,5 +112,6 @@ export const useTimerAudio = (isMuted: boolean) => {
   return {
     playStartSound: () => playSound('start'),
     playEndSound: () => playSound('end'),
+    disableSoundsTemporarily,
   };
 };

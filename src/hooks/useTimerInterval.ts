@@ -14,6 +14,7 @@ export const useTimerInterval = (
     resetTimer: () => void;
     playStartSound: () => void;
     playEndSound: () => void;
+    isInResetState?: React.MutableRefObject<boolean>; // Add optional isInResetState ref
   }
 ) => {
   const intervalStore = useRef<{ id?: number }>({});
@@ -35,6 +36,9 @@ export const useTimerInterval = (
     if (!isRunning) return;
     
     const intervalId = window.setInterval(() => {
+      // Check if we're in a reset state from any source
+      const inResetState = isResetOperation.current || (controls.isInResetState && controls.isInResetState.current);
+      
       if (seconds > 0) {
         state.setSecondsState(seconds - 1);
       } else if (minutes > 0) {
@@ -46,7 +50,7 @@ export const useTimerInterval = (
         if (isResting) {
           // Rest period ended - Play start sound for the next workout period
           // Only play if not in a reset operation
-          if (!isResetOperation.current) {
+          if (!inResetState) {
             controls.playStartSound();
             console.log("Rest ended: Playing GO sound for next workout");
           }
@@ -66,7 +70,7 @@ export const useTimerInterval = (
         } else {
           // Workout period ended - Play end sound
           // Only play if not in a reset operation
-          if (!isResetOperation.current) {
+          if (!inResetState) {
             controls.playEndSound();
             console.log("Workout ended: Playing WHISTLE sound");
           }
@@ -78,7 +82,7 @@ export const useTimerInterval = (
               
               // Play start sound for the next repetition
               // Only play if not in a reset operation
-              if (!isResetOperation.current) {
+              if (!inResetState) {
                 setTimeout(() => {
                   controls.playStartSound();
                   console.log("No rest period: Playing GO sound for next workout");

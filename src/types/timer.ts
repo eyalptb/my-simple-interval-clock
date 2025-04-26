@@ -50,5 +50,5 @@ export interface TimerControls {
   pendingTimeUpdateRef: React.RefObject<NodeJS.Timeout>;
   playStartSound: () => void;
   playEndSound: () => void;
-  // Removed audioStore as it's no longer being used since we now use AudioService
+  isInResetState?: React.MutableRefObject<boolean>; // Add optional isInResetState ref
 }

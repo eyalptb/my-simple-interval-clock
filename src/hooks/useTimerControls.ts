@@ -19,7 +19,7 @@ export const useTimerControls = (state: TimerState) => {
   } = state;
 
   // Initialize audio hooks with correct muting state
-  const { playStartSound, playEndSound } = useTimerAudio(isMuted);
+  const { playStartSound, playEndSound, disableSoundsTemporarily } = useTimerAudio(isMuted);
 
   // Create refs for timer settings
   const timerRef = useRef<{
@@ -34,23 +34,34 @@ export const useTimerControls = (state: TimerState) => {
     restSec: state.restSeconds
   });
 
+  // Add a ref to track if we're in a reset state to prevent sounds from playing
+  const isInResetState = useRef<boolean>(false);
   const intervalStore = useRef<{ id?: number }>({});
 
   const startTimer = () => {
     if (!state.isRunning && (minutes > 0 || seconds > 0)) {
-      // Update timer reference with current values before starting
-      if (!state.isResting) {
-        timerRef.current = {
-          workoutMin: minutes,
-          workoutSec: seconds,
-          restMin: state.restMinutes,
-          restSec: state.restSeconds
-        };
+      // Don't play sounds if we're in a reset state
+      if (!isInResetState.current) {
+        // Update timer reference with current values before starting
+        if (!state.isResting) {
+          timerRef.current = {
+            workoutMin: minutes,
+            workoutSec: seconds,
+            restMin: state.restMinutes,
+            restSec: state.restSeconds
+          };
+        }
+        
+        // Play start sound when timer begins
+        playStartSound();
+        console.log("Timer started: Playing start sound");
+      } else {
+        console.log("In reset state, not playing start sound");
+        // Clear the reset state after handling this interaction
+        setTimeout(() => {
+          isInResetState.current = false;
+        }, 1000);
       }
-      
-      // Play start sound when timer begins
-      playStartSound();
-      console.log("Timer started: Playing start sound");
       
       setIsRunning(true);
       setIsPaused(false);
@@ -70,6 +81,12 @@ export const useTimerControls = (state: TimerState) => {
 
   const resetTimer = (): ResetTimerValues => {
     console.log("Starting reset timer function - SILENT reset");
+    
+    // Set the reset state to prevent sounds
+    isInResetState.current = true;
+    
+    // Also use the audio hook's method to disable sounds
+    disableSoundsTemporarily();
     
     // Clear any active interval
     if (intervalStore.current.id) {
@@ -98,6 +115,12 @@ export const useTimerControls = (state: TimerState) => {
       restSec: 0
     });
     
+    // Clear reset state after a delay to prevent sounds on immediate button presses
+    setTimeout(() => {
+      isInResetState.current = false;
+      console.log("Reset state cleared");
+    }, 1000);
+    
     // Return fixed reset values for immediate UI update
     return {
       minutes: 0,
@@ -116,5 +139,6 @@ export const useTimerControls = (state: TimerState) => {
     pendingTimeUpdateRef: state.pendingTimeUpdateRef,
     playStartSound,
     playEndSound,
+    isInResetState, // Export this so it can be used in other components
   };
 };
