@@ -40,12 +40,15 @@ export const useTimerInterval = (
         state.setMinutesState(minutes - 1);
         state.setSecondsState(59);
       } else {
-        // Play the end sound at the end of any period
-        controls.playEndSound();
+        // Timer has reached zero
         
         if (isResting) {
-          // When rest period ends, start workout
+          // Rest period ended
           if (currentRepetition < totalRepetitions) {
+            // Play start sound for next workout period
+            controls.playStartSound();
+            console.log("Rest ended: Playing GO sound for next workout");
+            
             state.setCurrentRepetition(currentRepetition + 1);
             state.setIsResting(false);
             
@@ -56,10 +59,8 @@ export const useTimerInterval = (
               title: `Starting repetition ${currentRepetition + 1} of ${totalRepetitions}`,
               duration: 3000,
             });
-            
-            // Play start sound when starting next workout after rest
-            controls.playStartSound();
           } else {
+            // Workout completely finished
             controls.resetTimer();
             
             toast({
@@ -69,11 +70,19 @@ export const useTimerInterval = (
             });
           }
         } else {
-          // When workout period ends
+          // Workout period ended
+          // Play end sound at the end of workout period
+          controls.playEndSound();
+          console.log("Workout ended: Playing WHISTLE sound");
+          
           if (currentRepetition < totalRepetitions) {
             if (restMinutes === 0 && restSeconds === 0) {
               // No rest time configured, move directly to next repetition
               state.setCurrentRepetition(currentRepetition + 1);
+              
+              // Play start sound for the next repetition
+              controls.playStartSound();
+              console.log("No rest period: Playing GO sound for next workout");
               
               state.setMinutesState(controls.timerRef.current.workoutMin);
               state.setSecondsState(controls.timerRef.current.workoutSec);
@@ -82,9 +91,6 @@ export const useTimerInterval = (
                 title: `Starting repetition ${currentRepetition + 1} of ${totalRepetitions}`,
                 duration: 3000,
               });
-              
-              // Play start sound for next workout repetition
-              controls.playStartSound();
             } else {
               // Rest time is configured, start rest period
               state.setIsResting(true);
@@ -96,8 +102,6 @@ export const useTimerInterval = (
                 description: `Rest for ${restMinutes}:${restSeconds.toString().padStart(2, '0')}`,
                 duration: 3000,
               });
-              
-              // No specific sound for entering rest period - just the end of workout sound already played
             }
           } else {
             controls.resetTimer();

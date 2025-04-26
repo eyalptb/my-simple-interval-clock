@@ -18,6 +18,7 @@ export const useTimerEffects = (state: TimerState, controls: TimerControls) => {
 
   const { timerRef, resetTimer, audioStore } = controls;
 
+  // Initialize audio with correct muting state
   const { playStartSound, playEndSound } = useTimerAudio(isMuted);
   
   // Pass the sound functions to the interval handler

@@ -21,36 +21,6 @@ export const useTimerAudio = (isMuted: boolean) => {
     end: false
   });
 
-  // Function to play a short beep sound using Web Audio API as fallback
-  const playFallbackBeep = (duration = 300, frequency = 800, volume = 0.5) => {
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
-      oscillator.frequency.value = frequency;
-      oscillator.type = 'sine';
-      
-      oscillator.start();
-      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration/1000);
-      
-      setTimeout(() => {
-        oscillator.stop();
-        audioContext.close();
-      }, duration);
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to play fallback beep:', error);
-      return false;
-    }
-  };
-
   // Initialize the audio on component mount
   useEffect(() => {
     // For Safari, try to unlock audio context with a silent audio element
@@ -88,6 +58,11 @@ export const useTimerAudio = (isMuted: boolean) => {
       
       startSound.addEventListener('error', (e) => {
         console.error('Go sound failed to load:', e);
+        toast({
+          title: 'Audio Error',
+          description: 'Failed to load the go.mp3 sound file',
+          variant: 'destructive'
+        });
       });
     }
     
@@ -99,11 +74,16 @@ export const useTimerAudio = (isMuted: boolean) => {
       
       endSound.addEventListener('error', (e) => {
         console.error('Whistle sound failed to load:', e);
+        toast({
+          title: 'Audio Error',
+          description: 'Failed to load the whistle.mp3 sound file',
+          variant: 'destructive'
+        });
       });
     }
 
     // Pre-test audio playback to try to resolve autoplay restrictions
-    const testSound = startSound || audioService.createBeep();
+    const testSound = startSound;
     if (testSound) {
       testSound.volume = 0.01; // Nearly silent
       testSound.play().then(() => {
@@ -155,26 +135,28 @@ export const useTimerAudio = (isMuted: boolean) => {
             .catch(error => {
               console.error(`Error playing ${type} sound:`, error);
               
-              // Try the Web Audio API fallback beep sound
-              const frequency = type === 'start' ? 800 : 1200;
-              if (!playFallbackBeep(300, frequency, 0.5)) {
-                toast({
-                  title: 'Audio Notice',
-                  description: 'Some browsers require user interaction before playing audio.',
-                  variant: 'default'
-                });
-              }
+              toast({
+                title: 'Audio Notice',
+                description: 'Some browsers require user interaction before playing audio.',
+                variant: 'default'
+              });
             });
         }
       } catch (error) {
         console.error(`Error playing ${type} sound:`, error);
-        const frequency = type === 'start' ? 800 : 1200;
-        playFallbackBeep(300, frequency, 0.5);
+        toast({
+          title: 'Audio Error',
+          description: `Failed to play ${type} sound`,
+          variant: 'destructive'
+        });
       }
     } else {
       console.error(`${type} sound is not available`);
-      const frequency = type === 'start' ? 800 : 1200;
-      playFallbackBeep(300, frequency, 0.5);
+      toast({
+        title: 'Audio Error',
+        description: `${type} sound is not available`,
+        variant: 'destructive'
+      });
     }
   };
 
