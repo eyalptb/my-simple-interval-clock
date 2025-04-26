@@ -7,30 +7,26 @@ interface AudioConfig {
 class AudioService {
   private static instance: AudioService;
   private audioConfig: AudioConfig = {
-    startSoundPath: '/src/assets/audio/go.mp3',
-    endSoundPath: '/src/assets/audio/whistle.mp3'
+    startSoundPath: '/audio/go.mp3',
+    endSoundPath: '/audio/whistle.mp3'
   };
   
-  private startAudio: HTMLAudioElement | null = null;
-  private endAudio: HTMLAudioElement | null = null;
+  private goSound: HTMLAudioElement;
+  private whistleSound: HTMLAudioElement;
 
   private constructor() {
-    this.initializeAudio();
-  }
-
-  private initializeAudio(): void {
-    try {
-      this.startAudio = new Audio(this.audioConfig.startSoundPath);
-      this.endAudio = new Audio(this.audioConfig.endSoundPath);
-      
-      // Preload audio files
-      this.startAudio.preload = "auto";
-      this.endAudio.preload = "auto";
-      
-      console.log('Audio initialized successfully');
-    } catch (error) {
-      console.error('Failed to initialize audio:', error);
-    }
+    this.goSound = new Audio(this.audioConfig.startSoundPath);
+    this.whistleSound = new Audio(this.audioConfig.endSoundPath);
+    
+    // Preload audio files
+    this.goSound.preload = "auto";
+    this.whistleSound.preload = "auto";
+    
+    // Set maximum volume
+    this.goSound.volume = 1.0;
+    this.whistleSound.volume = 1.0;
+    
+    console.log('Audio Service initialized');
   }
 
   public static getInstance(): AudioService {
@@ -42,45 +38,28 @@ class AudioService {
 
   public async playSound(type: 'start' | 'end'): Promise<void> {
     try {
-      // Create a fresh instance every time to avoid any playback issues
-      const audio = new Audio(type === 'start' ? 
-        this.audioConfig.startSoundPath : 
-        this.audioConfig.endSoundPath
-      );
+      const audio = type === 'start' ? this.goSound : this.whistleSound;
       
-      // Set volume to maximum to ensure it's audible
-      audio.volume = 1.0;
+      // Reset the audio to start
+      audio.currentTime = 0;
       
       console.log(`Playing ${type} sound`);
-      
       const playPromise = audio.play();
+      
       if (playPromise !== undefined) {
         playPromise.catch(error => {
           console.error(`Error playing ${type} sound:`, error);
+          // Create a fresh instance as fallback
+          const newAudio = new Audio(type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath);
+          newAudio.volume = 1.0;
+          return newAudio.play();
         });
       }
     } catch (error) {
-      console.error(`Error playing ${type} sound:`, error);
+      console.error(`Error in AudioService playing ${type} sound:`, error);
     }
-  }
-  
-  public createAudio(type: 'start' | 'end'): HTMLAudioElement {
-    const audio = new Audio();
-    
-    if (type === 'start') {
-      audio.src = this.audioConfig.startSoundPath;
-    } else {
-      audio.src = this.audioConfig.endSoundPath;
-    }
-    
-    // Set maximum volume
-    audio.volume = 1.0;
-    
-    // Preload the audio
-    audio.preload = "auto";
-    
-    return audio;
   }
 }
 
 export default AudioService;
+
