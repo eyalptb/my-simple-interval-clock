@@ -1,34 +1,31 @@
 
 export class IOSAudioHandler {
-  // Track only essential timestamps
   private lastPlayAttempt: number = 0;
   private lastResetTime: number = 0;
-  private shouldBlockSounds: boolean = false;
+  private shouldBlockProgressSounds: boolean = false;
   private startSoundPlayed: boolean = false;
   
-  // Constants for timing
   private readonly RESET_BLOCK_DURATION = 30000; // 30 seconds
   private readonly RATE_LIMIT_DURATION = 8000;   // 8 seconds
   
-  // Main method to check if sound can play
-  canPlaySound(type: 'start' | 'end'): boolean {
+  // Refined method to check if progress sounds can play
+  canPlayProgressSound(type: 'start' | 'end'): boolean {
     const now = Date.now();
     
-    // Global block check
-    if (this.shouldBlockSounds) {
-      console.log(`iOS: Sound '${type}' blocked - Global block active`);
-      return false;
+    // Block progress sounds after reset for specific duration
+    if (this.shouldBlockProgressSounds) {
+      if (now - this.lastResetTime < this.RESET_BLOCK_DURATION) {
+        console.log(`iOS: Progress sound '${type}' blocked - Reset cooldown active`);
+        return false;
+      } else {
+        // Reset block automatically after duration
+        this.shouldBlockProgressSounds = false;
+      }
     }
     
-    // After reset, block for duration
-    if (now - this.lastResetTime < this.RESET_BLOCK_DURATION) {
-      console.log(`iOS: Sound '${type}' blocked - Reset cooldown active`);
-      return false;
-    }
-    
-    // Rate limiting protection
+    // Rate limiting for progress sounds
     if (now - this.lastPlayAttempt < this.RATE_LIMIT_DURATION) {
-      console.log(`iOS: Sound '${type}' prevented - rate limiting in effect (${this.RATE_LIMIT_DURATION}ms)`);
+      console.log(`iOS: Progress sound '${type}' prevented - rate limiting in effect`);
       return false;
     }
     
@@ -41,23 +38,17 @@ export class IOSAudioHandler {
     return true;
   }
 
-  // Record a play attempt
-  updateLastPlayAttempt(): void {
+  // Update last play attempt for progress sounds
+  updateLastProgressSoundAttempt(): void {
     this.lastPlayAttempt = Date.now();
   }
   
-  // Handle reset button presses
+  // Handle reset button presses, specifically for progress sounds
   registerResetPress(): void {
     this.lastResetTime = Date.now();
-    this.shouldBlockSounds = true;
+    this.shouldBlockProgressSounds = true;
     
-    // Auto-disable block after duration
-    setTimeout(() => {
-      this.shouldBlockSounds = false;
-      console.log('iOS: Sound block removed after reset timeout');
-    }, this.RESET_BLOCK_DURATION);
-    
-    console.log(`iOS: Reset pressed - sounds blocked for ${this.RESET_BLOCK_DURATION/1000}s`);
+    console.log(`iOS: Reset pressed - progress sounds blocked for ${this.RESET_BLOCK_DURATION/1000}s`);
   }
   
   // Set start sound played status

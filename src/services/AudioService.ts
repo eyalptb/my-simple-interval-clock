@@ -119,12 +119,12 @@ class AudioService {
   }
 
   private async playIOSSound(type: SoundType): Promise<void> {
-    if (!this.iOSHandler.canPlaySound(type)) {
+    if (!this.iOSHandler.canPlayProgressSound(type)) {
       console.log(`iOS: ${type} sound blocked by handler`);
       return;
     }
     
-    this.iOSHandler.updateLastPlayAttempt();
+    this.iOSHandler.updateLastProgressSoundAttempt();
     
     const newSound = createAudioElement(
       type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath
@@ -152,7 +152,7 @@ class AudioService {
       this.iOSHandler.registerResetPress();
     }
     
-    console.log('Reset operation registered - sounds blocked');
+    console.log('Reset operation registered - progress sounds blocked');
     
     setTimeout(() => {
       this.isResetOperation = false;
