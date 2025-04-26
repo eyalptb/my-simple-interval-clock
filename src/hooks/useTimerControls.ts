@@ -88,7 +88,14 @@ export const useTimerControls = (state: TimerState) => {
     const initialRestMin = timerRef.current.restMin;
     const initialRestSec = timerRef.current.restSec;
     
-    // First update timer state
+    console.log("Before reset - Timer state:", {
+      minutes: state.minutes,
+      seconds: state.seconds,
+      restMinutes: state.restMinutes,
+      restSeconds: state.restSeconds
+    });
+    
+    // Directly update state values to ensure they change
     state.setMinutesState(initialWorkoutMin);
     state.setSecondsState(initialWorkoutSec);
     state.setRestMinutesState(initialRestMin);
@@ -101,6 +108,14 @@ export const useTimerControls = (state: TimerState) => {
       restMin: initialRestMin,
       restSec: initialRestSec
     });
+    
+    // Return the reset values for immediate UI update
+    return {
+      minutes: initialWorkoutMin,
+      seconds: initialWorkoutSec,
+      restMinutes: initialRestMin,
+      restSeconds: initialRestSec
+    };
   };
 
   return {

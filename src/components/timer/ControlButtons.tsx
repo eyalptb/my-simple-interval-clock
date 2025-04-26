@@ -27,7 +27,12 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
     e.preventDefault();
     e.stopPropagation();
     console.log("Reset button clicked inside ControlButtons");
-    onReset();
+    // Force a synchronous reset call
+    try {
+      onReset();
+    } catch (error) {
+      console.error("Error during reset:", error);
+    }
   };
 
   return (
