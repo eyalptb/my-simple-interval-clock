@@ -1,4 +1,3 @@
-
 import { useRef } from 'react';
 import { TimerState, ResetTimerValues } from '@/types/timer';
 import { useTimerAudio } from './useTimerAudio';
@@ -75,8 +74,6 @@ export const useTimerControls = (state: TimerState) => {
   };
 
   const pauseTimer = () => {
-    // Removed delay check
-    
     if (state.isRunning) {
       setIsRunning(false);
       setIsPaused(true);
@@ -111,20 +108,21 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting(false);
     setCurrentRepetition(1);
     
-    // Don't reset to 0, use the stored reference values
-    setMinutesState(timerRef.current.workoutMin);
-    setSecondsState(timerRef.current.workoutSec);
-    setRestMinutesState(timerRef.current.restMin);
-    setRestSecondsState(timerRef.current.restSec);
+    // Reset to 0 when user presses the reset button
+    setMinutesState(0);
+    setSecondsState(0);
+    setRestMinutesState(0);
+    setRestSecondsState(0);
     
     soundPlayedForThisSession.current = false;
     wasRecentlyPaused.current = false;
     
+    // Keep reference values unchanged for workout completion restoration
     return {
-      minutes: timerRef.current.workoutMin,
-      seconds: timerRef.current.workoutSec,
-      restMinutes: timerRef.current.restMin,
-      restSeconds: timerRef.current.restSec
+      minutes: 0,
+      seconds: 0,
+      restMinutes: 0,
+      restSeconds: 0
     };
   };
   
