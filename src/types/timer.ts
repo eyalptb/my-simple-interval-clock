@@ -50,6 +50,7 @@ export interface TimerControls {
   pendingTimeUpdateRef: React.RefObject<NodeJS.Timeout>;
   playStartSound: () => void;
   playEndSound: () => void;
-  isInResetState?: React.MutableRefObject<boolean>; // Add optional isInResetState ref
-  resetIOSSoundState?: () => void; // Add optional method to reset iOS sound state
+  isInResetState?: React.MutableRefObject<boolean>;
+  resetIOSSoundState?: () => void;
+  registerPlusButton: () => void; // Added the missing property
 }

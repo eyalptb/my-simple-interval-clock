@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useRef } from 'react';
 import { useTimerState } from '@/hooks/useTimerState';
 import { useTimerControls } from '@/hooks/useTimerControls';
@@ -35,6 +36,7 @@ interface TimerContextType {
   decrementRestSeconds: () => void;
   incrementRestMinutes: () => void;
   decrementRestMinutes: () => void;
+  registerPlusButton: () => void; // Added the missing property
 }
 
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
@@ -186,6 +188,7 @@ export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     decrementRestSeconds,
     incrementRestMinutes,
     decrementRestMinutes,
+    registerPlusButton: timerControls.registerPlusButton, // Added the missing property
   };
 
   return <TimerContext.Provider value={value}>{children}</TimerContext.Provider>;
