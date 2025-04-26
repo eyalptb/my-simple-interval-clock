@@ -64,7 +64,7 @@ export const useTimerInterval = (
             
             toast({
               title: "Workout completed!",
-              description: `Completed all ${totalRepetitions} repetitions. Great job!`,
+              description: `Completed all ${totalRepetitions} repetitions.`,
               duration: 5000,
             });
           }
@@ -108,7 +108,7 @@ export const useTimerInterval = (
             
             toast({
               title: "Workout completed!",
-              description: `Completed all ${totalRepetitions} repetitions. Great job!`,
+              description: `Completed all ${totalRepetitions} repetitions.`,
               duration: 5000,
             });
           }

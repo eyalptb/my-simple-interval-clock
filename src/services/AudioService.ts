@@ -41,77 +41,51 @@ class AudioService {
   }
 
   public async playSound(type: 'start' | 'end'): Promise<void> {
-    if (type !== 'start' && type !== 'end') return;
-    
+    // We'll use a more direct and forceful approach to play audio
     try {
-      // Create a fresh audio instance each time to avoid playback issues
+      // Create a fresh instance every time to avoid any playback issues
       const audio = new Audio(type === 'start' ? 
         this.audioConfig.startSoundPath : 
         this.audioConfig.endSoundPath
       );
       
+      // Set volume to maximum to ensure it's audible
+      audio.volume = 1.0;
+      
       console.log(`Playing ${type} sound`);
-      await audio.play();
+      
+      // Try to play the sound multiple times if needed
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.error(`Error playing ${type} sound:`, error);
+          // Try again with user interaction simulation
+          document.addEventListener('click', () => {
+            audio.play().catch(e => console.error('Second attempt failed:', e));
+          }, { once: true });
+        });
+      }
     } catch (error) {
       console.error(`Error playing ${type} sound:`, error);
     }
   }
   
-  public createAudio(type: 'start' | 'end'): HTMLAudioElement | undefined {
-    try {
-      const audio = new Audio();
-      
-      if (type === 'start') {
-        audio.src = this.audioConfig.startSoundPath;
-        console.log('Creating start sound with path:', audio.src);
-      } else {
-        audio.src = this.audioConfig.endSoundPath;
-        console.log('Creating end sound with path:', audio.src);
-      }
-      
-      // Preload the audio
-      audio.preload = "auto";
-      
-      // Add error handler for debugging
-      audio.onerror = (e) => {
-        console.error('Audio error:', e);
-        console.error('Audio error code:', (audio as any).error?.code);
-        console.error('Audio error message:', (audio as any).error?.message);
-      };
-      
-      return audio;
-    } catch (error) {
-      console.error('Error creating audio:', error);
-      return undefined;
+  public createAudio(type: 'start' | 'end'): HTMLAudioElement {
+    const audio = new Audio();
+    
+    if (type === 'start') {
+      audio.src = this.audioConfig.startSoundPath;
+    } else {
+      audio.src = this.audioConfig.endSoundPath;
     }
-  }
-  
-  public playTestSound(type: 'start' | 'end'): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        const audio = this.createAudio(type);
-        if (!audio) {
-          return reject('Could not create audio element');
-        }
-        
-        // Set up event listeners
-        audio.addEventListener('ended', () => resolve());
-        audio.addEventListener('error', (e) => reject(e));
-        
-        // Try to play
-        const playPromise = audio.play();
-        
-        if (playPromise !== undefined) {
-          playPromise.catch(error => {
-            console.warn(`Test playback failed for ${type} sound:`, error);
-            reject(error);
-          });
-        }
-      } catch (error) {
-        console.error('Error in playTestSound:', error);
-        reject(error);
-      }
-    });
+    
+    // Set maximum volume
+    audio.volume = 1.0;
+    
+    // Preload the audio
+    audio.preload = "auto";
+    
+    return audio;
   }
 }
 

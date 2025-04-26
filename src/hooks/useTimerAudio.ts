@@ -1,6 +1,5 @@
 
 import { useEffect, useRef, useCallback } from 'react';
-import { toast } from '@/hooks/use-toast';
 import AudioService from '@/services/AudioService';
 
 interface AudioStore {
@@ -26,6 +25,16 @@ export const useTimerAudio = (isMuted: boolean) => {
     
     console.log('Audio files initialized in useTimerAudio');
 
+    // Auto-play a silent sound to unlock audio on iOS
+    const unlockAudio = () => {
+      const silentSound = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAJbvABgAABQgGB0REREZGRkfHx8mJiYtLS0zMzM6Ojo/Pz9GRkZNTU1TU1NaWlpgYGBoaGhvb293d3d+fn6EhISKioqSkpKYmJienp6lpaWrq6uxsbG5ubm/v7/FxcXLy8vS0tLY2Nje3t7l5eXr6+vx8fH4+Pj+/v7///8AAAA5TEFNRTMuMTAwAUEAALYgJALkTYAAAA4AA5wBAOgYQD/+M4wC4PHYAQMQAAAP8ZJDkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk/+MYxA8AAANIAAAAABYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhY/+MYxBoFEANYAUwAAFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhY");
+      silentSound.play().catch(() => {});
+    };
+    
+    // Attempt to unlock audio API
+    document.addEventListener('touchstart', unlockAudio, { once: true });
+    document.addEventListener('click', unlockAudio, { once: true });
+    
     // Cleanup function
     return () => {
       if (audioStore.current.startSound) {
@@ -49,15 +58,6 @@ export const useTimerAudio = (isMuted: boolean) => {
       audioStore.current.attemptedToPlay = true;
     } catch (error) {
       console.error(`Error in useTimerAudio playing ${type} sound:`, error);
-      
-      if (!audioStore.current.attemptedToPlay) {
-        toast({
-          title: 'Audio Notice',
-          description: 'Please interact with the page to enable sound playback.',
-          variant: 'default'
-        });
-        audioStore.current.attemptedToPlay = true;
-      }
     }
   }, [isMuted]);
 
