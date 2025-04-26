@@ -27,10 +27,17 @@ export interface TimerState {
   pendingTimeUpdateRef: React.MutableRefObject<NodeJS.Timeout | null>;
 }
 
+export interface ResetTimerValues {
+  minutes: number;
+  seconds: number;
+  restMinutes: number;
+  restSeconds: number;
+}
+
 export interface TimerControls {
   startTimer: () => void;
   pauseTimer: () => void;
-  resetTimer: () => void;
+  resetTimer: () => ResetTimerValues;
   timerRef: React.MutableRefObject<{
     workoutMin: number;
     workoutSec: number;

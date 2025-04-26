@@ -4,6 +4,7 @@ import { useTimer } from '@/contexts/TimerContext';
 import ControlButtons from './timer/ControlButtons';
 import RepetitionControls from './timer/RepetitionControls';
 import TimeSections from './timer/controls/TimeSections';
+import { ResetTimerValues } from '@/types/timer';
 
 const TimerControls: React.FC = () => {
   const { 
@@ -88,23 +89,13 @@ const TimerControls: React.FC = () => {
   // Custom reset handler to ensure the reset happens properly
   const handleReset = () => {
     console.log("Reset button clicked in TimerControls");
-    const resetValues = resetTimer();
+    const resetValues: ResetTimerValues = resetTimer();
     
-    // Force immediate update of the input values without waiting for effect
-    if (resetValues) {
-      console.log("Directly updating input fields after reset", resetValues);
-      setInputMinutes(resetValues.minutes);
-      setInputSeconds(resetValues.seconds);
-      setInputRestMinutes(resetValues.restMinutes);
-      setInputRestSeconds(resetValues.restSeconds);
-    } else {
-      // Fallback to current state values
-      console.log("Updating input fields with current state", { minutes, seconds, restMinutes, restSeconds });
-      setInputMinutes(minutes);
-      setInputSeconds(seconds);
-      setInputRestMinutes(restMinutes);
-      setInputRestSeconds(restSeconds);
-    }
+    console.log("Directly updating input fields after reset", resetValues);
+    setInputMinutes(resetValues.minutes);
+    setInputSeconds(resetValues.seconds);
+    setInputRestMinutes(resetValues.restMinutes);
+    setInputRestSeconds(resetValues.restSeconds);
   };
 
   return (

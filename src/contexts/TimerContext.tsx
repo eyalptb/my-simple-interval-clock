@@ -3,7 +3,7 @@ import { useTimerState } from '@/hooks/useTimerState';
 import { useTimerControls } from '@/hooks/useTimerControls';
 import { useTimeInputs } from '@/hooks/useTimeInputs';
 import { useTimerEffects } from '@/hooks/useTimerEffects';
-import { TimerTheme } from '@/types/timer';
+import { TimerTheme, ResetTimerValues } from '@/types/timer';
 
 interface TimerContextType {
   minutes: number;
@@ -26,7 +26,7 @@ interface TimerContextType {
   toggleMute: () => void;
   startTimer: () => void;
   pauseTimer: () => void;
-  resetTimer: () => void;
+  resetTimer: () => ResetTimerValues;
   incrementSeconds: () => void;
   decrementSeconds: () => void;
   incrementMinutes: () => void;
