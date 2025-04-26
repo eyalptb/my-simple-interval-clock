@@ -20,7 +20,7 @@ const TimerControls: React.FC = () => {
     setMinutes,
     setSeconds,
     totalRepetitions,
-    currentRepetition, // Add this to get current repetition
+    currentRepetition, 
     setTotalRepetitions,
     restMinutes,
     restSeconds,
@@ -34,7 +34,7 @@ const TimerControls: React.FC = () => {
     decrementRestSeconds,
     incrementRestMinutes,
     decrementRestMinutes,
-    registerPlusButton
+    registerPlusButton // Keep using this function to maintain compatibility
   } = useTimer();
 
   // Store input values - these should be the configured values, not the running countdown
@@ -90,7 +90,7 @@ const TimerControls: React.FC = () => {
   // Super responsive button handlers - no delay
   const handleIncreaseMinutes = () => {
     incrementMinutes();
-    registerPlusButton();
+    registerPlusButton(); // We keep this call to maintain existing logic
   };
   
   const handleDecreaseMinutes = () => {
@@ -99,7 +99,7 @@ const TimerControls: React.FC = () => {
   
   const handleIncreaseSeconds = () => {
     incrementSeconds();
-    registerPlusButton();
+    registerPlusButton(); // We keep this call to maintain existing logic
   };
   
   const handleDecreaseSeconds = () => {
@@ -108,7 +108,7 @@ const TimerControls: React.FC = () => {
   
   const handleIncreaseRestMinutes = () => {
     incrementRestMinutes();
-    registerPlusButton();
+    registerPlusButton(); // We keep this call to maintain existing logic
   };
   
   const handleDecreaseRestMinutes = () => {
@@ -117,7 +117,7 @@ const TimerControls: React.FC = () => {
   
   const handleIncreaseRestSeconds = () => {
     incrementRestSeconds();
-    registerPlusButton();
+    registerPlusButton(); // We keep this call to maintain existing logic
   };
   
   const handleDecreaseRestSeconds = () => {
@@ -188,7 +188,7 @@ const TimerControls: React.FC = () => {
         isRunning={isRunning}
         isPaused={isPaused}
         totalRepetitions={totalRepetitions}
-        currentRepetition={currentRepetition} // Pass current repetition to the component
+        currentRepetition={currentRepetition}
         onIncreaseReps={handleIncreaseReps}
         onDecreaseReps={handleDecreaseReps}
       />

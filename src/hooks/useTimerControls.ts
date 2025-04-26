@@ -1,3 +1,4 @@
+
 import { useRef } from 'react';
 import { TimerState, ResetTimerValues } from '@/types/timer';
 import { useTimerAudio } from './useTimerAudio';
@@ -140,6 +141,12 @@ export const useTimerControls = (state: TimerState) => {
     };
   };
 
+  // Adding an empty registerPlusButton function to maintain type compatibility
+  const registerPlusButton = () => {
+    // This function is intentionally left empty as we're removing the old audio trigger logic
+    console.log("Plus button pressed - no action needed");
+  };
+
   return {
     startTimer,
     pauseTimer,
@@ -149,6 +156,7 @@ export const useTimerControls = (state: TimerState) => {
     pendingTimeUpdateRef: state.pendingTimeUpdateRef,
     playStartSound,
     playEndSound,
-    wasRecentlyPaused
+    wasRecentlyPaused,
+    registerPlusButton // Return the empty function to maintain the interface
   };
 };
