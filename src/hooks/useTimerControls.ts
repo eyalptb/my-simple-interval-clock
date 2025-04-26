@@ -1,4 +1,3 @@
-
 import { useRef } from 'react';
 import { TimerState, ResetTimerValues } from '@/types/timer';
 import { useTimerAudio } from './useTimerAudio';
@@ -84,38 +83,25 @@ export const useTimerControls = (state: TimerState) => {
     setIsResting(false);
     setCurrentRepetition(1);
     
-    // Make sure we get the original values to reset to
-    const initialWorkoutMin = timerRef.current.workoutMin || 0;
-    const initialWorkoutSec = timerRef.current.workoutSec || 40;
-    const initialRestMin = timerRef.current.restMin || 1;
-    const initialRestSec = timerRef.current.restSec || 0;
-    
-    console.log("Before reset - Timer state:", {
-      minutes: state.minutes,
-      seconds: state.seconds,
-      restMinutes: state.restMinutes,
-      restSeconds: state.restSeconds
-    });
-    
     // IMPORTANT: Directly update state values to ensure immediate change
-    setMinutesState(0);  // Always reset to 0
-    setSecondsState(40);  // Always reset to 40 seconds
-    setRestMinutesState(1);  // Always reset to 1 minute rest
-    setRestSecondsState(0);  // Always reset to 0 seconds rest
+    setMinutesState(0);  // Reset to 0
+    setSecondsState(0);  // Reset to 0
+    setRestMinutesState(0);  // Reset to 0
+    setRestSecondsState(0);  // Reset to 0
     
     // Log for debugging
     console.log('Reset timer values:', {
       workoutMin: 0, 
-      workoutSec: 40,
-      restMin: 1,
+      workoutSec: 0,
+      restMin: 0,
       restSec: 0
     });
     
     // Return fixed reset values for immediate UI update
     return {
       minutes: 0,
-      seconds: 40,
-      restMinutes: 1,
+      seconds: 0,
+      restMinutes: 0,
       restSeconds: 0
     };
   };
