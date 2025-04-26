@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TimerProvider } from '@/contexts/TimerContext';
 import FlipClock from '@/components/FlipClock';
@@ -12,6 +11,13 @@ const Index = () => {
     <TimerProvider>
       <main className="min-h-screen flex flex-col bg-background">
         <div className="container mx-auto px-4 py-8 flex-1 max-w-md">
+          <section 
+            aria-label="Advertisement" 
+            className="mb-8 rounded-lg shadow-sm bg-card"
+          >
+            <Advertisement />
+          </section>
+          
           <header className="mb-8 text-center">
             <h1 className="text-3xl font-bold tracking-tight">Interval Clock</h1>
             <h2 className="text-xl mt-2 text-muted-foreground">
@@ -20,13 +26,6 @@ const Index = () => {
           </header>
           
           <div className="space-y-8">
-            <section 
-              aria-label="Advertisement" 
-              className="rounded-lg shadow-sm bg-card"
-            >
-              <Advertisement />
-            </section>
-            
             <section 
               aria-label="Workout Status"
               className="bg-transparent"
