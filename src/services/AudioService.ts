@@ -1,3 +1,4 @@
+
 import goMp3 from '@/assets/audio/go.mp3';
 import whistleMp3 from '@/assets/audio/whistle.mp3';
 import { AudioConfig, AudioState, SoundType } from '@/types/audio';
@@ -152,11 +153,12 @@ class AudioService {
     
     console.log('Reset operation registered');
     
+    // Set reset state briefly to prevent sound conflicts during reset
     this.isResetOperation = true;
     setTimeout(() => {
       this.isResetOperation = false;
       console.log('Reset operation cleared');
-    }, 3000);
+    }, 1000); // Reduced to 1 second to minimize sound blockage
   }
 
   public setMute(muted: boolean): void {
@@ -166,10 +168,6 @@ class AudioService {
 
   private canPlaySounds(): boolean {
     if (this.globalMute) {
-      return false;
-    }
-    
-    if (this.isResetOperation) {
       return false;
     }
     
@@ -186,6 +184,12 @@ class AudioService {
   public async playSound(type: SoundType): Promise<void> {
     if (!this.canPlaySounds()) {
       console.log(`${type} sound blocked - global restriction`);
+      return;
+    }
+    
+    // Short circuit during active reset operations
+    if (this.isResetOperation) {
+      console.log(`${type} sound blocked - reset operation in progress`);
       return;
     }
     
@@ -212,12 +216,23 @@ class AudioService {
         }
       }
       
+      // Fallback to HTML Audio API
       const audio = type === 'start' ? this.goSound : this.whistleSound;
       audio.currentTime = 0;
       await audio.play();
       console.log(`${type} sound played using HTML Audio`);
     } catch (error) {
       console.error(`Error playing ${type} sound:`, error);
+      
+      // One more attempt with new audio element if the first attempt fails
+      try {
+        const freshAudio = new Audio(type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath);
+        freshAudio.volume = 1.0;
+        await freshAudio.play();
+        console.log(`${type} sound played using fresh HTML Audio element (recovery attempt)`);
+      } catch (recoveryError) {
+        console.error(`Final attempt to play ${type} sound failed:`, recoveryError);
+      }
     }
   }
 }

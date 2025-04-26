@@ -5,7 +5,7 @@ export class IOSAudioHandler {
   
   private readonly RATE_LIMIT_DURATION = 8000;   // 8 seconds
   
-  // Simplified method that only does basic rate limiting
+  // Method that only handles iOS-specific sound limitations
   canPlayProgressSound(type: 'start' | 'end'): boolean {
     const now = Date.now();
     
@@ -15,7 +15,7 @@ export class IOSAudioHandler {
       return false;
     }
     
-    // Only allow start sound to play once per session unless reset
+    // Only limit start sound if it's already played in this session
     if (type === 'start' && this.startSoundPlayed) {
       console.log('iOS: Start sound already played, inhibiting playback');
       return false;
