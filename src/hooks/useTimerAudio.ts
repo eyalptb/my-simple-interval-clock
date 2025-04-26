@@ -45,10 +45,36 @@ export const useTimerAudio = (isMuted: boolean) => {
         source.buffer = buffer;
         source.connect(audioContext.destination);
         source.start(0);
-
-        // Attempt to play both sounds to initialize them
-        audioStore.current.startSound?.play().catch(() => {});
-        audioStore.current.endSound?.play().catch(() => {});
+        
+        // Only try to play a quick silent version of each sound to initialize them
+        // But don't actually play them fully - just initialize the audio context
+        const silentPlay = async (audio: HTMLAudioElement | null) => {
+          if (audio) {
+            // Save the original volume
+            const originalVolume = audio.volume;
+            // Set to silent
+            audio.volume = 0;
+            // Short play attempt
+            try {
+              await audio.play();
+              // Pause immediately
+              setTimeout(() => {
+                audio.pause();
+                audio.currentTime = 0;
+                // Restore original volume
+                audio.volume = originalVolume;
+              }, 10);
+            } catch (e) {
+              // Restore volume even on error
+              audio.volume = originalVolume;
+              console.log("Silent initialization failed, but this is okay:", e);
+            }
+          }
+        };
+        
+        // Initialize both sounds silently
+        silentPlay(audioStore.current.startSound);
+        silentPlay(audioStore.current.endSound);
 
         console.log('Audio context initialized for iOS compatibility');
       } catch (error) {
