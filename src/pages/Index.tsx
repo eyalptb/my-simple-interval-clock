@@ -55,6 +55,7 @@ const Index = () => {
           
           <footer className="mt-12 text-center text-sm text-muted-foreground">
             <p>©Eyal Wolanowski {new Date().getFullYear()}</p>
+            <p className="mt-2 text-rose-600">Я люблю тебя, Аленушка моя ❤️</p>
           </footer>
         </div>
       </main>
