@@ -86,11 +86,6 @@ export const useTimerAudio = (isMuted: boolean) => {
     audioService.registerReset();
   }, [audioService]);
 
-  // Register a plus button press
-  const registerPlusButtonPress = useCallback(() => {
-    audioService.registerPlusButtonPress();
-  }, [audioService]);
-
   // Prepare for playing start sound
   const prepareStartSound = useCallback(() => {
     audioService.prepareStartSound();
@@ -100,7 +95,6 @@ export const useTimerAudio = (isMuted: boolean) => {
     playStartSound,
     playEndSound,
     registerReset,
-    registerPlusButtonPress,
     prepareStartSound
   };
 };

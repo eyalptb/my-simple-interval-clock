@@ -30,7 +30,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   const [lastPauseTime, setLastPauseTime] = useState<number>(0);
   const [lastMuteTime, setLastMuteTime] = useState<number>(0);
   
-  // Enhanced reset button handler with aggressive iOS prevention
+  // Enhanced reset button handler
   const handleResetClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -55,7 +55,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
     onReset();
   };
   
-  // Start button with improved iOS handling
+  // Start button with improved handling
   const handleStart = () => {
     const now = Date.now();
     

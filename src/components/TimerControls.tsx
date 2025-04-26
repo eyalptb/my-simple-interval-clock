@@ -5,7 +5,6 @@ import ControlButtons from './timer/ControlButtons';
 import RepetitionControls from './timer/RepetitionControls';
 import TimeSections from './timer/controls/TimeSections';
 import { ResetTimerValues } from '@/types/timer';
-import AudioService from '@/services/AudioService';
 
 const TimerControls: React.FC = () => {
   const { 
@@ -34,7 +33,7 @@ const TimerControls: React.FC = () => {
     decrementRestSeconds,
     incrementRestMinutes,
     decrementRestMinutes,
-    registerPlusButton // New method to register plus button presses
+    registerPlusButton // Interface requires this
   } = useTimer();
 
   // Store input values
@@ -81,7 +80,7 @@ const TimerControls: React.FC = () => {
     }
   };
 
-  // Handle plus button presses with improved iOS detection
+  // Simplified button handlers
   const handleIncreaseMinutes = () => {
     const now = Date.now();
     if (now - lastButtonClick < 1000) {
@@ -89,9 +88,6 @@ const TimerControls: React.FC = () => {
       return;
     }
     setLastButtonClick(now);
-    
-    // Register plus button press for iOS
-    registerPlusButton();
     incrementMinutes();
   };
   
@@ -106,9 +102,6 @@ const TimerControls: React.FC = () => {
     const now = Date.now();
     if (now - lastButtonClick < 1000) return;
     setLastButtonClick(now);
-    
-    // Register plus button press for iOS
-    registerPlusButton();
     incrementSeconds();
   };
   
@@ -123,9 +116,6 @@ const TimerControls: React.FC = () => {
     const now = Date.now();
     if (now - lastButtonClick < 1000) return;
     setLastButtonClick(now);
-    
-    // Register plus button press for iOS
-    registerPlusButton();
     incrementRestMinutes();
   };
   
@@ -140,9 +130,6 @@ const TimerControls: React.FC = () => {
     const now = Date.now();
     if (now - lastButtonClick < 1000) return;
     setLastButtonClick(now);
-    
-    // Register plus button press for iOS
-    registerPlusButton();
     incrementRestSeconds();
   };
   
@@ -157,9 +144,6 @@ const TimerControls: React.FC = () => {
     const now = Date.now();
     if (now - lastButtonClick < 1000) return;
     setLastButtonClick(now);
-    
-    // Register plus button press for iOS
-    registerPlusButton();
     setTotalRepetitions(Math.min(20, totalRepetitions + 1));
   };
 

@@ -22,8 +22,7 @@ export const useTimerControls = (state: TimerState) => {
   const { 
     playStartSound, 
     playEndSound, 
-    registerReset, 
-    registerPlusButtonPress, 
+    registerReset,
     prepareStartSound 
   } = useTimerAudio(isMuted);
 
@@ -159,9 +158,10 @@ export const useTimerControls = (state: TimerState) => {
     };
   };
   
-  // Track plus button presses
+  // Simple function to satisfy the interface
   const registerPlusButton = () => {
-    registerPlusButtonPress();
+    // We don't need to track plus buttons anymore
+    // This is a no-op function
   };
 
   return {

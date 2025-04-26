@@ -52,5 +52,5 @@ export interface TimerControls {
   playEndSound: () => void;
   isInResetState?: React.MutableRefObject<boolean>;
   resetIOSSoundState?: () => void;
-  registerPlusButton: () => void; // Added the missing property
+  registerPlusButton: () => void; // Keep this to maintain the interface
 }
