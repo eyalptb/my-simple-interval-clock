@@ -26,11 +26,11 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
   const handleResetClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Reset button clicked inside ControlButtons");
+    console.log("Reset button clicked inside ControlButtons - SILENT RESET");
     // Force a synchronous reset call
     try {
       onReset();
-      console.log("Reset function called successfully");
+      console.log("Reset function called successfully - NO SOUNDS");
     } catch (error) {
       console.error("Error during reset:", error);
     }
@@ -43,6 +43,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         size="icon"
         onClick={handleResetClick}
         className="rounded-full bg-[#ea384c] hover:bg-[#d1323e] text-white border-none relative group"
+        aria-label="Reset timer"
       >
         <RefreshCw className="h-5 w-5" />
       </Button>
@@ -54,6 +55,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
           onClick={onStart}
           className="rounded-full bg-green-500 hover:bg-green-600"
           disabled={!canStart}
+          aria-label="Start timer"
         >
           <Play className="h-5 w-5" />
         </Button>
@@ -63,6 +65,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
           size="icon"
           onClick={onPause}
           className="rounded-full bg-amber-500 hover:bg-amber-600"
+          aria-label="Pause timer"
         >
           <Pause className="h-5 w-5" />
         </Button>
@@ -73,6 +76,7 @@ const ControlButtons: React.FC<ControlButtonsProps> = ({
         size="icon"
         onClick={onToggleMute}
         className="rounded-full"
+        aria-label={isMuted ? "Unmute" : "Mute"}
       >
         {isMuted ? (
           <VolumeX className="h-5 w-5" />

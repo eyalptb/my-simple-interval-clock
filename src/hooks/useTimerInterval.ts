@@ -18,6 +18,8 @@ export const useTimerInterval = (
   }
 ) => {
   const intervalStore = useRef<{ id?: number }>({});
+  // Track if we're in a manual reset operation to prevent sounds
+  const isResetOperation = useRef<boolean>(false);
   
   useEffect(() => {
     const {
@@ -44,8 +46,11 @@ export const useTimerInterval = (
         
         if (isResting) {
           // Rest period ended - Play start sound for the next workout period
-          controls.playStartSound();
-          console.log("Rest ended: Playing GO sound for next workout");
+          // Only play if not in a reset operation
+          if (!isResetOperation.current) {
+            controls.playStartSound();
+            console.log("Rest ended: Playing GO sound for next workout");
+          }
           
           if (currentRepetition < totalRepetitions) {
             state.setCurrentRepetition(currentRepetition + 1);
@@ -60,7 +65,9 @@ export const useTimerInterval = (
             });
           } else {
             // Workout completely finished
+            isResetOperation.current = true;
             controls.resetTimer();
+            isResetOperation.current = false;
             
             toast({
               title: "Workout completed!",
@@ -70,8 +77,11 @@ export const useTimerInterval = (
           }
         } else {
           // Workout period ended - Play end sound
-          controls.playEndSound();
-          console.log("Workout ended: Playing WHISTLE sound");
+          // Only play if not in a reset operation
+          if (!isResetOperation.current) {
+            controls.playEndSound();
+            console.log("Workout ended: Playing WHISTLE sound");
+          }
           
           if (currentRepetition < totalRepetitions) {
             if (restMinutes === 0 && restSeconds === 0) {
@@ -79,10 +89,13 @@ export const useTimerInterval = (
               state.setCurrentRepetition(currentRepetition + 1);
               
               // Play start sound for the next repetition
-              setTimeout(() => {
-                controls.playStartSound();
-                console.log("No rest period: Playing GO sound for next workout");
-              }, 1000); // Small delay between whistle and go sounds
+              // Only play if not in a reset operation
+              if (!isResetOperation.current) {
+                setTimeout(() => {
+                  controls.playStartSound();
+                  console.log("No rest period: Playing GO sound for next workout");
+                }, 1000); // Small delay between whistle and go sounds
+              }
               
               state.setMinutesState(controls.timerRef.current.workoutMin);
               state.setSecondsState(controls.timerRef.current.workoutSec);
@@ -104,7 +117,9 @@ export const useTimerInterval = (
               });
             }
           } else {
+            isResetOperation.current = true;
             controls.resetTimer();
+            isResetOperation.current = false;
             
             toast({
               title: "Workout completed!",

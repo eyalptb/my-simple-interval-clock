@@ -1,3 +1,4 @@
+
 import { useRef } from 'react';
 import { TimerState, ResetTimerValues } from '@/types/timer';
 import { useTimerAudio } from './useTimerAudio';
@@ -68,7 +69,7 @@ export const useTimerControls = (state: TimerState) => {
   };
 
   const resetTimer = (): ResetTimerValues => {
-    console.log("Starting reset timer function");
+    console.log("Starting reset timer function - SILENT reset");
     
     // Clear any active interval
     if (intervalStore.current.id) {
