@@ -7,8 +7,8 @@ interface AudioConfig {
 class AudioService {
   private static instance: AudioService;
   private audioConfig: AudioConfig = {
-    startSoundPath: '/assets/audio/go.mp3',
-    endSoundPath: '/assets/audio/whistle.mp3'
+    startSoundPath: '/src/assets/audio/go.mp3',
+    endSoundPath: '/src/assets/audio/whistle.mp3'
   };
   
   private startAudio: HTMLAudioElement | null = null;

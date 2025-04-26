@@ -21,13 +21,13 @@ export const useTimerAudio = (isMuted: boolean) => {
   useEffect(() => {
     // Create audio elements
     if (!audioStore.current.startSound) {
-      audioStore.current.startSound = new Audio('/assets/audio/go.mp3');
+      audioStore.current.startSound = new Audio('/src/assets/audio/go.mp3');
       audioStore.current.startSound.volume = 1.0;
       audioStore.current.startSound.preload = "auto";
     }
     
     if (!audioStore.current.endSound) {
-      audioStore.current.endSound = new Audio('/assets/audio/whistle.mp3');
+      audioStore.current.endSound = new Audio('/src/assets/audio/whistle.mp3');
       audioStore.current.endSound.volume = 1.0;
       audioStore.current.endSound.preload = "auto";
     }
@@ -76,7 +76,7 @@ export const useTimerAudio = (isMuted: boolean) => {
             console.error(`Error playing ${type} sound:`, error);
             
             // Create a fresh audio element and try again
-            const newAudio = new Audio(type === 'start' ? '/assets/audio/go.mp3' : '/assets/audio/whistle.mp3');
+            const newAudio = new Audio(type === 'start' ? '/src/assets/audio/go.mp3' : '/src/assets/audio/whistle.mp3');
             newAudio.volume = 1.0;
             newAudio.play().catch(e => console.error('Second attempt failed:', e));
             
