@@ -24,14 +24,11 @@ class AudioService {
     try {
       const audio = new Audio();
       
-      // Get the base URL dynamically
-      const baseUrl = window.location.origin;
-      
       if (type === 'start') {
-        audio.src = `${baseUrl}${this.audioConfig.startSoundPath}`;
+        audio.src = this.audioConfig.startSoundPath;
         console.log('Creating start sound with path:', audio.src);
       } else {
-        audio.src = `${baseUrl}${this.audioConfig.endSoundPath}`;
+        audio.src = this.audioConfig.endSoundPath;
         console.log('Creating end sound with path:', audio.src);
       }
       
