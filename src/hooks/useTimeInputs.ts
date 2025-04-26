@@ -37,7 +37,6 @@ export const useTimeInputs = (state: TimerState) => {
         const minutesToAdd = Math.floor(sec / 60);
         const remainingSeconds = sec % 60;
         setSecondsState(remainingSeconds);
-        // Fix the type error by providing a direct number value
         setMinutesState(Math.min(99, state.minutes + minutesToAdd));
         return;
       }
