@@ -23,20 +23,32 @@ export const useTimerAudio = (isMuted: boolean) => {
 
   // Initialize the audio on component mount
   useEffect(() => {
-    // For Safari, try to unlock audio context with a silent audio element
-    const unlockAudio = () => {
-      const silentAudio = new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f/+MYxAAUAFL8AAAAAX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f/+MYxA8Ri8qEAFnGAX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19");
-      silentAudio.play().catch(() => {});
+    // For Safari and mobile browsers, unlock audio context with user interaction
+    const unlockAudioContext = () => {
+      console.log('Attempting to unlock audio context...');
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
+      // Create a silent audio buffer and play it
+      const buffer = audioContext.createBuffer(1, 1, 22050);
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.destination);
+      source.start(0);
+      
+      document.removeEventListener('click', unlockAudioContext);
+      document.removeEventListener('touchstart', unlockAudioContext);
     };
     
-    unlockAudio();
-    document.addEventListener('click', unlockAudio);
-    document.addEventListener('touchstart', unlockAudio);
+    document.addEventListener('click', unlockAudioContext);
+    document.addEventListener('touchstart', unlockAudioContext);
     
     // Initialize the audio service
     const audioService = AudioService.getInstance();
     
-    console.log('Initializing audio files: go.mp3 and whistle.mp3');
+    console.log('Initializing audio files from paths');
     
     // Create audio elements
     const startSound = audioService.createAudio('start');
@@ -52,111 +64,97 @@ export const useTimerAudio = (isMuted: boolean) => {
     // Add event listeners to monitor audio loading status
     if (startSound) {
       startSound.addEventListener('canplaythrough', () => {
-        console.log('Go sound loaded successfully');
+        console.log('Start sound loaded successfully');
         setAudioLoaded(prev => ({ ...prev, start: true }));
       });
       
       startSound.addEventListener('error', (e) => {
-        console.error('Go sound failed to load:', e);
-        toast({
-          title: 'Audio Error',
-          description: 'Failed to load the go.mp3 sound file',
-          variant: 'destructive'
-        });
+        console.error('Start sound failed to load:', e);
+        console.error('Error code:', (startSound as any).error?.code);
+        console.error('Error message:', (startSound as any).error?.message);
       });
     }
     
     if (endSound) {
       endSound.addEventListener('canplaythrough', () => {
-        console.log('Whistle sound loaded successfully');
+        console.log('End sound loaded successfully');
         setAudioLoaded(prev => ({ ...prev, end: true }));
       });
       
       endSound.addEventListener('error', (e) => {
-        console.error('Whistle sound failed to load:', e);
-        toast({
-          title: 'Audio Error',
-          description: 'Failed to load the whistle.mp3 sound file',
-          variant: 'destructive'
-        });
-      });
-    }
-
-    // Pre-test audio playback to try to resolve autoplay restrictions
-    const testSound = startSound;
-    if (testSound) {
-      testSound.volume = 0.01; // Nearly silent
-      testSound.play().then(() => {
-        console.log('Audio pre-test successful');
-        testSound.pause();
-        testSound.currentTime = 0;
-      }).catch(e => {
-        console.log('Audio pre-test failed, browser may block autoplay');
+        console.error('End sound failed to load:', e);
+        console.error('Error code:', (endSound as any).error?.code);
+        console.error('Error message:', (endSound as any).error?.message);
       });
     }
 
     // Cleanup function
     return () => {
-      document.removeEventListener('click', unlockAudio);
-      document.removeEventListener('touchstart', unlockAudio);
+      document.removeEventListener('click', unlockAudioContext);
+      document.removeEventListener('touchstart', unlockAudioContext);
       
       if (audioStore.current.startSound) {
         audioStore.current.startSound.pause();
-        audioStore.current.startSound.src = '';
+        audioStore.current.startSound = undefined;
       }
       if (audioStore.current.endSound) {
         audioStore.current.endSound.pause();
-        audioStore.current.endSound.src = '';
+        audioStore.current.endSound = undefined;
       }
     };
   }, []);
 
   // Function to play a sound
   const playSound = async (type: 'start' | 'end') => {
-    if (isMuted) return;
+    if (isMuted) {
+      console.log('Audio is muted, not playing sound');
+      return;
+    }
     
-    const sound = type === 'start' ? 
-      audioStore.current.startSound : 
-      audioStore.current.endSound;
-
+    console.log(`Attempting to play ${type} sound...`);
+    
+    // Re-create the audio element each time to avoid issues with replaying
+    const audioService = AudioService.getInstance();
+    const sound = audioService.createAudio(type);
+    
     if (sound) {
       try {
-        console.log(`Playing ${type === 'start' ? 'go.mp3' : 'whistle.mp3'} sound...`);
-        sound.currentTime = 0;
+        console.log(`Playing ${type} sound...`);
         audioStore.current.attemptedToPlay = true;
+        
+        // Update the store with the new sound
+        if (type === 'start') {
+          audioStore.current.startSound = sound;
+        } else {
+          audioStore.current.endSound = sound;
+        }
         
         const playPromise = sound.play();
         
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              console.log(`${type === 'start' ? 'Go' : 'Whistle'} sound played successfully`);
+              console.log(`${type} sound played successfully`);
             })
             .catch(error => {
               console.error(`Error playing ${type} sound:`, error);
               
-              toast({
-                title: 'Audio Notice',
-                description: 'Some browsers require user interaction before playing audio.',
-                variant: 'default'
-              });
+              // Only show the toast if we haven't already
+              if (!audioStore.current.attemptedToPlay) {
+                toast({
+                  title: 'Audio Notice',
+                  description: 'Please interact with the page to enable sound playback.',
+                  variant: 'default'
+                });
+                audioStore.current.attemptedToPlay = true;
+              }
             });
         }
       } catch (error) {
         console.error(`Error playing ${type} sound:`, error);
-        toast({
-          title: 'Audio Error',
-          description: `Failed to play ${type} sound`,
-          variant: 'destructive'
-        });
       }
     } else {
       console.error(`${type} sound is not available`);
-      toast({
-        title: 'Audio Error',
-        description: `${type} sound is not available`,
-        variant: 'destructive'
-      });
     }
   };
 

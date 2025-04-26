@@ -44,8 +44,8 @@ export const useTimerControls = (state: TimerState) => {
       }
       
       // Play start sound when timer begins
-      console.log("Timer started: Playing GO sound");
-      playStartSound();
+      console.log("Timer started: Playing start sound");
+      setTimeout(() => playStartSound(), 0);
       
       setIsRunning(true);
       setIsPaused(false);
