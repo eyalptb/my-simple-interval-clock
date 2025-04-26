@@ -7,6 +7,7 @@ interface RepetitionControlsProps {
   isRunning: boolean;
   isPaused: boolean;
   totalRepetitions: number;
+  currentRepetition?: number; // Add currentRepetition as an optional prop
   onIncreaseReps: () => void;
   onDecreaseReps: () => void;
 }
@@ -15,6 +16,7 @@ const RepetitionControls: React.FC<RepetitionControlsProps> = ({
   isRunning,
   isPaused,
   totalRepetitions,
+  currentRepetition = 1, // Default to 1 if not provided
   onIncreaseReps,
   onDecreaseReps,
 }) => {
@@ -23,7 +25,7 @@ const RepetitionControls: React.FC<RepetitionControlsProps> = ({
       <div className="text-center">
         <div className="flex items-center justify-center">
           <Repeat className="h-4 w-4 mr-1" />
-          <span className="text-sm font-medium">Repetition Work</span>
+          <span className="text-sm font-medium">Repetition {currentRepetition}/{totalRepetitions}</span>
         </div>
       </div>
     );

@@ -20,6 +20,7 @@ const TimerControls: React.FC = () => {
     setMinutes,
     setSeconds,
     totalRepetitions,
+    currentRepetition, // Add this to get current repetition
     setTotalRepetitions,
     restMinutes,
     restSeconds,
@@ -187,6 +188,7 @@ const TimerControls: React.FC = () => {
         isRunning={isRunning}
         isPaused={isPaused}
         totalRepetitions={totalRepetitions}
+        currentRepetition={currentRepetition} // Pass current repetition to the component
         onIncreaseReps={handleIncreaseReps}
         onDecreaseReps={handleDecreaseReps}
       />
