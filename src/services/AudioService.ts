@@ -1,3 +1,4 @@
+
 import goMp3 from '@/assets/audio/go.mp3';
 import whistleMp3 from '@/assets/audio/whistle.mp3';
 import { AudioConfig, AudioState, SoundType } from '@/types/audio';
@@ -176,16 +177,23 @@ class AudioService {
     
     await this.initializeAudioContext();
     
+    // iOS specific handling
     if (this.isIOSDevice) {
       await this.playIOSSound(type);
       return;
     }
     
+    // Enhanced desktop sound playback with multiple fallback methods
+    console.log(`Attempting to play ${type} sound on desktop using multiple methods`);
+    
+    // Always ensure whistleSound is loaded
+    if (type === 'end') {
+      this.whistleSound.load();
+    }
+    
+    // Try Web Audio API first (most reliable)
     try {
-      if (this.state.audioContext && 
-          ((type === 'start' && this.state.startAudioBuffer) || 
-           (type === 'end' && this.state.endAudioBuffer))) {
-        
+      if (this.state.audioContext) {
         const buffer = type === 'start' ? this.state.startAudioBuffer : this.state.endAudioBuffer;
         if (buffer) {
           const source = this.state.audioContext.createBufferSource();
@@ -193,43 +201,62 @@ class AudioService {
           source.connect(this.state.audioContext.destination);
           source.start(0);
           console.log(`${type} sound played using Web Audio API`);
-          return;
+          return; // Successfully played
         }
       }
+    } catch (webAudioError) {
+      console.warn(`Web Audio API playback failed for ${type} sound:`, webAudioError);
+    }
+    
+    // Try new Audio element (second most reliable)
+    try {
+      const freshAudio = new Audio(type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath);
+      freshAudio.volume = 1.0;
+      await freshAudio.play();
+      console.log(`${type} sound played using fresh HTML Audio element`);
+      return; // Successfully played
+    } catch (freshAudioError) {
+      console.warn(`Fresh audio element failed for ${type} sound:`, freshAudioError);
+    }
+    
+    // Try DOM audio element method (for browsers with strict autoplay policies)
+    try {
+      console.log(`Attempting DOM audio element for ${type} sound`);
+      const emergencyAudio = document.createElement('audio');
+      emergencyAudio.src = type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath;
+      emergencyAudio.volume = 1.0;
+      document.body.appendChild(emergencyAudio);
       
-      const useNewElement = true; // Always use a fresh audio element for more reliable playback
+      await emergencyAudio.play();
+      console.log(`${type} sound played using emergency audio element`);
       
-      if (useNewElement) {
-        const freshAudio = new Audio(type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath);
-        freshAudio.volume = 1.0;
-        await freshAudio.play();
-        console.log(`${type} sound played using fresh HTML Audio element`);
-      } else {
-        console.log(`Playing ${type} sound using HTML Audio`);
-        const audio = type === 'start' ? this.goSound : this.whistleSound;
-        audio.currentTime = 0;
-        await audio.play();
-        console.log(`${type} sound played successfully using HTML Audio`);
-      }
-    } catch (error) {
-      console.error(`Error playing ${type} sound, trying final backup method:`, error);
+      // Clean up the element after playback
+      emergencyAudio.onended = () => {
+        document.body.removeChild(emergencyAudio);
+      };
       
-      try {
-        console.log(`Final attempt to play ${type} sound with emergency audio element`);
-        const emergencyAudio = document.createElement('audio');
-        emergencyAudio.src = type === 'start' ? this.audioConfig.startSoundPath : this.audioConfig.endSoundPath;
-        emergencyAudio.volume = 1.0;
-        document.body.appendChild(emergencyAudio);
-        
-        await emergencyAudio.play();
-        console.log(`${type} sound played using emergency audio element`);
-        
-        setTimeout(() => {
+      // Fallback cleanup
+      setTimeout(() => {
+        if (document.body.contains(emergencyAudio)) {
           document.body.removeChild(emergencyAudio);
-        }, 2000);
-      } catch (finalError) {
-        console.error(`All attempts to play ${type} sound failed:`, finalError);
-      }
+        }
+      }, 3000);
+      
+      return; // Successfully played
+    } catch (domAudioError) {
+      console.error(`DOM audio element failed for ${type} sound:`, domAudioError);
+    }
+    
+    // Final attempt with original audio elements
+    try {
+      const audio = type === 'start' ? this.goSound : this.whistleSound;
+      audio.currentTime = 0;
+      audio.volume = 1.0;
+      await audio.play();
+      console.log(`${type} sound played using original HTML Audio element`);
+      return; // Successfully played
+    } catch (finalError) {
+      console.error(`All attempts to play ${type} sound failed:`, finalError);
     }
   }
 }

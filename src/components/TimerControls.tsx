@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import ControlButtons from './timer/ControlButtons';
@@ -54,6 +53,7 @@ const TimerControls: React.FC = () => {
     }
   }, [minutes, seconds, restMinutes, restSeconds, isRunning, isPaused]);
 
+  // Input handlers
   const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>, isRest: boolean) => {
     const value = parseInt(e.target.value) || 0;
     if (value >= 0 && value <= 99) {
@@ -80,7 +80,7 @@ const TimerControls: React.FC = () => {
     }
   };
 
-  // Optimized button handlers with minimal delay
+  // Super responsive button handlers - no delay
   const handleIncreaseMinutes = () => {
     incrementMinutes();
     registerPlusButton();
