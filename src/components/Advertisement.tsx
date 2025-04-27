@@ -9,7 +9,7 @@ const Advertisement: React.FC = () => {
     // Async load Google AdSense script
     const loadAdsScript = () => {
       const script = document.createElement('script');
-      script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
+      script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4358788562530186';
       script.async = true;
       script.crossOrigin = 'anonymous';
       document.head.appendChild(script);
