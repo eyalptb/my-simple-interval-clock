@@ -1,15 +1,15 @@
 
-const CACHE_NAME = 'interval-timer-cache-v8';
+const CACHE_NAME = 'interval-timer-cache-v9';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/assets/favicon/favicon.ico',
-  '/assets/favicon/favicon-16x16.png',
-  '/assets/favicon/favicon-32x32.png',
-  '/assets/favicon/apple-touch-icon.png',
-  '/assets/favicon/android-chrome-192x192.png',
-  '/assets/favicon/android-chrome-512x512.png',
-  '/site.webmanifest'
+  '/favicon.ico',
+  '/favicon-16x16.png',
+  '/favicon-32x32.png',
+  '/apple-touch-icon.png',
+  '/android-chrome-192x192.png',
+  '/android-chrome-512x512.png',
+  '/manifest.json'
 ];
 
 // On install, cache the static resources
@@ -49,7 +49,13 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   
   // For favicon requests, bypass cache and go straight to network
-  if (url.pathname.includes('/assets/favicon/') || url.pathname === '/site.webmanifest') {
+  if (url.pathname === '/favicon.ico' || 
+      url.pathname === '/favicon-16x16.png' || 
+      url.pathname === '/favicon-32x32.png' || 
+      url.pathname === '/apple-touch-icon.png' ||
+      url.pathname === '/android-chrome-192x192.png' ||
+      url.pathname === '/android-chrome-512x512.png' ||
+      url.pathname === '/manifest.json') {
     event.respondWith(fetch(event.request));
     return;
   }
