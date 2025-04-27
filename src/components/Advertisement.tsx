@@ -29,7 +29,7 @@ const Advertisement: React.FC = () => {
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXX"
+        data-ad-client="ca-pub-4358788562530186"
         data-ad-slot="XXXXXXXXXX"
         data-ad-format="auto"
         data-full-width-responsive="true"
