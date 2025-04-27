@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TimerProvider } from '@/contexts/TimerContext';
 import FlipClock from '@/components/FlipClock';
@@ -6,6 +5,7 @@ import TimerControls from '@/components/TimerControls';
 import ThemeSelector from '@/components/ThemeSelector';
 import Advertisement from '@/components/Advertisement';
 import WorkoutStatus from '@/components/WorkoutStatus';
+import OptimizedImage from '@/components/OptimizedImage';
 import { Facebook, Twitter, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
