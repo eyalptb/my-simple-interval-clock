@@ -2,24 +2,14 @@ const CACHE_NAME = 'interval-timer-cache-v6';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/favicon.ico',
-  '/favicon-16x16.png',
-  '/favicon-32x32.png',
-  '/apple-touch-icon.png',
-  '/android-chrome-192x192.png',
-  '/android-chrome-512x512.png',
+  '/assets/favicon/favicon.ico',
+  '/assets/favicon/favicon-16x16.png',
+  '/assets/favicon/favicon-32x32.png',
+  '/assets/favicon/apple-touch-icon.png',
+  '/assets/favicon/android-chrome-192x192.png',
+  '/assets/favicon/android-chrome-512x512.png',
   '/site.webmanifest'
 ];
-
-// Create a mapping for handling favicon requests
-const faviconMap = {
-  '/favicon.ico': '/assets/favicon/favicon.ico',
-  '/favicon-16x16.png': '/assets/favicon/favicon-16x16.png',
-  '/favicon-32x32.png': '/assets/favicon/favicon-32x32.png',
-  '/apple-touch-icon.png': '/assets/favicon/apple-touch-icon.png',
-  '/android-chrome-192x192.png': '/assets/favicon/android-chrome-192x192.png',
-  '/android-chrome-512x512.png': '/assets/favicon/android-chrome-512x512.png'
-};
 
 // On install, cache the static resources
 self.addEventListener('install', (event) => {
@@ -57,23 +47,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
   
-  // Handle favicon redirects
-  const faviconPath = faviconMap[url.pathname];
-  if (faviconPath) {
-    event.respondWith(
-      fetch(new Request(faviconPath))
-        .then(response => {
-          if (!response || response.status !== 200) {
-            return caches.match(faviconPath);
-          }
-          return response;
-        })
-        .catch(() => caches.match(faviconPath))
-    );
-    return;
-  }
-  
-  // Standard cache-first strategy for all other resources
+  // Standard cache-first strategy for all resources
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {

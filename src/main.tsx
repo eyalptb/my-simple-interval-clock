@@ -7,10 +7,18 @@ import './index.css';
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
+      // First, unregister any existing service workers to ensure clean state
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+        console.info('ServiceWorker unregistered successfully');
+      }
+      
+      // Register the service worker again
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/'
       });
-      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      console.info('ServiceWorker registration successful with scope: ', registration.scope);
       
       // Check for updates to the service worker
       registration.update();
