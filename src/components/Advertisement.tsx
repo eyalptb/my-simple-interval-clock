@@ -1,7 +1,10 @@
 
 import React, { useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Advertisement: React.FC = () => {
+  const isMobile = useIsMobile();
+  
   useEffect(() => {
     // Async load Google AdSense script
     const loadAdsScript = () => {
@@ -24,11 +27,19 @@ const Advertisement: React.FC = () => {
     };
   }, []);
 
+  // Temporarily hide the advertisement section
+  return null;
+
+  /* Uncomment this when you have the ad slot ID
   return (
-    <div className="w-full h-16 bg-gray-200 flex items-center justify-center border border-gray-300 rounded-md">
+    <div className="w-full flex items-center justify-center border border-gray-300 rounded-md">
       <ins
         className="adsbygoogle"
-        style={{ display: 'block' }}
+        style={{ 
+          display: 'block',
+          width: isMobile ? '320px' : '970px',
+          height: isMobile ? '50px' : '90px'
+        }}
         data-ad-client="ca-pub-4358788562530186"
         data-ad-slot="XXXXXXXXXX"
         data-ad-format="auto"
@@ -36,6 +47,7 @@ const Advertisement: React.FC = () => {
       />
     </div>
   );
+  */
 };
 
 export default Advertisement;
