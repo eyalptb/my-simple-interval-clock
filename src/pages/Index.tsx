@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { TimerProvider } from '@/contexts/TimerContext';
 import FlipClock from '@/components/FlipClock';
@@ -52,7 +53,7 @@ const Index = () => {
             
             <section 
               aria-label="Theme Selection" 
-              className="rounded-lg shadow-sm bg-card p-4"
+              className="bg-transparent"
             >
               <ThemeSelector />
             </section>
