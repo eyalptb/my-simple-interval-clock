@@ -3,12 +3,12 @@ const CACHE_NAME = 'interval-timer-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/favicon.ico',
-  '/favicon-16x16.png',
-  '/favicon-32x32.png',
-  '/apple-touch-icon.png',
-  '/android-chrome-192x192.png',
-  '/android-chrome-512x512.png'
+  '/src/assets/favicon/favicon.ico',
+  '/src/assets/favicon/favicon-16x16.png',
+  '/src/assets/favicon/favicon-32x32.png',
+  '/src/assets/favicon/apple-touch-icon.png',
+  '/src/assets/favicon/android-chrome-192x192.png',
+  '/src/assets/favicon/android-chrome-512x512.png'
 ];
 
 // On install, cache the static resources
