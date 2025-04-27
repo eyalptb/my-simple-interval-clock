@@ -1,0 +1,33 @@
+
+{
+  "name": "Interval Timer - Free Online Timer for Workouts",
+  "short_name": "IntervalTimer",
+  "description": "Free online interval timer for HIIT, tabata, and workouts. Customizable and easy to use!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/src/assets/favicon/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/src/assets/favicon/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["fitness", "health", "lifestyle"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Start Timer",
+      "url": "/"
+    }
+  ]
+}
