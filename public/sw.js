@@ -1,19 +1,18 @@
-
-const CACHE_NAME = 'interval-timer-cache-v5';
+const CACHE_NAME = 'interval-timer-cache-v6';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/assets/favicon/favicon.ico',
-  '/assets/favicon/favicon-16x16.png',
-  '/assets/favicon/favicon-32x32.png',
-  '/assets/favicon/apple-touch-icon.png',
-  '/assets/favicon/android-chrome-192x192.png',
-  '/assets/favicon/android-chrome-512x512.png',
+  '/favicon.ico',
+  '/favicon-16x16.png',
+  '/favicon-32x32.png',
+  '/apple-touch-icon.png',
+  '/android-chrome-192x192.png',
+  '/android-chrome-512x512.png',
   '/site.webmanifest'
 ];
 
 // Create a mapping for handling favicon requests
-const faviconRedirectMap = {
+const faviconMap = {
   '/favicon.ico': '/assets/favicon/favicon.ico',
   '/favicon-16x16.png': '/assets/favicon/favicon-16x16.png',
   '/favicon-32x32.png': '/assets/favicon/favicon-32x32.png',
@@ -29,90 +28,47 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Service Worker: Cache opened');
-        // Cache each URL individually to handle failures gracefully
-        const cachePromises = urlsToCache.map(url => 
-          fetch(url)
-            .then(response => {
-              if (!response || response.status !== 200) {
-                console.log(`Failed to cache: ${url}`);
-                return;
-              }
-              return cache.put(url, response);
-            })
-            .catch(error => {
-              console.log(`Error caching ${url}: ${error}`);
-            })
-        );
-        
-        return Promise.all(cachePromises);
+        return cache.addAll(urlsToCache);
       })
       .then(() => {
         console.log('Service Worker: Installation complete');
         return self.skipWaiting();
       })
+      .catch(error => {
+        console.error('Service worker install error:', error);
+      })
   );
 });
 
-// Helper function to safely cache a response
-const safelyCacheResponse = (request, response) => {
-  // Only cache same-origin resources
-  const requestUrl = new URL(request.url);
-  
-  // Don't cache chrome-extension resources or other extension resources
-  if (requestUrl.protocol === 'chrome-extension:' || 
-      requestUrl.href.includes('extension://') ||
-      requestUrl.protocol !== 'https:' && requestUrl.protocol !== 'http:') {
-    return;
-  }
-  
-  // Only cache if it's from our origin
-  if (requestUrl.origin === self.location.origin) {
-    caches.open(CACHE_NAME).then(cache => {
-      cache.put(request, response.clone());
-    }).catch(error => {
-      console.log(`Error caching ${request.url}: ${error}`);
-    });
-  }
-};
+// Helper function to check if a URL has an extension of common web files
+function hasWebFileExtension(url) {
+  const extensions = ['.html', '.css', '.js', '.json', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.webp', '.woff', '.woff2', '.ttf', '.otf'];
+  return extensions.some(ext => url.endsWith(ext));
+}
 
-// On fetch, intercept requests to handle favicon redirection and caching
+// On fetch, try the cache first, then network
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests and extension-related requests
+  // Skip non-GET requests and browser extension requests
   if (event.request.method !== 'GET' || 
-      event.request.url.startsWith('chrome-extension://') || 
+      event.request.url.startsWith('chrome-extension:') || 
       event.request.url.includes('extension://')) {
     return;
   }
 
   const url = new URL(event.request.url);
   
-  // Check if the request is for a favicon that needs to be redirected
-  const redirectPath = faviconRedirectMap[url.pathname];
-  if (redirectPath) {
+  // Handle favicon redirects
+  const faviconPath = faviconMap[url.pathname];
+  if (faviconPath) {
     event.respondWith(
-      caches.match(redirectPath)
-        .then(cachedResponse => {
-          if (cachedResponse) {
-            return cachedResponse;
+      fetch(new Request(faviconPath))
+        .then(response => {
+          if (!response || response.status !== 200) {
+            return caches.match(faviconPath);
           }
-          
-          // If not in cache, try to fetch it
-          return fetch(redirectPath)
-            .then(response => {
-              if (!response || response.status !== 200) {
-                console.log(`Failed to fetch favicon: ${redirectPath}`);
-                return response;
-              }
-              
-              // Clone the response to store in cache
-              const responseToCache = response.clone();
-              safelyCacheResponse(new Request(redirectPath), responseToCache);
-              return response;
-            })
-            .catch(error => {
-              console.log(`Error fetching favicon ${redirectPath}: ${error}`);
-            });
+          return response;
         })
+        .catch(() => caches.match(faviconPath))
     );
     return;
   }
@@ -127,18 +83,30 @@ self.addEventListener('fetch', (event) => {
         
         return fetch(event.request)
           .then(response => {
-            if (!response || response.status !== 200) {
+            // Only cache valid responses from the same origin
+            if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
             
             // Clone the response to store in cache
             const responseToCache = response.clone();
-            safelyCacheResponse(event.request, responseToCache);
+            
+            // Only cache if it's from our origin and has a web file extension
+            if (url.origin === self.location.origin && hasWebFileExtension(url.pathname)) {
+              caches.open(CACHE_NAME)
+                .then(cache => {
+                  cache.put(event.request, responseToCache);
+                });
+            }
+            
             return response;
           })
-          .catch(error => {
-            console.log(`Fetch error: ${error}`);
-            // Fall back to offline page or just return the error
+          .catch(() => {
+            // Return a fallback for navigation requests
+            if (event.request.mode === 'navigate') {
+              return caches.match('/');
+            }
+            // Otherwise, just propagate the error
             return new Response('Network error occurred', { 
               status: 503,
               statusText: 'Service Unavailable'
