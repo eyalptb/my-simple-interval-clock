@@ -17,20 +17,18 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache');
+        // Don't use addAll as it fails if any single request fails
         return Promise.all(
           urlsToCache.map(url => {
-            // Attempt to fetch each resource
-            return fetch(url)
+            // Use fetch with no-cors for cross-origin resources
+            return fetch(url, { mode: 'no-cors' })
               .then(response => {
-                // If the response was good, clone it and store it in the cache
-                if (response.status === 200) {
-                  cache.put(url, response.clone());
-                  return Promise.resolve();
-                }
-                return Promise.reject(`Failed to fetch ${url}`);
+                // Put the response in cache regardless of status code when using no-cors
+                cache.put(url, response.clone());
+                return Promise.resolve();
               })
               .catch(error => {
-                console.error(`Failed to cache resource: ${url}`, error);
+                console.warn(`Could not cache ${url}: ${error}`);
                 // Continue even if an individual resource fails
                 return Promise.resolve();
               });
@@ -45,5 +43,9 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => response || fetch(event.request))
+      .catch(() => {
+        // Return a fallback response or just continue with the fetch
+        return fetch(event.request);
+      })
   );
 });
