@@ -5,7 +5,7 @@ import TimerControls from '@/components/TimerControls';
 import ThemeSelector from '@/components/ThemeSelector';
 import Advertisement from '@/components/Advertisement';
 import WorkoutStatus from '@/components/WorkoutStatus';
-import { Facebook, Twitter, Linkedin, Mail } from 'lucide-react';
+import { Facebook, Twitter, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -61,7 +61,14 @@ const Index = () => {
           <footer className="mt-12 border-t border-border">
             <div className="container mx-auto px-4 py-6 flex flex-col items-center gap-6">
               <nav className="flex gap-4 text-sm text-muted-foreground">
-                <a href="mailto:contact@intervalclock.com" className="hover:text-foreground">Contact Me</a>
+                <a 
+                  href="https://www.linkedin.com/in/eyal-wolanowski-8b50784a/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-foreground"
+                >
+                  Contact Me
+                </a>
                 <Link to="/terms" className="hover:text-foreground">Terms</Link>
                 <Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link>
               </nav>
