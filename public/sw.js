@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'interval-timer-cache-v3';
+const CACHE_NAME = 'interval-timer-cache-v4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -13,7 +13,7 @@ const urlsToCache = [
   '/site.webmanifest'
 ];
 
-// Create a mapping for handling favicon requests from root path
+// Create a mapping for handling favicon requests from any path
 const faviconRedirectMap = {
   '/favicon.ico': '/assets/favicon/favicon.ico',
   '/favicon-16x16.png': '/assets/favicon/favicon-16x16.png',
@@ -30,7 +30,22 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Service Worker: Cache opened');
-        return cache.addAll(urlsToCache);
+        // Use fetch() for each URL instead of addAll to handle failures gracefully
+        const cachePromises = urlsToCache.map(url => 
+          fetch(url)
+            .then(response => {
+              if (!response || response.status !== 200) {
+                console.log(`Failed to cache: ${url}`);
+                return;
+              }
+              return cache.put(url, response);
+            })
+            .catch(error => {
+              console.log(`Error caching ${url}: ${error}`);
+            })
+        );
+        
+        return Promise.all(cachePromises);
       })
       .then(() => {
         console.log('Service Worker: Installation complete');
@@ -38,6 +53,25 @@ self.addEventListener('install', (event) => {
       })
   );
 });
+
+// Helper function to safely cache a response
+const safelyCacheResponse = (request, response) => {
+  // Don't cache chrome-extension resources
+  if (request.url.startsWith('chrome-extension://') || 
+      request.url.includes('extension://')) {
+    return;
+  }
+  
+  // Only cache same-origin or explicitly allowed resources
+  const requestUrl = new URL(request.url);
+  if (requestUrl.origin === self.location.origin) {
+    caches.open(CACHE_NAME).then(cache => {
+      cache.put(request, response.clone());
+    }).catch(error => {
+      console.log(`Error caching ${request.url}: ${error}`);
+    });
+  }
+};
 
 // On fetch, intercept requests to handle favicon redirection and caching
 self.addEventListener('fetch', (event) => {
@@ -48,11 +82,24 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Handle all favicon requests regardless of path
   const url = new URL(event.request.url);
+  const pathEnd = url.pathname.split('/').pop();
   
-  // Handle favicon redirection for root path requests
-  const redirectPath = faviconRedirectMap[url.pathname];
-  if (redirectPath) {
+  // Handle favicons from any path
+  // Check if we're requesting a favicon by its filename, regardless of path
+  const isFaviconFile = [
+    'favicon.ico', 
+    'favicon-16x16.png', 
+    'favicon-32x32.png', 
+    'apple-touch-icon.png', 
+    'android-chrome-192x192.png', 
+    'android-chrome-512x512.png'
+  ].includes(pathEnd);
+  
+  if (isFaviconFile) {
+    // Redirect to the correct favicon path
+    const redirectPath = `/assets/favicon/${pathEnd}`;
     event.respondWith(
       caches.match(redirectPath)
         .then(cachedResponse => {
@@ -60,20 +107,21 @@ self.addEventListener('fetch', (event) => {
             return cachedResponse;
           }
           
-          const redirectUrl = new URL(redirectPath, self.location.origin);
-          return fetch(redirectUrl)
+          // If not in cache, try to fetch it
+          return fetch(redirectPath)
             .then(response => {
               if (!response || response.status !== 200) {
+                console.log(`Failed to fetch favicon: ${redirectPath}`);
                 return response;
               }
               
+              // Clone the response to store in cache
               const responseToCache = response.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(redirectPath, responseToCache);
-                });
-                
+              safelyCacheResponse(new Request(redirectPath), responseToCache);
               return response;
+            })
+            .catch(error => {
+              console.log(`Error fetching favicon ${redirectPath}: ${error}`);
             });
         })
     );
@@ -96,15 +144,7 @@ self.addEventListener('fetch', (event) => {
             
             // Clone the response to store in cache
             const responseToCache = response.clone();
-            
-            // Only cache same-origin requests to avoid CORS issues
-            if (url.origin === self.location.origin) {
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, responseToCache);
-                });
-            }
-            
+            safelyCacheResponse(event.request, responseToCache);
             return response;
           });
       })
