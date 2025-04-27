@@ -1,43 +1,42 @@
 
-import { useState, useCallback } from 'react';
-import { Howl } from 'howler';
+import useSound from 'use-sound';
 import goMp3 from '@/assets/audio/go.mp3';
 import whistleMp3 from '@/assets/audio/whistle.mp3';
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 export const useIOSTimerAudio = (isMuted: boolean) => {
-  const [goSound] = useState(new Howl({
-    src: [goMp3],
+  const [playGo] = useSound(goMp3, {
     volume: isMuted ? 0 : 1,
-    preload: true
-  }));
+    soundEnabled: isIOS, // Only enable for iOS
+  });
 
-  const [whistleSound] = useState(new Howl({
-    src: [whistleMp3],
+  const [playWhistle] = useSound(whistleMp3, {
     volume: isMuted ? 0 : 1,
-    preload: true
-  }));
+    soundEnabled: isIOS, // Only enable for iOS
+  });
 
-  const playStartSound = useCallback(() => {
-    if (!isIOS || isMuted) return;
+  const playStartSound = async () => {
+    if (!isIOS) return; // Only handle iOS devices
+    if (isMuted) return;
     
     try {
-      goSound.play();
+      await playGo();
     } catch (error) {
       console.error('Error playing iOS start sound:', error);
     }
-  }, [goSound, isMuted]);
+  };
 
-  const playEndSound = useCallback(() => {
-    if (!isIOS || isMuted) return;
+  const playEndSound = async () => {
+    if (!isIOS) return; // Only handle iOS devices
+    if (isMuted) return;
     
     try {
-      whistleSound.play();
+      await playWhistle();
     } catch (error) {
       console.error('Error playing iOS end sound:', error);
     }
-  }, [whistleSound, isMuted]);
+  };
 
   return {
     playStartSound,
