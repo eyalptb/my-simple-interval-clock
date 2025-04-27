@@ -3,8 +3,12 @@ const CACHE_NAME = 'interval-timer-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  // Instead of listing specific favicon files with hashed names,
-  // we'll cache them when they're requested
+  '/favicon.ico',
+  '/favicon-16x16.png',
+  '/favicon-32x32.png',
+  '/apple-touch-icon.png',
+  '/android-chrome-192x192.png',
+  '/android-chrome-512x512.png'
 ];
 
 // On install, cache the static resources
@@ -13,7 +17,23 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        // Try to cache each resource separately to prevent failing if one resource is missing
+        return Promise.allSettled(
+          urlsToCache.map(url => 
+            fetch(url, { cache: 'reload' })
+              .then(response => {
+                if (response.ok) {
+                  return cache.put(url, response);
+                }
+                console.warn(`Couldn't cache ${url}: ${response.status} ${response.statusText}`);
+                return Promise.resolve();
+              })
+              .catch(error => {
+                console.warn(`Failed to fetch ${url} for caching: ${error}`);
+                return Promise.resolve();
+              })
+          )
+        );
       })
   );
 });
@@ -32,30 +52,32 @@ self.addEventListener('fetch', (event) => {
         const fetchRequest = event.request.clone();
         
         // Make network request and cache the response
-        return fetch(fetchRequest).then(response => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          
-          // Clone the response since it can only be used once
-          const responseToCache = response.clone();
-          
-          // Add response to cache
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
+        return fetch(fetchRequest)
+          .then(response => {
+            // Check if valid response
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
             
-          return response;
-        });
-      })
-      .catch(() => {
-        // Return a fallback response or just continue with the fetch
-        return fetch(event.request).catch(() => {
-          // Return nothing if even the fetch fails
-          console.log('Failed to fetch: ', event.request.url);
-        });
+            // Clone the response since it can only be used once
+            const responseToCache = response.clone();
+            
+            // Add response to cache
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+              
+            return response;
+          })
+          .catch(error => {
+            console.log('Failed to fetch: ', event.request.url, error);
+            // Return a default response or fall through
+            return new Response('Network error occurred', {
+              status: 408,
+              headers: { 'Content-Type': 'text/plain' }
+            });
+          });
       })
   );
 });
