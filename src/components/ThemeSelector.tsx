@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { useTimer } from '@/contexts/TimerContext';
-import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 
@@ -10,10 +9,10 @@ const ThemeSelector: React.FC = () => {
   
   const themes = [
     { id: 'black-white', name: 'Black/White', preview: 'bg-black text-white' },
-    { id: 'white-black', name: 'White/Black', preview: 'bg-white text-black border border-gray-300' },
+    { id: 'white-black', name: 'White/Black', preview: 'bg-white text-black' },
     { id: 'neon-green', name: 'Neon Green', preview: 'bg-black text-[#39FF14]' },
     { id: 'neon-red', name: 'Neon Red', preview: 'bg-black text-[#FF3131]' },
-    { id: 'neon-pink', name: 'Neon Pink', preview: 'bg-white text-[#FF69B4] border border-gray-300' },
+    { id: 'neon-pink', name: 'Neon Pink', preview: 'bg-white text-[#FF69B4]' },
   ] as const;
 
   return (
@@ -30,7 +29,9 @@ const ThemeSelector: React.FC = () => {
             <RadioGroupItem value={themeOption.id} id={themeOption.id} className="sr-only" />
             <Label 
               htmlFor={themeOption.id} 
-              className={`${themeOption.preview} px-3 py-1.5 rounded cursor-pointer text-xs flex items-center justify-center ${theme === themeOption.id ? 'ring-2 ring-primary' : ''}`}
+              className={`${themeOption.preview} px-3 py-1.5 rounded cursor-pointer text-xs 
+                ${theme === themeOption.id ? 'ring-2 ring-primary' : ''} 
+                transition-all duration-200 ease-in-out`}
             >
               {themeOption.name}
             </Label>
