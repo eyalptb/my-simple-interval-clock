@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'interval-timer-cache-v4';
+const CACHE_NAME = 'interval-timer-cache-v5';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -9,11 +9,10 @@ const urlsToCache = [
   '/assets/favicon/apple-touch-icon.png',
   '/assets/favicon/android-chrome-192x192.png',
   '/assets/favicon/android-chrome-512x512.png',
-  '/opengraph-image.png',
   '/site.webmanifest'
 ];
 
-// Create a mapping for handling favicon requests from any path
+// Create a mapping for handling favicon requests
 const faviconRedirectMap = {
   '/favicon.ico': '/assets/favicon/favicon.ico',
   '/favicon-16x16.png': '/assets/favicon/favicon-16x16.png',
@@ -30,7 +29,7 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Service Worker: Cache opened');
-        // Use fetch() for each URL instead of addAll to handle failures gracefully
+        // Cache each URL individually to handle failures gracefully
         const cachePromises = urlsToCache.map(url => 
           fetch(url)
             .then(response => {
@@ -56,14 +55,17 @@ self.addEventListener('install', (event) => {
 
 // Helper function to safely cache a response
 const safelyCacheResponse = (request, response) => {
-  // Don't cache chrome-extension resources
-  if (request.url.startsWith('chrome-extension://') || 
-      request.url.includes('extension://')) {
+  // Only cache same-origin resources
+  const requestUrl = new URL(request.url);
+  
+  // Don't cache chrome-extension resources or other extension resources
+  if (requestUrl.protocol === 'chrome-extension:' || 
+      requestUrl.href.includes('extension://') ||
+      requestUrl.protocol !== 'https:' && requestUrl.protocol !== 'http:') {
     return;
   }
   
-  // Only cache same-origin or explicitly allowed resources
-  const requestUrl = new URL(request.url);
+  // Only cache if it's from our origin
   if (requestUrl.origin === self.location.origin) {
     caches.open(CACHE_NAME).then(cache => {
       cache.put(request, response.clone());
@@ -75,31 +77,18 @@ const safelyCacheResponse = (request, response) => {
 
 // On fetch, intercept requests to handle favicon redirection and caching
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests and chrome-extension:// requests
+  // Skip non-GET requests and extension-related requests
   if (event.request.method !== 'GET' || 
       event.request.url.startsWith('chrome-extension://') || 
       event.request.url.includes('extension://')) {
     return;
   }
 
-  // Handle all favicon requests regardless of path
   const url = new URL(event.request.url);
-  const pathEnd = url.pathname.split('/').pop();
   
-  // Handle favicons from any path
-  // Check if we're requesting a favicon by its filename, regardless of path
-  const isFaviconFile = [
-    'favicon.ico', 
-    'favicon-16x16.png', 
-    'favicon-32x32.png', 
-    'apple-touch-icon.png', 
-    'android-chrome-192x192.png', 
-    'android-chrome-512x512.png'
-  ].includes(pathEnd);
-  
-  if (isFaviconFile) {
-    // Redirect to the correct favicon path
-    const redirectPath = `/assets/favicon/${pathEnd}`;
+  // Check if the request is for a favicon that needs to be redirected
+  const redirectPath = faviconRedirectMap[url.pathname];
+  if (redirectPath) {
     event.respondWith(
       caches.match(redirectPath)
         .then(cachedResponse => {
@@ -146,6 +135,14 @@ self.addEventListener('fetch', (event) => {
             const responseToCache = response.clone();
             safelyCacheResponse(event.request, responseToCache);
             return response;
+          })
+          .catch(error => {
+            console.log(`Fetch error: ${error}`);
+            // Fall back to offline page or just return the error
+            return new Response('Network error occurred', { 
+              status: 503,
+              statusText: 'Service Unavailable'
+            });
           });
       })
   );
