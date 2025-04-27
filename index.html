@@ -5,13 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Free Online Interval Timer for productive workouts</title>
     
+    <!-- Critical CSS inline -->
+    <style>
+      /* Minimal styles needed for initial render */
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      #root {
+        min-height: 100vh;
+      }
+    </style>
+    
     <!-- Resource hints for faster third-party connections -->
     <link rel="preconnect" href="https://cdn.gpteng.co" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Preload critical fonts -->
+    <!-- Preload critical assets -->
     <link rel="preload" href="/src/assets/favicon/favicon.ico" as="image">
+    <link rel="preload" href="/src/index.css" as="style">
     
     <!-- Optimized favicon loading -->
     <link rel="apple-touch-icon" href="/src/assets/favicon/apple-touch-icon.png" />
@@ -57,6 +70,6 @@
       </div>
     </div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module" defer></script>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx" defer></script>
   </body>
 </html>
