@@ -5,7 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Free Online Interval Timer for productive workouts</title>
     
-    <link rel="apple-touch-icon" sizes="180x180" href="/src/assets/favicon/apple-touch-icon.png" />
+    <!-- Resource hints for faster third-party connections -->
+    <link rel="preconnect" href="https://cdn.gpteng.co" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="/src/assets/favicon/favicon.ico" as="image">
+    
+    <!-- Optimized favicon loading -->
+    <link rel="apple-touch-icon" href="/src/assets/favicon/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/src/assets/favicon/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/src/assets/favicon/favicon-16x16.png" />
     <link rel="icon" type="image/x-icon" href="/src/assets/favicon/favicon.ico" />
@@ -47,7 +56,7 @@
         <meta itemprop="suitableForDiet" content="All Fitness Levels" />
       </div>
     </div>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module" defer></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
