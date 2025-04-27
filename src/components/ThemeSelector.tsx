@@ -9,10 +9,10 @@ const ThemeSelector: React.FC = () => {
   
   const themes = [
     { id: 'black-white', name: 'Black/White', preview: 'bg-black text-white' },
-    { id: 'white-black', name: 'White/Black', preview: 'bg-white text-black' },
+    { id: 'white-black', name: 'White/Black', preview: 'bg-white text-black border border-black rounded-sm' },
     { id: 'neon-green', name: 'Neon Green', preview: 'bg-black text-[#39FF14]' },
     { id: 'neon-red', name: 'Neon Red', preview: 'bg-black text-[#FF3131]' },
-    { id: 'neon-pink', name: 'Neon Pink', preview: 'bg-white text-[#FF69B4]' },
+    { id: 'neon-pink', name: 'Neon Pink', preview: 'bg-white text-[#FF69B4] border border-black rounded-sm' },
   ] as const;
 
   return (
