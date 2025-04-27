@@ -1,15 +1,15 @@
 
-const CACHE_NAME = 'interval-timer-cache-v6';
+const CACHE_NAME = 'interval-timer-cache-v7';
 const urlsToCache = [
   '/',
   '/index.html',
-  'assets/favicon/favicon.ico',
-  'assets/favicon/favicon-16x16.png',
-  'assets/favicon/favicon-32x32.png',
-  'assets/favicon/apple-touch-icon.png',
-  'assets/favicon/android-chrome-192x192.png',
-  'assets/favicon/android-chrome-512x512.png',
-  '/site.webmanifest'
+  './assets/favicon/favicon.ico',
+  './assets/favicon/favicon-16x16.png',
+  './assets/favicon/favicon-32x32.png',
+  './assets/favicon/apple-touch-icon.png',
+  './assets/favicon/android-chrome-192x192.png',
+  './assets/favicon/android-chrome-512x512.png',
+  './site.webmanifest'
 ];
 
 // On install, cache the static resources
