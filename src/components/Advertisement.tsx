@@ -30,7 +30,6 @@ const Advertisement: React.FC = () => {
   // Temporarily hide the advertisement section
   return null;
 
-  /* Uncomment this when you have the ad slot ID
   return (
     <div className="w-full flex items-center justify-center border border-gray-300 rounded-md">
       <ins
@@ -47,7 +46,7 @@ const Advertisement: React.FC = () => {
       />
     </div>
   );
-  */
+
 };
 
 export default Advertisement;
