@@ -16,16 +16,16 @@ const ThemeSelector: React.FC = () => {
   ] as const;
 
   return (
-    <div className="w-full">
+    <div className="w-full border-none">
       <h3 className="text-sm font-medium mb-3">Clock Theme</h3>
       
       <RadioGroup 
         value={theme} 
         onValueChange={(value) => setTheme(value as any)} 
-        className="flex flex-wrap gap-2"
+        className="flex flex-wrap gap-2 border-none"
       >
         {themes.map((themeOption) => (
-          <div key={themeOption.id} className="flex items-center space-x-2">
+          <div key={themeOption.id} className="flex items-center space-x-2 border-none">
             <RadioGroupItem value={themeOption.id} id={themeOption.id} className="sr-only" />
             <Label 
               htmlFor={themeOption.id} 
