@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'interval-timer-cache-v9';
+const CACHE_NAME = 'interval-timer-cache-v10';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,8 +7,8 @@ const urlsToCache = [
   '/favicon-16x16.png',
   '/favicon-32x32.png',
   '/apple-touch-icon.png',
-  '/android-chrome-192x192.png',
-  '/android-chrome-512x512.png',
+  '/favicon-192x192.png',
+  '/favicon-512x512.png',
   '/manifest.json'
 ];
 
@@ -48,15 +48,33 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
   
-  // For favicon requests, bypass cache and go straight to network
-  if (url.pathname === '/favicon.ico' || 
-      url.pathname === '/favicon-16x16.png' || 
-      url.pathname === '/favicon-32x32.png' || 
-      url.pathname === '/apple-touch-icon.png' ||
-      url.pathname === '/android-chrome-192x192.png' ||
-      url.pathname === '/android-chrome-512x512.png' ||
-      url.pathname === '/manifest.json') {
-    event.respondWith(fetch(event.request));
+  // Handle all favicon requests with network-first strategy
+  const isFaviconRequest = [
+    '/favicon.ico',
+    '/favicon-16x16.png',
+    '/favicon-32x32.png',
+    '/apple-touch-icon.png',
+    '/favicon-192x192.png',
+    '/favicon-512x512.png',
+    '/manifest.json'
+  ].includes(url.pathname);
+
+  if (isFaviconRequest) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Clone the response to store in cache
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // If network fails, try the cache
+          return caches.match(event.request);
+        })
+    );
     return;
   }
   
