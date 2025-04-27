@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'interval-timer-cache-v2';
+const CACHE_NAME = 'interval-timer-cache-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -30,22 +30,7 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Service Worker: Cache opened');
-        return Promise.allSettled(
-          urlsToCache.map(url => 
-            fetch(url, { cache: 'reload' })
-              .then(response => {
-                if (response.ok) {
-                  return cache.put(url, response);
-                }
-                console.warn(`Couldn't cache ${url}: ${response.status} ${response.statusText}`);
-                return Promise.resolve();
-              })
-              .catch(error => {
-                console.warn(`Failed to fetch ${url} for caching: ${error}`);
-                return Promise.resolve();
-              })
-          )
-        );
+        return cache.addAll(urlsToCache);
       })
       .then(() => {
         console.log('Service Worker: Installation complete');
@@ -56,97 +41,71 @@ self.addEventListener('install', (event) => {
 
 // On fetch, intercept requests to handle favicon redirection and caching
 self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests and chrome-extension:// requests
+  if (event.request.method !== 'GET' || 
+      event.request.url.startsWith('chrome-extension://') || 
+      event.request.url.includes('extension://')) {
+    return;
+  }
+
   const url = new URL(event.request.url);
   
   // Handle favicon redirection for root path requests
   const redirectPath = faviconRedirectMap[url.pathname];
   if (redirectPath) {
-    const redirectUrl = new URL(redirectPath, url.origin);
-    console.log(`Service Worker: Redirecting favicon request from ${url.pathname} to ${redirectPath}`);
     event.respondWith(
-      fetch(redirectUrl)
-        .then(response => {
-          // Cache the response for future requests
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-          return response;
-        })
-        .catch(() => {
-          console.log(`Service Worker: Failed to fetch redirected favicon ${redirectPath}, trying cache`);
-          return caches.match(redirectUrl);
-        })
-    );
-    return;
-  }
-  
-  // Special handling for favicon and manifest files
-  if (url.pathname.includes('favicon') || 
-      url.pathname.includes('apple-touch-icon') ||
-      url.pathname.includes('android-chrome') ||
-      url.pathname.includes('site.webmanifest')) {
-    console.log(`Service Worker: Handling asset request for ${url.pathname}`);
-    event.respondWith(
-      caches.match(event.request)
-        .then((response) => {
-          if (response) {
-            console.log(`Service Worker: Serving ${url.pathname} from cache`);
-            return response;
+      caches.match(redirectPath)
+        .then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
           }
           
-          console.log(`Service Worker: Fetching ${url.pathname} from network`);
-          return fetch(event.request)
-            .then(fetchResponse => {
-              // Cache the fetched response
-              if (fetchResponse && fetchResponse.status === 200) {
-                const clonedResponse = fetchResponse.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                  cache.put(event.request, clonedResponse);
-                });
+          const redirectUrl = new URL(redirectPath, self.location.origin);
+          return fetch(redirectUrl)
+            .then(response => {
+              if (!response || response.status !== 200) {
+                return response;
               }
-              return fetchResponse;
-            })
-            .catch(error => {
-              console.log(`Service Worker: Failed to fetch ${url.pathname}: `, error);
-              return new Response('Not found', { status: 404 });
+              
+              const responseToCache = response.clone();
+              caches.open(CACHE_NAME)
+                .then(cache => {
+                  cache.put(redirectPath, responseToCache);
+                });
+                
+              return response;
             });
         })
     );
     return;
   }
   
-  // Standard network-first strategy for other resources
+  // Standard cache-first strategy for all other resources
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Clone the response since it can only be used once
-        const responseToCache = response.clone();
-        
-        // Check if valid response
-        if (response.status === 200) {
-          // Add response to cache
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
+    caches.match(event.request)
+      .then(cachedResponse => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
         
-        return response;
-      })
-      .catch(() => {
-        // If network fails, try from cache
-        return caches.match(event.request)
-          .then(cachedResponse => {
-            if (cachedResponse) {
-              return cachedResponse;
+        return fetch(event.request)
+          .then(response => {
+            if (!response || response.status !== 200) {
+              return response;
             }
             
-            // If not in cache, return a default offline response
-            return new Response('Network error occurred', {
-              status: 408,
-              headers: { 'Content-Type': 'text/plain' }
-            });
+            // Clone the response to store in cache
+            const responseToCache = response.clone();
+            
+            // Only cache same-origin requests to avoid CORS issues
+            if (url.origin === self.location.origin) {
+              caches.open(CACHE_NAME)
+                .then(cache => {
+                  cache.put(event.request, responseToCache);
+                });
+            }
+            
+            return response;
           });
       })
   );
