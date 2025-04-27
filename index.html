@@ -28,7 +28,25 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root" 
+      itemscope 
+      itemtype="https://schema.org/WebApplication"
+    >
+      <meta itemprop="applicationCategory" content="HealthAndFitness" />
+      <meta itemprop="name" content="Interval Timer" />
+      <meta itemprop="author" content="Eyal Wolanowski" />
+      <meta itemprop="version" content="1.0" />
+      <meta itemprop="operatingSystem" content="Any" />
+      
+      <div itemscope itemtype="https://schema.org/ExerciseAction">
+        <meta itemprop="name" content="Interval Workout Timer" />
+        <meta itemprop="duration" content="PT1H" />
+        <meta itemprop="exerciseType" content="HIIT, Tabata, Strength Training, Cardio, Circuit, Fartlek" />
+        <meta itemprop="activityDuration" content="PT1H" />
+        <meta itemprop="intensity" content="All Levels" />
+        <meta itemprop="suitableForDiet" content="All Fitness Levels" />
+      </div>
+    </div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
