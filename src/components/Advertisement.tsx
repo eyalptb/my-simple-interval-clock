@@ -40,7 +40,7 @@ const Advertisement: React.FC = () => {
           height: isMobile ? '50px' : '90px'
         }}
         data-ad-client="ca-pub-4358788562530186"
-        data-ad-slot="XXXXXXXXXX"
+        data-ad-slot="1644378831"
         data-ad-format="auto"
         data-full-width-responsive="true"
       />
