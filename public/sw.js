@@ -1,15 +1,15 @@
 
-const CACHE_NAME = 'interval-timer-cache-v7';
+const CACHE_NAME = 'interval-timer-cache-v8';
 const urlsToCache = [
   '/',
   '/index.html',
-  './assets/favicon/favicon.ico',
-  './assets/favicon/favicon-16x16.png',
-  './assets/favicon/favicon-32x32.png',
-  './assets/favicon/apple-touch-icon.png',
-  './assets/favicon/android-chrome-192x192.png',
-  './assets/favicon/android-chrome-512x512.png',
-  './site.webmanifest'
+  '/assets/favicon/favicon.ico',
+  '/assets/favicon/favicon-16x16.png',
+  '/assets/favicon/favicon-32x32.png',
+  '/assets/favicon/apple-touch-icon.png',
+  '/assets/favicon/android-chrome-192x192.png',
+  '/assets/favicon/android-chrome-512x512.png',
+  '/site.webmanifest'
 ];
 
 // On install, cache the static resources
@@ -48,7 +48,13 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
   
-  // Standard cache-first strategy for all resources
+  // For favicon requests, bypass cache and go straight to network
+  if (url.pathname.includes('/assets/favicon/') || url.pathname === '/site.webmanifest') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
+  // Standard cache-first strategy for all other resources
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
